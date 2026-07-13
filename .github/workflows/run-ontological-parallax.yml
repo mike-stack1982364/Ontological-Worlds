@@ -1,0 +1,45 @@
+name: Run Ontological Parallax Update
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .ontological-parallax-trigger
+
+permissions:
+  contents: write
+
+jobs:
+  patch-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply and validate Mode 7
+        shell: bash
+        run: |
+          test "$(git hash-object index.html)" = "be114014104e036e9b1d34be29ae1586f78a61a6"
+          sed -n "/<<'PATCH_B64'/,/^PATCH_B64$/p" .github/workflows/apply-ontological-parallax.yml | sed '1d;$d' | base64 -d > /tmp/ontological.patch.gz
+          gzip -dc /tmp/ontological.patch.gz > /tmp/ontological.patch
+          git apply --check /tmp/ontological.patch
+          git apply /tmp/ontological.patch
+          python - <<'PY_EXTRACT'
+          from pathlib import Path
+          import re
+          html = Path('index.html').read_text()
+          match = re.search(r'<script type="module">([\s\S]*?)</script>', html)
+          if not match:
+              raise SystemExit('Module script not found')
+          Path('/tmp/imagi-world.js').write_text(match.group(1))
+          PY_EXTRACT
+          node --check /tmp/imagi-world.js
+          test "$(git hash-object index.html)" = "2306a8eb80ca31a4d4e8f47438abebfe1536e299"
+      - name: Commit verified update
+        shell: bash
+        run: |
+          git config user.name "Ontological Worlds Maintainer"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add ontological parallax training mode"
+          git push origin HEAD:main
