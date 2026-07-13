@@ -1,0 +1,287 @@
+/* High-contrast light presentation layer.
+   Loaded after styles.css so gameplay, speech, audio-only mode, timing and
+   scoring remain untouched. */
+
+:root {
+  --bg: #ffffff;
+  --panel: #f4f8fc;
+  --green: #086b3a;
+  --red: #b42318;
+  --pink: #a61e4d;
+  --yellow: #124f8c;
+}
+
+body {
+  background: #ffffff;
+  color: #0b1728;
+}
+
+/* Keep the lion atmospheric rather than competitive with the interface. */
+.lion-backdrop {
+  opacity: 0.12;
+  filter: saturate(0.75) contrast(0.92);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.68) 46%, rgba(0,0,0,.16) 74%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.68) 46%, rgba(0,0,0,.16) 74%, transparent 100%);
+}
+
+.lion-backdrop::after {
+  background: linear-gradient(to bottom,
+    rgba(255,255,255,.10) 0%,
+    rgba(255,255,255,.44) 25%,
+    rgba(255,255,255,.80) 60%,
+    #ffffff 100%);
+}
+
+h1 {
+  font-size: clamp(1.15rem, 5.7vw, 2.35rem);
+  letter-spacing: 2px;
+  white-space: nowrap;
+  background: linear-gradient(100deg,
+    #052f5f 0%,
+    #0a5596 24%,
+    #58bdf2 49%,
+    #176aa8 70%,
+    #052f5f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 1px rgba(5,47,95,.18));
+  text-shadow: none;
+}
+
+.alpha-badge {
+  background: linear-gradient(90deg, #063768 0%, #1584c6 50%, #063768 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: none;
+}
+
+.session-countdown {
+  color: #124f8c;
+  text-shadow: none;
+}
+
+.session-countdown.ending {
+  color: #a61e4d;
+  text-shadow: none;
+}
+
+.session-countdown.idle {
+  color: #52677f;
+  opacity: 1;
+}
+
+.controls,
+.game-area,
+.stat-box,
+.modal > .modal-inner,
+#confirm-overlay .confirm-box {
+  background: #f4f8fc;
+  border-color: #aebdce;
+  color: #0b1728;
+  box-shadow: 0 8px 24px rgba(15,42,70,.12);
+}
+
+.game-area {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(18,79,140,.05), 0 8px 24px rgba(15,42,70,.10);
+}
+
+label,
+#paused-overlay h2,
+#confirm-overlay h3,
+.modal h2,
+.modal h3,
+.modal .row span:last-child {
+  color: #124f8c;
+}
+
+.toggle-row label,
+.delta-rate-row .drl,
+.stat-label,
+.hint,
+#paused-overlay p,
+.modal .row span:first-child {
+  color: #43566d;
+}
+
+select {
+  background: #ffffff;
+  color: #0b1728;
+  border-color: #718399;
+  box-shadow: inset 0 0 0 1px rgba(11,23,40,.02);
+}
+
+input[type="range"] {
+  background: #d4dfeb;
+  border: 1px solid #9fb0c3;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  background: #176aa8;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 2px #176aa8, 0 3px 9px rgba(5,47,95,.28);
+}
+
+input[type="range"]::-moz-range-thumb {
+  background: #176aa8;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 2px #176aa8, 0 3px 9px rgba(5,47,95,.28);
+}
+
+.toggle-row input {
+  accent-color: #176aa8;
+}
+
+.delta-rate-btn,
+.small-btn,
+#pause-btn,
+#stop-btn,
+#confirm-no {
+  background: #e7eef6;
+  border-color: #8fa3b9;
+  color: #123f6b;
+}
+
+.delta-rate-btn.on,
+#pause-btn:active,
+#pause-btn.flash,
+#premise-test-btn.playing {
+  background: #176aa8;
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(23,106,168,.18);
+}
+
+#start-btn {
+  background: linear-gradient(135deg, #0b4f88, #49aee7);
+  color: #ffffff;
+  box-shadow: 0 5px 14px rgba(11,79,136,.22);
+}
+
+#stop-btn {
+  color: #8f173d;
+  border-color: #c79aaa;
+  background: #fff1f4;
+}
+
+button:disabled {
+  opacity: .48;
+}
+
+#countdown-box {
+  color: #124f8c;
+  text-shadow: none;
+}
+
+.premise-display {
+  color: #071525;
+  text-shadow: none;
+}
+
+.response-buttons button {
+  box-shadow: 0 4px 12px rgba(15,42,70,.08);
+}
+
+#match-btn {
+  background: #e9f8ef;
+  color: #086b3a;
+  border-color: #55a879;
+}
+
+#no-match-btn {
+  background: #fff0ef;
+  color: #a61f17;
+  border-color: #d78b86;
+}
+
+#match-btn:active,
+#match-btn.flash {
+  background: #086b3a;
+  color: #ffffff;
+}
+
+#no-match-btn:active,
+#no-match-btn.flash {
+  background: #b42318;
+  color: #ffffff;
+}
+
+.timer-container,
+.session-bar,
+.vol-meter {
+  background: #d7e1eb;
+  border-color: #9fb0c3;
+}
+
+#timer-bar {
+  background: #176aa8;
+}
+
+#session-progress {
+  background: linear-gradient(to right, #0b4f88, #55b9ec);
+}
+
+.stat-box {
+  background: #ffffff;
+}
+
+.stat-value {
+  color: #0b4f88;
+}
+
+.modal,
+#paused-overlay,
+#confirm-overlay {
+  background: rgba(11,23,40,.72);
+}
+
+.modal p,
+#confirm-overlay p {
+  color: #24364b;
+}
+
+.modal code {
+  background: #e7eef6;
+  color: #0b4f88;
+  border: 1px solid #b6c4d3;
+}
+
+.modal .row {
+  border-color: #d1dbe6;
+}
+
+.modal .row.divider {
+  border-color: #b6c4d3;
+}
+
+.modal-close {
+  background: #ffffff;
+  color: #124f8c;
+  border-color: #718399;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+  background: #124f8c;
+  color: #ffffff;
+}
+
+#dprime-chart {
+  background: #ffffff;
+  border: 1px solid #b6c4d3;
+}
+
+#recovery-banner {
+  background: #eef6ff;
+  border-color: #82a9cf;
+  color: #123f6b;
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+.modal-close:focus-visible {
+  outline: 3px solid #69bdf0;
+  outline-offset: 3px;
+}
