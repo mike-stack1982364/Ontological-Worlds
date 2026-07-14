@@ -57,9 +57,12 @@ assert.equal(interference?.selfTestPassed, true, 'interference self-test failed'
 assert.equal(interference?.symbolsDriveInterference, false, 'symbols must not drive interference');
 
 const modeSelect = window.document.getElementById('logic-mode');
-const probability = window.document.getElementById('prob-slider');
 const interferenceSlider = window.document.getElementById('interference-slider');
-probability.value = '0';
+let forcedMatchProbability = 0;
+const runtimeSettings = app.settings.bind(app);
+app.settings = function deterministicTestSettings() {
+  return { ...runtimeSettings(), matchProbability: forcedMatchProbability };
+};
 
 function resetMode(mode, level, seed) {
   modeSelect.value = String(mode);
@@ -87,6 +90,7 @@ function renamedLogicalClone(trial) {
 }
 
 function runNonMatchSequence(mode, level, seed, count = 450) {
+  forcedMatchProbability = 0;
   resetMode(mode, level, seed);
   const similarities = [];
   const highOrder = [];
@@ -137,10 +141,9 @@ for (let mode = 0; mode < 7; mode += 1) {
   }
 }
 
-probability.value = '100';
+forcedMatchProbability = 1;
 for (let mode = 0; mode < 7; mode += 1) {
   resetMode(mode, 100, 3000 + mode);
-  probability.value = '100';
   for (let index = 0; index < 40; index += 1) {
     const target = app.trials[app.trials.length - app.n];
     const trial = app.makeTrial();
