@@ -42,7 +42,7 @@ window.AudioContext = class AudioContext {
 };
 window.webkitAudioContext = window.AudioContext;
 
-for (const file of ['app.js', 'audio-only-display.js', 'ontology-integration-v4.js', 'cognitive-interference-v3.js', 'audio-accessibility.js']) {
+for (const file of ['app.js', 'audio-only-display.js', 'response-window.js', 'ontology-integration-v4.js', 'cognitive-interference-v3.js', 'audio-accessibility.js']) {
   window.eval(fs.readFileSync(file, 'utf8'));
 }
 window.document.dispatchEvent(new window.Event('DOMContentLoaded', { bubbles: true }));
@@ -52,6 +52,7 @@ const app = window.__ontologicalWorlds;
 const ontology = window.__ontologyTestAPI;
 const interference = window.__interferenceTestAPI;
 const audioOnlyDisplay = window.__audioOnlyDisplayTestAPI;
+const responseWindow = window.__responseWindowTestAPI;
 assert.ok(app, 'application instance missing');
 assert.equal(ontology?.selfTestPassed, true, 'ontology self-test failed');
 assert.equal(interference?.selfTestPassed, true, 'interference self-test failed');
@@ -82,6 +83,44 @@ assert.equal(premiseDisplay.classList.contains('muted'), false, 'audio-only mode
 assert.equal(premiseDisplay.getAttribute('aria-hidden'), 'true', 'audio-only premise remains in accessibility tree');
 audioOnly.checked = false;
 app.applyPremiseVisibility();
+
+const responseSlider = window.document.getElementById('spt-slider');
+const responseLabel = window.document.getElementById('spt-val');
+assert.equal(responseWindow?.maxSeconds, 300, 'response-window maximum is not five minutes');
+assert.equal(responseSlider.max, '300', 'response-window slider does not expose five minutes');
+assert.equal(responseSlider.step, '0.5', 'response-window precision changed unexpectedly');
+
+responseSlider.value = '300';
+responseSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
+assert.equal(app.settings().seconds, 300, 'five-minute response setting is not consumed by the engine');
+assert.equal(responseLabel.textContent, '5:00', 'five-minute response setting is not formatted as a clock');
+assert.equal(responseSlider.getAttribute('aria-valuetext'), '5 minutes', 'five-minute response setting lacks accessible text');
+
+responseSlider.value = '60.5';
+responseSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
+assert.equal(responseLabel.textContent, '1:00.5', 'sub-second precision above one minute was lost');
+assert.equal(responseSlider.getAttribute('aria-valuetext'), '1 minute and 0.5 seconds', 'accessible duration formatting is incorrect');
+
+responseSlider.value = '300';
+responseSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
+const originalWindowSetTimeout = window.setTimeout;
+let scheduledResponseMilliseconds = null;
+window.setTimeout = (_callback, milliseconds) => {
+  scheduledResponseMilliseconds = milliseconds;
+  return 999;
+};
+app.running = true;
+app.paused = false;
+app.current = { _answered: false };
+app.awaiting = false;
+app._openResponseWindow(app.settings().seconds * 1000);
+assert.equal(scheduledResponseMilliseconds, 300000, 'five-minute response deadline was not scheduled precisely');
+window.setTimeout = originalWindowSetTimeout;
+app.running = false;
+app.awaiting = false;
+app.current = null;
+clearTimeout(app.timerId);
+app.timerId = null;
 
 const modeSelect = window.document.getElementById('logic-mode');
 const interferenceSlider = window.document.getElementById('interference-slider');
@@ -182,4 +221,4 @@ for (let mode = 0; mode < 7; mode += 1) {
   }
 }
 
-console.log('Logic-engineered cognitive interference and audio-only visibility tests passed.');
+console.log('Logic-engineered cognitive interference, audio-only visibility and five-minute response-window tests passed.');
