@@ -115,38 +115,43 @@
     <div class="modal-inner">
       <button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button>
       <h2 id="tutorial-title">How to Train</h2>
-      <p>Listen to or read each premise, then internally generate semantic content satisfying every directional, categorical and perspectival constraint. Nothing is typed or spoken into the game. Respond MATCH only when the current trial has the same complete scored structure as the trial N positions earlier.</p>
+      <p>Listen to or read each premise, then internally generate one structure satisfying every node, direction, ontology and perspective. Respond MATCH only when the current trial has the same complete scored structure as the trial N positions earlier.</p>
 
-      <h3>The hidden ontological grammar</h3>
-      <p>Every mode now uses all nine categories: All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion. Each is expressed as Inner, Outer or Archetypal. Complementary mirrors are All–Completion, Difference–Encompassment, Action–Projection and Division–Multiplication; Connection mirrors itself.</p>
-      <p>Category composition is computed on a nine-position relational field. Directional turns transform how operators combine, so the required result is determined jointly by category, perspective and topology—not by category labels alone.</p>
+      <h3>Compact auditory grammar</h3>
+      <p>Every relation uses the same order: category-bound node; direction to category-bound node. Example: “Inner Division U; east to Outer Multiplication M.” Semicolons mark auditory boundaries. “Of”, “connects”, explanatory definitions and the spoken word “Archetypal” are excluded.</p>
+      <p>A bare category name is the unmarked or archetypal form. Therefore “Connection M” is distinct from “Inner Connection M” and “Outer Connection M”, without saying “Archetypal Connection”. Categories belong to nodes; direction words never masquerade as ontological operators.</p>
+
+      <h3>The ontological field</h3>
+      <p>The nine categories are All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion. Complementary mirrors are All–Completion, Difference–Encompassment, Action–Projection and Division–Multiplication; Connection mirrors itself.</p>
+      <p>Inner and Outer meanings are learned operators, not definitions repeated inside every trial. Category composition uses an explicit nine-position computational field. This is a game formalisation for deterministic scoring, not a claim that the source theory supplied this exact composition table.</p>
 
       <h3>Mode 1 — Cardinal Streaming</h3>
-      <p>Instantiate one cardinal relation through a specified ontological category and perspective. The category governs what kind of internally generated relation may satisfy the direction.</p>
+      <p>Bind two independently categorised nodes through one cardinal relation. Example: “Inner Division U; east to Outer Multiplication M.”</p>
 
       <h3>Mode 2 — Relational Reversal</h3>
-      <p>Reverse both the cardinal relation and its ontological perspective through the complementary category. Hold the original and reversal as one invariant structure.</p>
+      <p>Hold the relation and its reversal together. “Reverse” swaps the nodes, reverses direction, mirrors each category and exchanges Inner with Outer; the unmarked form remains unmarked.</p>
 
       <h3>Mode 3 — Triadic Composition</h3>
-      <p>Coordinate two category-bound relations across three symbols. The game computes the category and perspective that must emerge from their directional composition.</p>
+      <p>Integrate three node ontologies and two linked directions. The resulting ontology and form are computed from the full triad and its turn topology.</p>
 
       <h3>Mode 4 — Topological Equivalence</h3>
-      <p>Transfer a relation into its complementary category and opposite perspective while preserving its axis and turn topology. Surface direction may change while the deeper isomorphism remains.</p>
+      <p>Integrate two complete dyads as relations-between-relations. The second dyad is the rotated ontological mirror of the first; either dyad may appear first without changing the scored equivalence.</p>
 
       <h3>Mode 5 — Operator Composition</h3>
-      <p>Compose three ontological operators, all three perspectives and three linked turns. Intermediate and final categories are computed rather than randomly appended.</p>
+      <p>Integrate four category-bound nodes and three linked directions as one quaternary structure. The final ontology is computed from all nodes and both directional turns.</p>
 
       <h3>Mode 6 — Recursive Invention</h3>
-      <p>Compose two category-bound operators and bind the full result to an invention symbol. A later trial can reopen that invention as an operand. Its category, perspective, topology, lineage and recursion depth are carried forward—not merely its letter.</p>
+      <p>Bind two nodes, compute their result and name it as an invention. A later “invention” node reopens its stored ontology, form, topology, lineage and recursion depth beneath the newly spoken wrapper category.</p>
 
       <h3>Mode 7 — Ontological Parallax</h3>
-      <p>Coordinate Inner, Outer and Archetypal perspectives; synthesize two operators; compute the category of their relationship; reify that relationship as an invention; then reverse perspective and transfer the invention while preserving both turns and all inherited structure.</p>
+      <p>Coordinate Inner, Outer and unmarked nodes in one triad; compute both node synthesis and the categories of its two relations; reify their relation as an invention; then hold its mirrored reversal.</p>
 
       <h3>What MATCH means</h3>
-      <p>The objective signature includes the mode-specific directional topology plus its category operations, perspective relations, computed outcomes and, in recursive modes, inherited invention signatures. Equivalent rotated or mirrored surfaces can therefore match, but a merely repeated category word cannot.</p>
+      <p>Scoring uses ontologies, forms, node roles, directional topology, computed results and inherited invention digests. Higher modes permit only their specified structural invariances, such as global rotation, reversal or dyad exchange. Repeated words alone cannot produce a match.</p>
 
       <h3>Accessibility guarantee</h3>
-      <p>The program constructs one final premise string, writes that exact string to the live visual premise region, and sends the same string to browser speech synthesis. The ontological engine loads before the existing speech-accessibility layer, so audio-only display, visible premises, pause/resume replay, speech rate, volume and speech/background separation remain available.</p>
+      <p>The program constructs one final premise string, writes that exact string to the live visual region and sends the same string to speech synthesis. The response window opens only after speech finishes; audio-only display, pause/resume replay, speech rate, volume and speech/background separation remain available.</p>
+      <p>This is a theoretically motivated relational-integration design. It is not validated evidence that training will increase general fluid intelligence.</p>
       <button id="dismiss-tutorial" class="small-btn" type="button">Close</button>
     </div>
   </section>
@@ -165,8 +170,7 @@
   </section>
 
   <script src="app.js"></script>
-  <script src="ontology-integration-v3.js"></script>
-  <script src="ontology-semantics-v3.js"></script>
+  <script src="ontology-integration-v4.js"></script>
   <script src="audio-accessibility.js"></script>
 </body>
 </html>
