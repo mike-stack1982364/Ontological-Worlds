@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <meta name="theme-color" content="#ffffff">
-  <title>Ontological-Worlds — Neural Topology</title>
+  <title>Ontological-Worlds</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="light-theme.css">
 </head>
@@ -12,7 +12,6 @@
   <div class="lion-backdrop" aria-hidden="true"></div>
   <main class="container">
     <h1>Ontological-Worlds</h1>
-    <div class="alpha-badge">Neural Topology</div>
     <div id="session-countdown" class="session-countdown idle" role="timer" aria-label="Session time remaining">00:00</div>
 
     <section class="controls" aria-label="Game settings">
@@ -44,6 +43,11 @@
       <div class="control-group">
         <label for="prob-slider">Match probability: <span id="prob-val">35%</span></label>
         <input id="prob-slider" type="range" min="15" max="60" step="1" value="35">
+      </div>
+      <div class="control-group">
+        <label for="interference-slider">Cognitive interference: <span id="interference-val">60%</span></label>
+        <input id="interference-slider" type="range" min="0" max="100" step="5" value="60" aria-describedby="interference-help">
+        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Raises relational-role interference and partial-structure lures. It does not add sensory noise.</p>
       </div>
 
       <div class="control-group" aria-labelledby="accessibility-label">
@@ -125,6 +129,10 @@
       <p>The nine categories are All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion. Complementary mirrors are All–Completion, Difference–Encompassment, Action–Projection and Division–Multiplication; Connection mirrors itself.</p>
       <p>Inner and Outer meanings are learned operators, not definitions repeated inside every trial. Category composition uses an explicit nine-position computational field. This is a game formalisation for deterministic scoring, not a claim that the source theory supplied this exact composition table.</p>
 
+      <h3>Cognitive interference</h3>
+      <p>The slider controls relational interference rather than visual or auditory distraction. Higher settings increasingly carry a recently encountered symbol into a different category, perspective or structural role, and select non-matches that overlap partially with the N-back target while differing on a decisive binding.</p>
+      <p>Exact symbol-pair repetitions and reversed pairs are blocked because they permit superficial recognition. At zero, generation remains comparatively fresh. At one hundred, recent-role carry and structurally competitive lures are maximised whenever a valid non-repeating construction exists.</p>
+
       <h3>Mode 1 — Cardinal Streaming</h3>
       <p>Bind two independently categorised nodes through one cardinal relation. Example: “Inner Division U; east to Outer Multiplication M.”</p>
 
@@ -171,6 +179,7 @@
 
   <script src="app.js"></script>
   <script src="ontology-integration-v4.js"></script>
+  <script src="cognitive-interference.js"></script>
   <script src="audio-accessibility.js"></script>
 </body>
 </html>
