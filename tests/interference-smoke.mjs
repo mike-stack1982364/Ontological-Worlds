@@ -65,6 +65,7 @@ const audioOnly = window.document.getElementById('audio-only');
 const legacyHideText = window.document.getElementById('hide-text');
 const premiseDisplay = window.document.getElementById('premise-display');
 assert.equal(legacyHideText.hidden, true, 'legacy compatibility element is visible');
+assert.equal(legacyHideText.closest('label'), null, 'legacy compatibility element remains user-facing');
 assert.equal(legacyHideText.checked, false, 'legacy blur state was not neutralised');
 assert.equal(Object.prototype.hasOwnProperty.call(app.settings(), 'hideText'), false, 'hideText remains in runtime settings');
 
