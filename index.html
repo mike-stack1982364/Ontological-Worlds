@@ -55,11 +55,11 @@
         <p style="font-size:.75rem;color:#43566d;line-height:1.45;margin-bottom:10px">Every generated premise is supplied through two parallel channels: visible text for deaf or hard-of-hearing players and optional speech for blind or vision-impaired players. Both channels use the same canonical premise string.</p>
         <div class="toggle-row">
           <label><input id="audio-only" type="checkbox"> Audio-only display</label>
-          <label><input id="hide-text" type="checkbox"> Blur visible premise</label>
           <label><input id="keyboard" type="checkbox" checked> Keyboard controls</label>
           <label><input id="haptic" type="checkbox" checked> Haptics</label>
           <label><input id="adaptive" type="checkbox"> Adaptive N</label>
         </div>
+        <input id="hide-text" type="checkbox" hidden aria-hidden="true" tabindex="-1">
       </div>
 
       <div class="control-group">
@@ -178,6 +178,7 @@
   </section>
 
   <script src="app.js"></script>
+  <script src="audio-only-display.js"></script>
   <script src="ontology-integration-v4.js"></script>
   <script src="cognitive-interference-v3.js"></script>
   <script src="audio-accessibility.js"></script>
