@@ -42,7 +42,7 @@ window.AudioContext = class AudioContext {
 };
 window.webkitAudioContext = window.AudioContext;
 
-for (const file of ['app.js', 'ontology-integration-v4.js', 'cognitive-interference-v3.js', 'audio-accessibility.js']) {
+for (const file of ['app.js', 'audio-only-display.js', 'ontology-integration-v4.js', 'cognitive-interference-v3.js', 'audio-accessibility.js']) {
   window.eval(fs.readFileSync(file, 'utf8'));
 }
 window.document.dispatchEvent(new window.Event('DOMContentLoaded', { bubbles: true }));
@@ -51,10 +51,36 @@ await new Promise(resolve => setTimeout(resolve, 0));
 const app = window.__ontologicalWorlds;
 const ontology = window.__ontologyTestAPI;
 const interference = window.__interferenceTestAPI;
+const audioOnlyDisplay = window.__audioOnlyDisplayTestAPI;
 assert.ok(app, 'application instance missing');
 assert.equal(ontology?.selfTestPassed, true, 'ontology self-test failed');
 assert.equal(interference?.selfTestPassed, true, 'interference self-test failed');
 assert.equal(interference?.symbolsDriveInterference, false, 'symbols must not drive interference');
+assert.equal(audioOnlyDisplay?.blurControlRemoved, true, 'blur behaviour was not removed');
+assert.equal(audioOnlyDisplay?.legacyControlHidden, true, 'legacy compatibility input must remain hidden');
+assert.equal(audioOnlyDisplay?.settingsExcludeHideText, true, 'obsolete hideText setting remains active');
+assert.equal(window.document.body.textContent.includes('Blur visible premise'), false, 'obsolete blur control remains visible');
+
+const audioOnly = window.document.getElementById('audio-only');
+const legacyHideText = window.document.getElementById('hide-text');
+const premiseDisplay = window.document.getElementById('premise-display');
+assert.equal(legacyHideText.hidden, true, 'legacy compatibility element is visible');
+assert.equal(legacyHideText.checked, false, 'legacy blur state was not neutralised');
+assert.equal(Object.prototype.hasOwnProperty.call(app.settings(), 'hideText'), false, 'hideText remains in runtime settings');
+
+audioOnly.checked = false;
+app.applyPremiseVisibility();
+assert.equal(premiseDisplay.classList.contains('hidden-mode'), false, 'visible mode incorrectly hides premise');
+assert.equal(premiseDisplay.classList.contains('muted'), false, 'blur class is still applied');
+assert.equal(premiseDisplay.getAttribute('aria-hidden'), 'false', 'visible premise is hidden from accessibility tree');
+
+audioOnly.checked = true;
+app.applyPremiseVisibility();
+assert.equal(premiseDisplay.classList.contains('hidden-mode'), true, 'audio-only mode did not hide premise');
+assert.equal(premiseDisplay.classList.contains('muted'), false, 'audio-only mode applied obsolete blur class');
+assert.equal(premiseDisplay.getAttribute('aria-hidden'), 'true', 'audio-only premise remains in accessibility tree');
+audioOnly.checked = false;
+app.applyPremiseVisibility();
 
 const modeSelect = window.document.getElementById('logic-mode');
 const interferenceSlider = window.document.getElementById('interference-slider');
@@ -155,4 +181,4 @@ for (let mode = 0; mode < 7; mode += 1) {
   }
 }
 
-console.log('Logic-engineered cognitive interference smoke tests passed.');
+console.log('Logic-engineered cognitive interference and audio-only visibility tests passed.');
