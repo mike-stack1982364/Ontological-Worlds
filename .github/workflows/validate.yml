@@ -21,6 +21,7 @@ jobs:
         run: |
           node --check app.js
           node --check audio-only-display.js
+          node --check response-window.js
           node --check ontology-integration-v4.js
           node --check cognitive-interference-v3.js
           node --check audio-accessibility.js
