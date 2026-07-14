@@ -1,0 +1,155 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { JSDOM } from 'jsdom';
+
+const html = fs.readFileSync('index.html', 'utf8').replace(/<script[^>]*src="[^"]+"[^>]*><\/script>/g, '');
+const dom = new JSDOM(html, {
+  runScripts: 'outside-only',
+  url: 'https://ontological-worlds.test/'
+});
+const { window } = dom;
+
+window.alert = () => {};
+window.confirm = () => true;
+window.requestAnimationFrame = callback => setTimeout(callback, 0);
+window.cancelAnimationFrame = id => clearTimeout(id);
+window.navigator.vibrate = () => true;
+window.URL.createObjectURL = () => 'blob:test';
+window.URL.revokeObjectURL = () => {};
+window.SpeechSynthesisUtterance = class SpeechSynthesisUtterance {
+  constructor(text = '') {
+    this.text = text;
+    this.volume = 1;
+    this.rate = 1;
+    this.pitch = 1;
+  }
+};
+window.speechSynthesis = {
+  paused: false,
+  speaking: false,
+  getVoices: () => [],
+  speak: utterance => { queueMicrotask(() => utterance.onend?.()); },
+  cancel: () => {},
+  resume: () => {},
+  pause: () => {}
+};
+window.AudioContext = class AudioContext {
+  constructor() { this.state = 'running'; this.currentTime = 0; this.destination = {}; }
+  resume() { this.state = 'running'; return Promise.resolve(); }
+  createGain() { return { gain: { value: 0, setTargetAtTime() {} }, connect() { return this; }, disconnect() {} }; }
+  createOscillator() { return { frequency: { value: 0 }, type: 'sine', connect() { return this; }, start() {}, stop() {}, disconnect() {} }; }
+  createChannelMerger() { return { connect() { return this; }, disconnect() {} }; }
+};
+window.webkitAudioContext = window.AudioContext;
+
+for (const file of ['app.js', 'ontology-integration-v4.js', 'cognitive-interference-v3.js', 'audio-accessibility.js']) {
+  window.eval(fs.readFileSync(file, 'utf8'));
+}
+window.document.dispatchEvent(new window.Event('DOMContentLoaded', { bubbles: true }));
+await new Promise(resolve => setTimeout(resolve, 0));
+
+const app = window.__ontologicalWorlds;
+const ontology = window.__ontologyTestAPI;
+const interference = window.__interferenceTestAPI;
+assert.ok(app, 'application instance missing');
+assert.equal(ontology?.selfTestPassed, true, 'ontology self-test failed');
+assert.equal(interference?.selfTestPassed, true, 'interference self-test failed');
+assert.equal(interference?.symbolsDriveInterference, false, 'symbols must not drive interference');
+
+const modeSelect = window.document.getElementById('logic-mode');
+const probability = window.document.getElementById('prob-slider');
+const interferenceSlider = window.document.getElementById('interference-slider');
+probability.value = '0';
+
+function resetMode(mode, level, seed) {
+  modeSelect.value = String(mode);
+  interferenceSlider.value = String(level);
+  interferenceSlider.dispatchEvent(new window.Event('input'));
+  app.rng.s = seed >>> 0;
+  app.trials = [];
+  app.inventionMemory.clear();
+  app.categoryDeck = [];
+  app.formDeck = [];
+  app.turnDeck = [];
+  app.n = 3;
+  app.score.shown = 0;
+}
+
+function renamedLogicalClone(trial) {
+  const copy = JSON.parse(JSON.stringify(trial));
+  const replacements = ['X', 'Y', 'Z', 'Q'];
+  copy.nodes.forEach((node, index) => {
+    if (!node.memory) node.symbol = replacements[index];
+  });
+  copy.symbols = copy.nodes.map(node => node.symbol);
+  app.deriveTrial(copy);
+  return copy;
+}
+
+function runNonMatchSequence(mode, level, seed, count = 450) {
+  resetMode(mode, level, seed);
+  const similarities = [];
+  const highOrder = [];
+  for (let index = 0; index < count; index += 1) {
+    const target = app.trials[app.trials.length - app.n];
+    const trial = app.makeTrial();
+    assert.ok(trial.signature, `missing signature in mode ${mode}`);
+    assert.ok(!/undefined|null/.test(app.renderTrial(trial)), `malformed premise in mode ${mode}`);
+
+    if (target) {
+      assert.equal(trial.isMatch, false, `unexpected match path in mode ${mode}`);
+      assert.notEqual(trial.signature, target.signature, `false non-match in mode ${mode}`);
+      const comparison = interference.compareLogic(trial, target);
+      similarities.push(comparison.similarity);
+      highOrder.push(comparison.highOrderDifference ? 1 : 0);
+      assert.deepEqual(
+        interference.logicProfile(trial),
+        interference.logicProfile(renamedLogicalClone(trial)),
+        `surface symbols entered logic profile in mode ${mode}`
+      );
+    }
+
+    if (mode >= 5) {
+      const reserved = new Set(app.inventionMemory.keys());
+      for (const node of trial.nodes) {
+        if (!node.memory) assert.equal(reserved.has(node.symbol), false, 'plain node reused an invention identifier');
+      }
+    }
+
+    app.trials.push(trial);
+    app.score.shown += 1;
+  }
+  return {
+    averageSimilarity: similarities.reduce((sum, value) => sum + value, 0) / Math.max(1, similarities.length),
+    highOrderRate: highOrder.reduce((sum, value) => sum + value, 0) / Math.max(1, highOrder.length)
+  };
+}
+
+for (let mode = 0; mode < 7; mode += 1) {
+  const low = runNonMatchSequence(mode, 0, 1000 + mode);
+  const high = runNonMatchSequence(mode, 100, 2000 + mode);
+  assert.ok(
+    high.averageSimilarity > low.averageSimilarity,
+    `interference did not increase logical lure similarity in mode ${mode}: ${low.averageSimilarity} -> ${high.averageSimilarity}`
+  );
+  if (mode >= 2) {
+    assert.ok(high.highOrderRate >= 0.7, `high-order lure rate too low in mode ${mode}: ${high.highOrderRate}`);
+  }
+}
+
+probability.value = '100';
+for (let mode = 0; mode < 7; mode += 1) {
+  resetMode(mode, 100, 3000 + mode);
+  probability.value = '100';
+  for (let index = 0; index < 40; index += 1) {
+    const target = app.trials[app.trials.length - app.n];
+    const trial = app.makeTrial();
+    if (target) {
+      assert.equal(trial.isMatch, true, `match path not selected in mode ${mode}`);
+      assert.equal(trial.signature, target.signature, `false match in mode ${mode}`);
+    }
+    app.trials.push(trial);
+  }
+}
+
+console.log('Logic-engineered cognitive interference smoke tests passed.');
