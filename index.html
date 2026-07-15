@@ -18,13 +18,13 @@
       <div class="control-group">
         <label for="logic-mode">Training mode</label>
         <select id="logic-mode">
-          <option value="0">Mode 1 — Cardinal Streaming</option>
-          <option value="1">Mode 2 — Relational Reversal</option>
-          <option value="2">Mode 3 — Triadic Composition</option>
-          <option value="3">Mode 4 — Topological Equivalence</option>
-          <option value="4">Mode 5 — Operator Composition</option>
-          <option value="5">Mode 6 — Recursive Invention</option>
-          <option value="6">Mode 7 — Ontological Parallax</option>
+          <option value="0">Mode 1 — Triadic Cardinal Streaming</option>
+          <option value="1" disabled>Mode 2 — Released in future</option>
+          <option value="2" disabled>Mode 3 — Released in future</option>
+          <option value="3" disabled>Mode 4 — Released in future</option>
+          <option value="4" disabled>Mode 5 — Released in future</option>
+          <option value="5" disabled>Mode 6 — Released in future</option>
+          <option value="6" disabled>Mode 7 — Released in future</option>
         </select>
       </div>
 
@@ -47,7 +47,7 @@
       <div class="control-group">
         <label for="interference-slider">Cognitive interference: <span id="interference-val">60%</span></label>
         <input id="interference-slider" type="range" min="0" max="100" step="5" value="60" aria-describedby="interference-help">
-        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls logical competition between premises: near-miss bindings, topology, outcomes and recursive lineage. Symbols are not the interference mechanism.</p>
+        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls logical competition between premises: near-miss bindings, topology, outcomes and intervening triads. Symbols are not the interference mechanism.</p>
       </div>
 
       <div class="control-group" aria-labelledby="accessibility-label">
@@ -119,43 +119,28 @@
     <div class="modal-inner">
       <button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button>
       <h2 id="tutorial-title">How to Train</h2>
-      <p>Listen to or read each premise, then internally generate one structure satisfying every node, direction, ontology and perspective. Respond MATCH only when the current trial has the same complete scored structure as the trial N positions earlier.</p>
+      <p>Listen to or read each premise, construct its complete triadic relation, then respond MATCH only when its full logical structure matches the premise N positions earlier.</p>
 
       <h3>Compact auditory grammar</h3>
-      <p>Every relation uses the same order: category-bound node; direction to category-bound node. Example: “Inner Division U; east to Outer Multiplication M.” Semicolons mark auditory boundaries. “Of”, “connects”, explanatory definitions and the spoken word “Archetypal” are excluded.</p>
-      <p>A bare category name is the unmarked or archetypal form. Therefore “Connection M” is distinct from “Inner Connection M” and “Outer Connection M”, without saying “Archetypal Connection”. Categories belong to nodes; direction words never masquerade as ontological operators.</p>
+      <p>Every premise uses three fixed auditory clauses: transformed symbol; direction to transformed symbol; direction to transformed symbol. Example: “Inner Division U; east to Outer Multiplication M; north to Connection R.” Semicolons mark the three role boundaries.</p>
+      <p>A bare category name is the unmarked form. Therefore “Connection R” is distinct from “Inner Connection R” and “Outer Connection R”, without saying “Archetypal Connection”.</p>
+
+      <h3>Mode 1 — Triadic Cardinal Streaming</h3>
+      <p>Each sentence contains three independently transformed symbols. Their ontologies and forms create three symbol-level transformations; two cardinal transitions bind the roles; the transition between those transitions creates a higher-order turn. The engine also computes node synthesis, relation synthesis and integrated synthesis for exact scoring.</p>
+      <p>N-back therefore increases both discourse density and cross-trial transformation demand: the player must preserve complete triadic structures while continuously integrating new ones.</p>
 
       <h3>The ontological field</h3>
       <p>The nine categories are All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion. Complementary mirrors are All–Completion, Difference–Encompassment, Action–Projection and Division–Multiplication; Connection mirrors itself.</p>
-      <p>Inner and Outer meanings are learned operators, not definitions repeated inside every trial. Category composition uses an explicit nine-position computational field. This is a game formalisation for deterministic scoring, not a claim that the source theory supplied this exact composition table.</p>
+      <p>Inner and Outer meanings are learned operators, not definitions repeated inside every premise. Category composition uses an explicit nine-position computational field for deterministic scoring.</p>
 
       <h3>Cognitive interference</h3>
-      <p>The slider changes how the logic of each new premise competes with the complete logic of premises already held in the N-back window. It does not create difficulty by recycling arbitrary letters.</p>
-      <p>Higher settings preferentially generate non-matches that preserve most of the target’s ontology, perspective and topology while changing one decisive relation; reinstate the structure of an intervening premise; permute the same operators across different roles; dissociate construction from computed outcome; or, in recursive modes, preserve visible wrappers while changing inherited lineage. Symbols are refreshed after the logical candidate is chosen. An invention symbol is retained only when it genuinely names inherited recursive structure.</p>
-
-      <h3>Mode 1 — Cardinal Streaming</h3>
-      <p>Bind two independently categorised nodes through one cardinal relation. Example: “Inner Division U; east to Outer Multiplication M.”</p>
-
-      <h3>Mode 2 — Relational Reversal</h3>
-      <p>Hold the relation and its reversal together. “Reverse” swaps the nodes, reverses direction, mirrors each category and exchanges Inner with Outer; the unmarked form remains unmarked.</p>
-
-      <h3>Mode 3 — Triadic Composition</h3>
-      <p>Integrate three node ontologies and two linked directions. The resulting ontology and form are computed from the full triad and its turn topology.</p>
-
-      <h3>Mode 4 — Topological Equivalence</h3>
-      <p>Integrate two complete dyads as relations-between-relations. The second dyad is the rotated ontological mirror of the first; either dyad may appear first without changing the scored equivalence.</p>
-
-      <h3>Mode 5 — Operator Composition</h3>
-      <p>Integrate four category-bound nodes and three linked directions as one quaternary structure. The final ontology is computed from all nodes and both directional turns.</p>
-
-      <h3>Mode 6 — Recursive Invention</h3>
-      <p>Bind two nodes, compute their result and name it as an invention. A later “invention” node reopens its stored ontology, form, topology, lineage and recursion depth beneath the newly spoken wrapper category.</p>
-
-      <h3>Mode 7 — Ontological Parallax</h3>
-      <p>Coordinate Inner, Outer and unmarked nodes in one triad; compute both node synthesis and the categories of its two relations; reify their relation as an invention; then hold its mirrored reversal.</p>
+      <p>The slider changes how each new triad competes with the complete logic of the N-back target and intervening triads. Higher settings produce near-miss role bindings, altered turns, operator permutations, competing syntheses and proactive reinstatements. Letters are assigned only after the logical lure is selected.</p>
 
       <h3>What MATCH means</h3>
-      <p>Scoring uses ontologies, forms, node roles, directional topology, computed results and inherited invention digests. Higher modes permit only their specified structural invariances, such as global rotation, reversal or dyad exchange. Repeated words alone cannot produce a match.</p>
+      <p>A match requires the same three ontological roles, forms, two directions, higher-order turn, relation categories and synthesis structure. The letters themselves may change and do not determine matching.</p>
+
+      <h3>Future modes</h3>
+      <p>Modes 2 through 7 remain in development and are shown as “Released in future”, but cannot be selected in this release.</p>
 
       <h3>Accessibility guarantee</h3>
       <p>The program constructs one final premise string, writes that exact string to the live visual region and sends the same string to speech synthesis. The response window opens only after speech finishes; audio-only display, pause/resume replay, speech rate, volume and speech/background separation remain available.</p>
@@ -178,10 +163,13 @@
   </section>
 
   <script src="app.js"></script>
+  <script src="mode-release-gate.js"></script>
   <script src="audio-only-display.js"></script>
   <script src="response-window.js"></script>
   <script src="ontology-integration-v4.js"></script>
+  <script src="mode-one-triadic.js"></script>
   <script src="cognitive-interference-v3.js"></script>
+  <script src="mode-one-interference.js"></script>
   <script src="audio-accessibility.js"></script>
 </body>
 </html>
