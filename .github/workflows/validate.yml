@@ -31,13 +31,4 @@ jobs:
       - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
       - name: Run relational logic smoke tests
-        run: |
-          set -o pipefail
-          node tests/interference-smoke.mjs 2>&1 | tee test-output.log
-      - name: Preserve smoke-test output
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: smoke-test-output
-          path: test-output.log
-          if-no-files-found: error
+        run: node tests/interference-smoke.mjs
