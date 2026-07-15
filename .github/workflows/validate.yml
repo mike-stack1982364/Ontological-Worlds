@@ -20,10 +20,13 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check app.js
+          node --check mode-release-gate.js
           node --check audio-only-display.js
           node --check response-window.js
           node --check ontology-integration-v4.js
+          node --check mode-one-triadic.js
           node --check cognitive-interference-v3.js
+          node --check mode-one-interference.js
           node --check audio-accessibility.js
       - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
