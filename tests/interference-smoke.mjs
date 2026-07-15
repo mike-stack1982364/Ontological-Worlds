@@ -69,7 +69,7 @@ assert.equal(triadic?.nodeCount, 3, 'Mode 1 does not contain three symbols');
 assert.equal(triadic?.transformedSymbolCount, 3, 'Mode 1 does not contain three symbol transformations');
 
 const modeSelect = window.document.getElementById('logic-mode');
-assert.deepEqual(releaseGate?.selectableModes, [0], 'more than Mode 1 is selectable');
+assert.equal(Array.from(releaseGate?.selectableModes || []).join(','), '0', 'more than Mode 1 is selectable');
 assert.equal(releaseGate?.futureModesDisabled, true, 'future modes are not disabled');
 assert.equal(app.settings().mode, 0, 'release gate did not force Mode 1');
 assert.equal([...modeSelect.options].filter(option => !option.disabled).length, 1, 'multiple modes remain clickable');
