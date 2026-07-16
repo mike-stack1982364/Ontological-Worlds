@@ -259,19 +259,28 @@ window.addEventListener('DOMContentLoaded', () => {
       // candidate using the new derived match identity rather than its raw full
       // signature. Candidates that accidentally integrate to the target result
       // are correctly discarded as MATCHES.
-      const legacyAttempts = 48 + Math.round(level / 2);
-      for (let attempt = 0; attempt < legacyAttempts; attempt += 1) {
-        const candidate = attachSignatures(legacyMakeTrial());
-        if (!candidate || candidate.mode !== 0) continue;
-        if (sameMatchIdentity(candidate, target)) continue;
-        if (seen.has(candidate.fullLogicSignature)) continue;
-        seen.add(candidate.fullLogicSignature);
-        candidates.push(candidate);
+      const legacyAttempts = 6 + Math.round(level / 20);
+      const derivedSurfaceVariant = app.surfaceVariant;
+      try {
+        // Prevent the legacy generator's own MATCH branch from recursively
+        // invoking the expensive derived-match search while we are only building
+        // a NO-MATCH candidate pool. Its old surface clone is filtered out below.
+        app.surfaceVariant = legacySurfaceVariant;
+        for (let attempt = 0; attempt < legacyAttempts; attempt += 1) {
+          const candidate = attachSignatures(legacyMakeTrial());
+          if (!candidate || candidate.mode !== 0) continue;
+          if (sameMatchIdentity(candidate, target)) continue;
+          if (seen.has(candidate.fullLogicSignature)) continue;
+          seen.add(candidate.fullLogicSignature);
+          candidates.push(candidate);
+        }
+      } finally {
+        app.surfaceVariant = derivedSurfaceVariant;
       }
 
       // Add independent logical alternatives so low-interference sessions do not
       // collapse into only near-clone lures.
-      const randomAttempts = 24;
+      const randomAttempts = 18;
       for (let attempt = 0; attempt < randomAttempts; attempt += 1) {
         const candidate = attachSignatures(app.makeBase(0));
         if (sameMatchIdentity(candidate, target)) continue;
