@@ -119,15 +119,15 @@
     <div class="modal-inner">
       <button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button>
       <h2 id="tutorial-title">How to Train</h2>
-      <p>Listen to or read each premise, construct its complete triadic relation, then respond MATCH only when its full logical structure matches the premise N positions earlier.</p>
+      <p>Listen to or read each premise, construct its complete triadic relation, reduce it to its integrated logical identity, then respond MATCH only when that derived identity matches the premise N positions earlier.</p>
 
       <h3>Compact auditory grammar</h3>
       <p>Every premise uses three fixed auditory clauses: transformed symbol; direction to transformed symbol; direction to transformed symbol. Example: “Inner Division U; east to Outer Multiplication M; north to Connection R.” Semicolons mark the three role boundaries.</p>
       <p>A bare category name is the unmarked form. Therefore “Connection R” is distinct from “Inner Connection R” and “Outer Connection R”, without saying “Archetypal Connection”.</p>
 
       <h3>Mode 1 — Triadic Cardinal Streaming</h3>
-      <p>Each sentence contains three independently transformed symbols. Their ontologies and forms create three symbol-level transformations; two cardinal transitions bind the roles; the transition between those transitions creates a higher-order turn. The engine also computes node synthesis, relation synthesis and integrated synthesis for exact scoring.</p>
-      <p>N-back therefore increases both discourse density and cross-trial transformation demand: the player must preserve complete triadic structures while continuously integrating new ones.</p>
+      <p>Each sentence contains three independently transformed symbols. Their ontologies and forms create three symbol-level transformations; two cardinal transitions bind the roles; and the transition between those transitions creates a higher-order turn.</p>
+      <p>The engine computes a complete logic profile for cognitive interference: left and right relation categories, node synthesis, relation synthesis and final integrated synthesis. N-back scoring uses the final integrated ontology and integrated form as the trial’s abstract logical identity.</p>
 
       <h3>The ontological field</h3>
       <p>The nine categories are All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion. Complementary mirrors are All–Completion, Difference–Encompassment, Action–Projection and Division–Multiplication; Connection mirrors itself.</p>
@@ -135,9 +135,12 @@
 
       <h3>Cognitive interference</h3>
       <p>The slider changes how each new triad competes with the complete logic of the N-back target and intervening triads. Higher settings produce near-miss role bindings, altered turns, operator permutations, competing syntheses and proactive reinstatements. Letters are assigned only after the logical lure is selected.</p>
+      <p>True MATCH trials are also logically varied: they preserve the same derived integrated identity while changing displayed ontology roles and directions. MATCH and NO MATCH are selected around comparable full-logic similarity so superficial repetition does not reveal the answer.</p>
 
       <h3>What MATCH means</h3>
-      <p>A match requires the same three ontological roles, forms, two directions, higher-order turn, relation categories and synthesis structure. The letters themselves may change and do not determine matching.</p>
+      <p>MATCH does not mean that the letters, displayed ontology categories, forms or directions repeat. Those are the surface ingredients.</p>
+      <p>First integrate the three transformed nodes and the two directional relations. The result is one hidden logical identity: an integrated ontology plus an integrated form. Press MATCH only when that derived identity is the same as the one N trials earlier. Two trials can therefore match even when every displayed category and both directions differ.</p>
+      <p>This follows the same architecture as IMAGI-WORLD: surface premise → derived logical signature → N-back comparison. The program recomputes the answer from the signatures rather than trusting whether the generator intended a match.</p>
 
       <h3>Future modes</h3>
       <p>Modes 2 through 7 remain in development and are shown as “Released in future”, but cannot be selected in this release.</p>
@@ -170,6 +173,7 @@
   <script src="cognitive-interference-v3.js"></script>
   <script src="mode-one-triadic.js"></script>
   <script src="mode-one-interference.js"></script>
+  <script src="mode-one-match-logic.js"></script>
   <script src="audio-accessibility.js"></script>
 </body>
 </html>
