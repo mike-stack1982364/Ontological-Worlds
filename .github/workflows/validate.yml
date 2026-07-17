@@ -34,7 +34,9 @@ jobs:
           node --check mode-one-approved-trials-v7.js
           node --check mode-one-nback-v8.js
           node --check mode-one-nback-v9.js
+          node --check mode-one-nback-v10.js
           node --check mode-router-v2.js
+          node --check mode-one-completion-v10.js
           node --check audio-accessibility.js
       - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
@@ -42,3 +44,5 @@ jobs:
         run: node tests/interference-smoke.mjs
       - name: Run complete-profile N-back browser smoke test
         run: node tests/profile-nback-browser-smoke.mjs
+      - name: Run level-specific 80-case browser runtime
+        run: node tests/level-curriculum-browser-smoke.mjs
