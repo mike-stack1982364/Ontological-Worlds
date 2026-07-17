@@ -1,0 +1,50 @@
+name: Apply Meta Curriculum Hotfix
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.event.pull_request.head.ref == 'mode1-160-meta-curriculum-v11'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Remove the eight-way quantisation boundary
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('mode-one-nback-v11.js')
+          text = path.read_text()
+          old = """    profile({
+                id: 'chain-coarse8-cardinal-diagonal', label: 'eight-way cardinal-diagonal truth',
+                topology: 'chain', mechanism: 'cardinal-diagonal-composition', queryOrientation: 'direct',
+                contract: CONTRACTS.unit8Truth, validityClass: 'coarse-truth-entailment', expected: true,
+                proofEquivalence: 'vector-sum', dependencyClass: 'resolution-critical',
+                premises: [{ subject: 'A', relation: 'N', object: 'B' }, { subject: 'B', relation: 'NE', object: 'C' }],
+                conclusion: { subject: 'A', relation: 'NE', object: 'C' }
+              }),"""
+          new = """    profile({
+                id: 'chain-coarse8-cardinal-diagonal', label: 'eight-way orthogonal truth',
+                topology: 'chain', mechanism: 'orthogonal-composition', queryOrientation: 'direct',
+                contract: CONTRACTS.unit8Truth, validityClass: 'coarse-truth-entailment', expected: true,
+                proofEquivalence: 'vector-sum', dependencyClass: 'resolution-critical',
+                premises: [{ subject: 'A', relation: 'N', object: 'B' }, { subject: 'B', relation: 'E', object: 'C' }],
+                conclusion: { subject: 'A', relation: 'NE', object: 'C' }
+              }),"""
+          if old not in text:
+              raise SystemExit('Expected profile block was not found')
+          path.write_text(text.replace(old, new, 1))
+          Path('.github/workflows/apply-meta-hotfix.yml').unlink()
+      - name: Commit the calibrated profile
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add mode-one-nback-v11.js .github/workflows/apply-meta-hotfix.yml
+          git commit -m "Calibrate the eight-way resolution profile"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
