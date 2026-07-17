@@ -35,8 +35,10 @@ jobs:
           node --check mode-one-nback-v8.js
           node --check mode-one-nback-v9.js
           node --check mode-one-nback-v10.js
+          node --check mode-one-nback-v11.js
           node --check mode-router-v2.js
           node --check mode-one-completion-v10.js
+          node --check mode-one-completion-v11.js
           node --check audio-accessibility.js
       - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
@@ -46,3 +48,5 @@ jobs:
         run: node tests/profile-nback-browser-smoke.mjs
       - name: Run level-specific 80-case browser runtime
         run: node tests/level-curriculum-browser-smoke.mjs
+      - name: Run level-specific 160-case meta-curriculum runtime
+        run: node tests/meta-curriculum-browser-smoke.mjs
