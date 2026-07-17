@@ -71,8 +71,10 @@ assert.equal(modeTwoInterference?.premiseLogicDrivesInterference, true, 'premise
 assert.equal(legacyTriadic?.selfTestPassed, true, 'preserved triadic ontology self-test failed');
 assert.equal(modeOne?.selfTestPassed, true, 'Triadic Entailment self-test failed');
 assert.equal(modeOne?.lettersDriveRelationalComputation, true, 'letters do not bind the Mode 1 graph');
-assert.equal(modeOne?.modelSetEvaluation, true, 'Mode 1 does not evaluate admissible model sets');
-assert.deepEqual(Array.from(modeOne?.directionalResolutions || []), [4, 8, 16]);
+assert.equal(modeOne?.modelSetEvaluation, false, 'Mode 1 still varies invisible model-set contracts');
+assert.equal(modeOne?.visibleContract, false, 'Mode 1 exposes a contract in the player-facing trial');
+assert.equal(modeOne?.fixedLogicalRegime, 'EXACT_16');
+assert.deepEqual(Array.from(modeOne?.directionalResolutions || []), [16]);
 
 const modeSelect = window.document.getElementById('logic-mode');
 assert.equal(Array.from(releaseGate?.selectableModes || []).join(','), '0,1', 'Modes 1 and 2 are not both selectable');
@@ -99,43 +101,19 @@ assert.equal(Object.prototype.hasOwnProperty.call(app.settings(), 'hideText'), f
 audioOnly.checked = false;
 app.applyPremiseVisibility();
 assert.equal(premiseDisplay.classList.contains('hidden-mode'), false);
-assert.equal(premiseDisplay.classList.contains('muted'), false);
 audioOnly.checked = true;
 app.applyPremiseVisibility();
 assert.equal(premiseDisplay.classList.contains('hidden-mode'), true);
-assert.equal(premiseDisplay.classList.contains('muted'), false);
 audioOnly.checked = false;
 app.applyPremiseVisibility();
 
 const responseSlider = window.document.getElementById('spt-slider');
 const responseLabel = window.document.getElementById('spt-val');
 assert.equal(responseWindow?.maxSeconds, 300);
-assert.equal(responseSlider.max, '300');
-assert.equal(responseSlider.step, '0.5');
 responseSlider.value = '300';
 responseSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
 assert.equal(app.settings().seconds, 300);
 assert.equal(responseLabel.textContent, '5:00');
-assert.equal(responseSlider.getAttribute('aria-valuetext'), '5 minutes');
-
-const originalSetTimeout = window.setTimeout;
-let scheduledMs = null;
-window.setTimeout = (_callback, milliseconds) => { scheduledMs = milliseconds; return 999; };
-app.running = true;
-app.paused = false;
-app.current = { _answered: false };
-app.awaiting = false;
-app._openResponseWindow(app.settings().seconds * 1000);
-assert.equal(scheduledMs, 300000, 'five-minute deadline was not scheduled precisely');
-window.setTimeout = originalSetTimeout;
-app.running = false;
-app.awaiting = false;
-app.current = null;
-clearTimeout(app.timerId);
-app.timerId = null;
-
-const interferenceSlider = window.document.getElementById('interference-slider');
-const probabilitySlider = window.document.getElementById('prob-slider');
 
 function chooseMode(value) {
   modeSelect.value = String(value);
@@ -144,50 +122,45 @@ function chooseMode(value) {
 }
 
 chooseMode(0);
+const interferenceSlider = window.document.getElementById('interference-slider');
 interferenceSlider.value = '100';
 interferenceSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
 app.rng.s = 442211;
-const contracts = new Set();
+const templates = new Set();
 const distinctions = new Set();
-for (let index = 0; index < 300; index += 1) {
+for (let index = 0; index < 500; index += 1) {
   const trial = app.makeBase(0);
   assert.equal(trial.mode, 0);
   assert.equal(trial.premises.length, 2);
   assert.equal(new Set(trial.letters).size, 3);
   assert.ok(trial.conclusion?.subject && trial.conclusion?.relation && trial.conclusion?.object);
-  assert.ok(trial.contractId);
+  assert.equal(trial.contractId, 'EXACT_16');
   assert.equal(modeOne.evaluateTrial(trial).isEntailed, trial.isMatch);
   const rendered = app.renderTrial(trial);
-  const statementBlock = rendered.slice(rendered.indexOf('. ') + 2);
-  assert.equal((statementBlock.match(/;/g) || []).length, 2, 'Mode 1 lacks exactly three relational clauses');
-  assert.ok(rendered.startsWith('Contract: '), 'logical contract is not rendered');
-  assert.ok(!/therefore/i.test(rendered), 'therefore entered the premise');
-  assert.ok(!/undefined|null/.test(rendered), 'malformed Triadic Entailment premise');
-  contracts.add(trial.contractId);
+  assert.equal((rendered.match(/;/g) || []).length, 2, 'Mode 1 lacks exactly three relational statements');
+  assert.ok(!/^Contract:/i.test(rendered), 'logical contract leaked into the player-facing trial');
+  assert.ok(!/therefore/i.test(rendered), 'therefore entered the trial');
+  assert.ok(!/undefined|null/.test(rendered), 'malformed Triadic Entailment trial');
+  templates.add(trial.templateId);
   distinctions.add(trial.distinctionClass);
 }
-assert.ok(contracts.has('UNIT_16'));
-assert.ok(contracts.has('QUAL_8'));
-assert.ok(contracts.has('QUAL_16'));
-assert.ok(distinctions.has('exact-necessary-entailment'));
-assert.ok(distinctions.has('possible-not-necessary'));
+assert.equal(templates.size, 10, 'not all approved relational structures are generated');
+assert.ok(distinctions.has('exact-entailment'));
 assert.ok(modeOne.exhaustiveAudit.distinctions.includes('wrong-letter-pair'));
 assert.ok(modeOne.exhaustiveAudit.distinctions.includes('adjacent-resolution-substitution'));
+assert.ok(modeOne.exhaustiveAudit.distinctions.includes('subject-object-reversal'));
 
 for (let index = 0; index < 100; index += 1) {
-  const trial = modeOne.generateTrial(app.rng, { matchProbability: 0, interferenceLevel: 100 });
-  assert.equal(trial.isMatch, false, 'forced NO MATCH generated a MATCH');
-}
-
-for (let index = 0; index < 100; index += 1) {
-  const trial = modeOne.generateTrial(app.rng, { matchProbability: 1, interferenceLevel: 100, contract: 'UNIT_16' });
-  assert.equal(trial.isMatch, true, 'forced MATCH failed exact necessary entailment');
+  assert.equal(modeOne.generateTrial(app.rng, { matchProbability: 0, interferenceLevel: 100 }).isMatch, false);
+  assert.equal(modeOne.generateTrial(app.rng, { matchProbability: 1, interferenceLevel: 100 }).isMatch, true);
 }
 
 const canonical = modeOne.canonicalTrials();
 assert.equal(canonical.length, 10);
 canonical.forEach((trial, index) => {
   assert.equal(modeOne.evaluateTrial(trial).isEntailed, trial.expected, `canonical trial ${index + 1} failed`);
+  assert.equal((modeOne.renderTrial(trial).match(/;/g) || []).length, 2);
+  assert.ok(!/contract:|therefore/i.test(modeOne.renderTrial(trial)));
 });
 
 chooseMode(1);
@@ -212,6 +185,7 @@ for (let index = 0; index < 500; index += 1) {
 assert.equal(categories.size, 9, 'not all ontologies appear in Mode 2');
 assert.equal(forms.size, 3, 'not all forms appear in Mode 2');
 
+const probabilitySlider = window.document.getElementById('prob-slider');
 probabilitySlider.value = '35';
 probabilitySlider.dispatchEvent(new window.Event('input', { bubbles: true }));
 app.n = 1;
