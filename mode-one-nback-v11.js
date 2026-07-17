@@ -171,11 +171,11 @@
       conclusion: { subject: 'A', relation: 'NE', object: 'C' }
     }),
     profile({
-      id: 'chain-coarse4-orthogonal', label: 'four-way orthogonal truth',
-      topology: 'chain', mechanism: 'orthogonal-composition', queryOrientation: 'direct',
+      id: 'chain-coarse4-orthogonal', label: 'four-way cardinal-diagonal truth',
+      topology: 'chain', mechanism: 'cardinal-diagonal-composition', queryOrientation: 'direct',
       contract: CONTRACTS.unit4Truth, validityClass: 'coarse-truth-entailment', expected: true,
       proofEquivalence: 'vector-sum', dependencyClass: 'resolution-critical',
-      premises: [{ subject: 'A', relation: 'W', object: 'B' }, { subject: 'B', relation: 'N', object: 'C' }],
+      premises: [{ subject: 'A', relation: 'N', object: 'B' }, { subject: 'B', relation: 'NE', object: 'C' }],
       conclusion: { subject: 'A', relation: 'N', object: 'C' }
     }),
     profile({
