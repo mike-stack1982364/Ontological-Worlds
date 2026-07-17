@@ -8,8 +8,6 @@ on:
 permissions:
   contents: read
 
-actions:
-
 jobs:
   validate:
     runs-on: ubuntu-latest
