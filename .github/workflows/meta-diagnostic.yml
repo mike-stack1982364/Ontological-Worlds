@@ -1,0 +1,25 @@
+name: Meta Curriculum Diagnostic
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Capture Node audit output
+        shell: bash
+        run: |
+          set +e
+          node tests/mode-one-nback-v11.test.js > meta-diagnostic.txt 2>&1
+          echo "exit_code=$?" >> meta-diagnostic.txt
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: meta-curriculum-diagnostic
+          path: meta-diagnostic.txt
+          if-no-files-found: error
