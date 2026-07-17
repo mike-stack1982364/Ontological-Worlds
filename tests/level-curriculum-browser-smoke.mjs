@@ -68,7 +68,7 @@ assert.equal(api?.nBackRuntime, 'level-specific-80-archetype-nback-v10');
 assert.equal(api?.implementationCoveragePercent, 100);
 assert.equal(completion?.passed, true);
 assert.equal(completion?.canonicalComparisonCount, 80);
-assert.deepEqual(completion?.examplesPerLevel, {
+assert.deepEqual(JSON.parse(JSON.stringify(completion?.examplesPerLevel)), {
   1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10, 8: 10
 });
 assert.equal(api?.modelSetEvaluation, true);
