@@ -29,8 +29,8 @@
       </div>
 
       <div class="control-group">
-        <label for="n-slider">N-back distance: <span id="n-val">1</span></label>
-        <input id="n-slider" type="range" min="1" max="9" step="1" value="1">
+        <label for="n-slider">N-back level: <span id="n-val">1</span></label>
+        <input id="n-slider" type="range" min="1" max="8" step="1" value="1" aria-valuemin="1" aria-valuemax="8" aria-valuetext="N-back level 1">
       </div>
       <div class="control-group">
         <label for="spt-slider">Response window: <span id="spt-val">8.0s</span></label>
@@ -47,7 +47,7 @@
       <div class="control-group">
         <label for="interference-slider">Cognitive interference: <span id="interference-val">60%</span></label>
         <input id="interference-slider" type="range" min="0" max="100" step="5" value="60" aria-describedby="interference-help">
-        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls relational precision: direction granularity, inversion, letter-role binding, branch structure, cancellation and near-miss conclusions.</p>
+        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls relational precision and surface transformation while N-back level controls the comparison distance.</p>
       </div>
 
       <div class="control-group" aria-labelledby="accessibility-label">
@@ -109,7 +109,7 @@
         <div class="stat-box"><div class="stat-label">Accuracy</div><div id="accuracy" class="stat-value">0%</div></div>
         <div class="stat-box"><div class="stat-label">d′</div><div id="dprime" class="stat-value">0.00</div></div>
       </div>
-      <div class="hint">CURRENT N: <span id="current-n">1</span></div>
+      <div class="hint">CURRENT N-BACK LEVEL: <span id="current-n">1</span></div>
       <div id="kbd-hint" class="hint">F/J = MATCH · D/K = NO MATCH · P = PAUSE · ESC = STOP</div>
     </section>
   </main>
@@ -122,18 +122,21 @@
       <h2 id="tutorial-title">How to Train</h2>
 
       <h3>Mode 1 — Triadic Entailment</h3>
-      <p>Every trial contains exactly three relational statements using three letters. The first two statements establish the transformed relation among the letters. The third statement is the relation being tested.</p>
-      <p>Example: “A is west of B; B is north of C; C is southeast of A.” The first two relations place A northwest of C, so the tested inverse relation is accurate and the triad is a MATCH.</p>
-      <p>The letters are arbitrary identifiers. MATCH never depends on identical lettering across trials. It depends only on whether the third relation is logically accurate after composing the first two transformations.</p>
-      <p>The triad itself contains no “therefore,” answer explanation or rule label. MATCH or NO MATCH is explained separately only after the player responds.</p>
+      <p>Every trial contains exactly three relational statements using three letters. The first two statements establish the transformed relation among the letters. The third statement supplies the logical conclusion or error pattern carried by that triad.</p>
+      <p>Choose an N-back level from 1 to 8. After the initial memory-fill trials, press MATCH when the current triad instantiates the same abstract relational proof or error family as the triad N positions back. Press NO MATCH when the logical family differs.</p>
+      <p>Letter identity never defines a match. A renamed, rotated, reflected, inversely worded or harmlessly reordered triad may still match because its relational proof is unchanged. Conversely, nearly identical lettering may conceal a different binding, reversal, near-miss or branch structure and must be rejected.</p>
+      <p>The triad itself contains no “therefore,” answer explanation or rule label. The comparison is explained separately only after the player responds.</p>
+
+      <h3>N-back levels 1–8</h3>
+      <p>Level 1 compares with the immediately preceding triad. Level 8 compares with the triad eight positions back. The first N triads fill the memory buffer and are not scored. Match probability controls how often the current logical family is deliberately reproduced at the selected distance.</p>
 
       <h3>Meta-distinction</h3>
       <p>Difficulty progresses from cardinal to eight-way and sixteen-way relations. The player must distinguish exact entailment from adjacent direction, reversed subject–object orientation, a relation attached to the wrong letters, branch-versus-chain structure, cancellation and local consistency that fails globally.</p>
-      <p>Consistent renaming, inverse wording and harmless premise reordering preserve the logic. A small change to one binding or direction may change the answer completely.</p>
+      <p>Consistent renaming, inverse wording and harmless premise reordering preserve the logic. A small change to one binding or direction may change the abstract family completely.</p>
 
       <h3>Mode 2 — Ontological Integration</h3>
       <p>The previous ontology-category system is preserved here. Each sentence contains three independently transformed symbols. Their ontology categories and forms create three node transformations; two cardinal transitions bind the roles; and the transition between those transitions creates a higher-order turn.</p>
-      <p>The nine categories are All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion. N-back scoring compares the derived integrated ontology and integrated form, while complete triadic logic drives cognitive interference. Letters remain surface carriers in Mode 2.</p>
+      <p>The nine categories are All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion. N-back levels 1–8 compare the derived integrated ontology and integrated form, while complete triadic logic drives cognitive interference. Letters remain surface carriers in Mode 2.</p>
 
       <h3>Accessibility guarantee</h3>
       <p>The program constructs one final three-statement string, writes that exact string to the live visual region and sends the same string to speech synthesis. The response window opens only after speech finishes; audio-only display, pause/resume replay, speech rate, volume and speech/background separation remain available.</p>
@@ -166,6 +169,7 @@
   <script src="mode-one-match-logic.js"></script>
   <script src="mode-one-spatial-core.js"></script>
   <script src="mode-one-approved-trials-v7.js"></script>
+  <script src="mode-one-nback-v8.js"></script>
   <script src="mode-router-v2.js"></script>
   <script src="audio-accessibility.js"></script>
 </body>
