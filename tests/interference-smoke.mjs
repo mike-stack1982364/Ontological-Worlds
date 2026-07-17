@@ -158,7 +158,8 @@ for (let index = 0; index < 2000; index += 1) {
   assert.ok(trial.contractId);
   assert.equal(modeOne.evaluateTrial(trial).isEntailed, trial.isMatch);
   const rendered = app.renderTrial(trial);
-  assert.equal((rendered.match(/;/g) || []).length, 2, 'Mode 1 lacks exactly three clauses');
+  const statementBlock = rendered.slice(rendered.indexOf('. ') + 2);
+  assert.equal((statementBlock.match(/;/g) || []).length, 2, 'Mode 1 lacks exactly three relational clauses');
   assert.ok(rendered.startsWith('Contract: '), 'logical contract is not rendered');
   assert.ok(!/therefore/i.test(rendered), 'therefore entered the premise');
   assert.ok(!/undefined|null/.test(rendered), 'malformed Triadic Entailment premise');
