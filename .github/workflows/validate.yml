@@ -38,5 +38,7 @@ jobs:
           node --check audio-accessibility.js
       - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
-      - name: Run relational logic smoke tests
+      - name: Run legacy relational logic smoke tests
         run: node tests/interference-smoke.mjs
+      - name: Run complete-profile N-back browser smoke test
+        run: node tests/profile-nback-browser-smoke.mjs
