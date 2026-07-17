@@ -1,11 +1,13 @@
 'use strict';
 
 /*
- * Public mode router v3
+ * Public mode router v4
  *
- * Mode 1: Triadic Entailment. Two letter-bound premises define a relational
- * graph under an explicit logical contract. The third statement is a MATCH
- * only when it is the exact necessary relation licensed by that contract.
+ * Mode 1: Triadic Entailment. Two letter-bound statements define one exact
+ * relational graph. The third statement is a MATCH only when it accurately
+ * expresses the relation produced by those transformations. Letter identity
+ * across trials is irrelevant; consistent renaming, rotation, inversion and
+ * premise reordering preserve the logic.
  *
  * Mode 2: Ontological Integration. The previous ontology-category engine is
  * preserved intact behind an external mode-number translation from 1 to its
@@ -116,8 +118,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (target?.mode === 0) {
       return core.generateTrial(this.rng, {
         matchProbability: target.isEntailed ? 1 : 0,
-        interferenceLevel: Number(document.getElementById('interference-slider')?.value) || 0,
-        contract: target.contractId
+        interferenceLevel: Number(document.getElementById('interference-slider')?.value) || 0
       });
     }
     if (target?.mode === 1) {
@@ -145,10 +146,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (Number(mode) === 0) {
       const result = core.evaluateTrial(trial);
       return [
-        'M0-TRIADIC-ENTAILMENT-V2',
-        result.contract.id,
+        'M0-TRIADIC-ENTAILMENT-V3',
         `VALID:${Number(result.isEntailed)}`,
-        `POSSIBLE:${result.possibleRelations.join(',')}`,
+        `EXPECTED:${result.expectedRelation}`,
         `CLASS:${result.distinctionClass}`
       ].join('|');
     }
@@ -187,7 +187,7 @@ window.addEventListener('DOMContentLoaded', () => {
         nSlider.value = '1';
         nSlider.disabled = true;
         nSlider.setAttribute('aria-disabled', 'true');
-        if (nLabel) nLabel.innerHTML = 'Mode 1 inference structure: <span id="n-val">two premises + one tested conclusion</span>';
+        if (nLabel) nLabel.innerHTML = 'Mode 1 inference structure: <span id="n-val">two relations + one tested relation</span>';
         if (currentNHint) currentNHint.innerHTML = 'CURRENT STRUCTURE: <span id="current-n">TRIAD</span>';
       } else {
         nSlider.disabled = false;
@@ -199,7 +199,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     if (interferenceHelp) {
       interferenceHelp.textContent = mode === 0
-        ? 'Controls logical-contract depth and meta-distinction: four-, eight- and sixteen-way resolution; inverse wording; letter-role binding; adjacent directions; equal versus unspecified distances; and necessary versus merely possible conclusions.'
+        ? 'Controls transformational difficulty: sixteen-way directional precision, inverse wording, premise order, letter-role binding, cancellation, branching and adjacent-direction near-misses.'
         : 'Controls logical competition between ontology premises: near-miss bindings, topology, outcomes and intervening triads. Symbols remain surface carriers in Mode 2.';
     }
     app.updateLabels();
@@ -215,7 +215,7 @@ window.addEventListener('DOMContentLoaded', () => {
     testButton.addEventListener('click', () => {
       app.primeAudioFromUserGesture();
       const premise = Number(select.value) === 0
-        ? 'Contract: equal-unit vectors; exact eight-way direction. A is west of J; J is north of P; P is southeast of A.'
+        ? 'A is west of B; B is north of C; C is southeast of A.'
         : 'Inner Division U; east to Outer Multiplication M; north to Connection R.';
       app.speak(premise);
     });
@@ -225,21 +225,22 @@ window.addEventListener('DOMContentLoaded', () => {
   if (!audit.passed) console.error('Mode 1 Triadic Entailment audit failed', audit);
 
   window.__modeOneTriadicEntailmentTestAPI = {
-    version: 2,
+    version: 3,
     ...core,
     exhaustiveAudit: audit,
     selfTestPassed: audit.passed,
     lettersDriveRelationalComputation: true,
     thirdRelationIsTestedConclusion: true,
-    modelSetEvaluation: true,
-    logicalContracts: true,
-    scoringIdentity: 'exact necessary entailment of the third letter-relation under the active logical contract',
-    directionalResolutions: [4, 8, 16]
+    modelSetEvaluation: false,
+    visibleContract: false,
+    fixedLogicalRegime: 'EXACT_16',
+    scoringIdentity: 'exact logical accuracy of the third letter-relation after composing the first two transformations',
+    directionalResolutions: [16]
   };
   window.__modeOneSpatialTestAPI = window.__modeOneTriadicEntailmentTestAPI;
 
   window.__modeReleaseTestAPI = {
-    version: 3,
+    version: 4,
     activeModes: [0, 1],
     selectableModes: [...select.options].filter(option => !option.disabled).map(option => Number(option.value)),
     futureModesDisabled: [...select.options].slice(2).every(option => option.disabled)
