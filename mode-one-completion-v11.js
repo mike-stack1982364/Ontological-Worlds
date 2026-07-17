@@ -15,6 +15,7 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   const comparisons = core.canonicalNBackComparisons();
+  const canonicalCasesPerLevel = 20;
   const examplesPerLevel = Object.fromEntries(core.nBackLevels.map(level => [
     level,
     comparisons.filter(item => item.level === level).length
@@ -23,11 +24,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const nonMatchCount = comparisons.length - matchCount;
   const complete = comparisons.length === 160
     && core.nBackLevels.length === 8
-    && Object.values(examplesPerLevel).every(count => count === 20)
+    && Object.values(examplesPerLevel).every(count => count === canonicalCasesPerLevel)
     && matchCount === 80
     && nonMatchCount === 80
     && core.nBackPolicy?.letteringIdentityRelevant === false
-    && core.nBackPolicy?.examplesPerLevel === 20
+    && core.nBackPolicy?.examplesPerLevel === canonicalCasesPerLevel
     && core.nBackPolicy?.curriculumExamples === 160
     && core.implementationCoverage?.criterionRegulation === true
     && core.implementationCoverage?.proofSpaceComparison === true
@@ -49,6 +50,7 @@ window.addEventListener('DOMContentLoaded', () => {
     nBackMatchIdentity: core.nBackPolicy.matchIdentity,
     scoringIdentity: 'logical-profile equivalence under the active criterion with the triad exactly N positions back',
     canonicalComparisonCount: comparisons.length,
+    canonicalCasesPerLevel,
     examplesPerLevel,
     matches: matchCount,
     nonMatches: nonMatchCount,
@@ -70,6 +72,7 @@ window.addEventListener('DOMContentLoaded', () => {
     passed: complete,
     implementationCoveragePercent: complete ? 100 : 0,
     canonicalComparisonCount: comparisons.length,
+    canonicalCasesPerLevel,
     examplesPerLevel,
     matches: matchCount,
     nonMatches: nonMatchCount,
