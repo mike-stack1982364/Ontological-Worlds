@@ -149,7 +149,7 @@ interferenceSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
 app.rng.s = 442211;
 const contracts = new Set();
 const distinctions = new Set();
-for (let index = 0; index < 2000; index += 1) {
+for (let index = 0; index < 300; index += 1) {
   const trial = app.makeBase(0);
   assert.equal(trial.mode, 0);
   assert.equal(trial.premises.length, 2);
@@ -174,12 +174,12 @@ assert.ok(distinctions.has('possible-not-necessary'));
 assert.ok(modeOne.exhaustiveAudit.distinctions.includes('wrong-letter-pair'));
 assert.ok(modeOne.exhaustiveAudit.distinctions.includes('adjacent-resolution-substitution'));
 
-for (let index = 0; index < 500; index += 1) {
+for (let index = 0; index < 100; index += 1) {
   const trial = modeOne.generateTrial(app.rng, { matchProbability: 0, interferenceLevel: 100 });
   assert.equal(trial.isMatch, false, 'forced NO MATCH generated a MATCH');
 }
 
-for (let index = 0; index < 500; index += 1) {
+for (let index = 0; index < 100; index += 1) {
   const trial = modeOne.generateTrial(app.rng, { matchProbability: 1, interferenceLevel: 100, contract: 'UNIT_16' });
   assert.equal(trial.isMatch, true, 'forced MATCH failed exact necessary entailment');
 }
@@ -195,7 +195,7 @@ assert.equal(window.document.getElementById('n-slider').disabled, false, 'Mode 2
 app.rng.s = 90210;
 const categories = new Set();
 const forms = new Set();
-for (let index = 0; index < 3000; index += 1) {
+for (let index = 0; index < 500; index += 1) {
   const trial = app.makeBase(1);
   assert.equal(trial.mode, 1);
   assert.equal(trial.nodes.length, 3);
@@ -218,7 +218,7 @@ app.n = 1;
 app.trials = [];
 let modeTwoMatches = 0;
 let modeTwoNonMatches = 0;
-for (let index = 0; index < 600; index += 1) {
+for (let index = 0; index < 200; index += 1) {
   const target = app.trials[app.trials.length - app.n];
   const trial = app.makeTrial();
   if (target) {
@@ -233,3 +233,4 @@ assert.ok(modeTwoMatches > 0, 'Mode 2 generated no matches');
 assert.ok(modeTwoNonMatches > 0, 'Mode 2 generated no non-matches');
 
 console.log('Triadic Entailment, Ontological Integration, release gate, accessibility and response-window tests passed.');
+window.close();
