@@ -47,12 +47,12 @@
       <div class="control-group">
         <label for="interference-slider">Cognitive interference: <span id="interference-val">60%</span></label>
         <input id="interference-slider" type="range" min="0" max="100" step="5" value="60" aria-describedby="interference-help">
-        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls logical-contract depth and meta-distinction: directional resolution, binding, inversion, metric assumptions and necessity.</p>
+        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls transformational difficulty: sixteen-way precision, inversion, premise order, letter binding, cancellation, branching and adjacent-direction near-misses.</p>
       </div>
 
       <div class="control-group" aria-labelledby="accessibility-label">
         <label id="accessibility-label">Premise accessibility</label>
-        <p style="font-size:.75rem;color:#43566d;line-height:1.45;margin-bottom:10px">Every generated premise is supplied through two parallel channels: visible text for deaf or hard-of-hearing players and optional speech for blind or vision-impaired players. Both channels use the same canonical premise string.</p>
+        <p style="font-size:.75rem;color:#43566d;line-height:1.45;margin-bottom:10px">Every generated triad is supplied through two parallel channels: visible text for deaf or hard-of-hearing players and optional speech for blind or vision-impaired players. Both channels use the same three-statement string.</p>
         <div class="toggle-row">
           <label><input id="audio-only" type="checkbox"> Audio-only display</label>
           <label><input id="keyboard" type="checkbox" checked> Keyboard controls</label>
@@ -122,24 +122,23 @@
       <h2 id="tutorial-title">How to Train</h2>
 
       <h3>Mode 1 — Triadic Entailment</h3>
-      <p>Each trial states a logical contract, then presents two relational premises and one tested third statement using three letter-bound objects. The third statement is not introduced by “therefore”; its MATCH or NO MATCH status is explained separately after the response.</p>
-      <p>Letters are arbitrary names, not match targets. MATCH never depends on identical lettering across trials. It depends on whether the relation asserted between the letters is exactly and necessarily licensed by the first two transformations under the active contract.</p>
-      <p>Example: “Contract: equal-unit vectors; exact eight-way direction. A is west of J; J is north of P; P is southeast of A.” A is northwest of P, so the inverse relation places P southeast of A. The third statement is a MATCH.</p>
+      <p>Each trial contains exactly three relational statements. The first two establish the positions of three letter-bound objects. The third statement is tested for logical accuracy. No rule label, contract description or “therefore” appears inside the trial.</p>
+      <p>Letters are arbitrary names, not match targets. MATCH never depends on identical lettering across trials. It depends only on whether the third relation is exactly correct after composing the first two transformations.</p>
+      <p>Example: “A is west of B; B is north of C; C is southeast of A.” A is northwest of C, making the tested inverse relation accurate. This is a MATCH.</p>
 
-      <h3>Logical contracts and model sets</h3>
-      <p>Equal-unit contracts compose exact vectors at four-, eight- or sixteen-way resolution. Unspecified-distance contracts evaluate every admissible magnitude. A relation that is possible in some models but not necessary in all models is NO MATCH.</p>
-      <p>At eight-way quadrant resolution, west plus north necessarily occupies the northwest quadrant even when the distances differ. At exact sixteen-way resolution, the same premises may permit west, west-northwest, northwest, north-northwest or north; selecting one of those is possible but not entailed.</p>
+      <h3>Transformational invariance</h3>
+      <p>Consistent letter renaming, rotation of every direction, inverse wording and reordering the first two statements preserve the underlying proof. Changing one binding, direction or queried pair may invalidate it. Trials are generated as lawful transformations of the approved ten relational structures rather than by repeating their letters.</p>
 
       <h3>Meta-distinction</h3>
-      <p>NO MATCH conclusions are generated from diagnosable neighbouring errors: adjacent-direction substitution, subject–object reversal, correct relation attached to the wrong letter pair, coarse or over-precise resolution, local consistency without global entailment, and possibility mistaken for necessity.</p>
-      <p>Higher interference increases contract depth and narrows the difference between valid and invalid conclusions. It does not merely add more symbols.</p>
+      <p>NO MATCH trials target precise errors: an adjacent sixteen-way direction, a subject–object reversal, a correct relation attached to the wrong letter pair, cancellation failure or a branching structure mistaken for a chain.</p>
+      <p>Higher interference makes the invalid relation logically closer to the valid one. It does not expose extra instructions or add irrelevant wording to the triad.</p>
 
       <h3>Mode 2 — Ontological Integration</h3>
       <p>The previous ontology-category system is preserved here. Each sentence contains three independently transformed symbols. Their ontology categories and forms create three node transformations; two cardinal transitions bind the roles; and the transition between those transitions creates a higher-order turn.</p>
       <p>The nine categories are All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion. N-back scoring compares the derived integrated ontology and integrated form, while complete triadic logic drives cognitive interference. Letters remain surface carriers in Mode 2.</p>
 
       <h3>Accessibility guarantee</h3>
-      <p>The program constructs one final premise string, writes that exact string to the live visual region and sends the same string to speech synthesis. The response window opens only after speech finishes; audio-only display, pause/resume replay, speech rate, volume and speech/background separation remain available.</p>
+      <p>The program constructs one final three-statement string, writes that exact string to the live visual region and sends the same string to speech synthesis. The response window opens only after speech finishes; audio-only display, pause/resume replay, speech rate, volume and speech/background separation remain available.</p>
       <p>This is a theoretically motivated relational-integration design. It is not validated evidence that training will increase general fluid intelligence.</p>
       <button id="dismiss-tutorial" class="small-btn" type="button">Close</button>
     </div>
