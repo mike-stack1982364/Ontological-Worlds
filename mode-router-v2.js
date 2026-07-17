@@ -1,21 +1,26 @@
 'use strict';
 
 /*
- * Public mode router v2
+ * Public mode router v3
  *
- * Mode 1: triadic spatial entailment. The third letter-relation is a MATCH only
- * when it is logically entailed by the first two letter-bound premises.
+ * Mode 1: Triadic Entailment. Two letter-bound premises define a relational
+ * graph under an explicit logical contract. The third statement is a MATCH
+ * only when it is the exact necessary relation licensed by that contract.
  *
- * Mode 2: the previous ontology-category integration engine, preserved intact
- * behind an external mode-number translation from 1 -> its legacy internal 0.
+ * Mode 2: Ontological Integration. The previous ontology-category engine is
+ * preserved intact behind an external mode-number translation from 1 to its
+ * legacy internal mode 0.
  */
 window.addEventListener('DOMContentLoaded', () => {
   const app = window.__ontologicalWorlds;
-  const core = window.__modeOneSpatialCore;
+  const core = window.__modeOneTriadicEntailmentCore || window.__modeOneSpatialCore;
   const select = document.getElementById('logic-mode');
   const nSlider = document.getElementById('n-slider');
   const nLabel = nSlider?.closest('.control-group')?.querySelector('label');
   const interferenceHelp = document.getElementById('interference-help');
+  const currentN = document.getElementById('current-n');
+  const currentNHint = currentN?.parentElement;
+  const explanation = document.getElementById('trial-explanation');
   if (!app || !core || !select) return;
 
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -26,7 +31,9 @@ window.addEventListener('DOMContentLoaded', () => {
     renderTrial: app.renderTrial.bind(app),
     surfaceVariant: app.surfaceVariant.bind(app),
     makeTrial: app.makeTrial.bind(app),
-    matchSignature: typeof app.matchSignature === 'function' ? app.matchSignature.bind(app) : null
+    matchSignature: typeof app.matchSignature === 'function' ? app.matchSignature.bind(app) : null,
+    nextTrial: app.nextTrial.bind(app),
+    answer: app.answer.bind(app)
   };
 
   let inLegacyModeTwo = false;
@@ -66,7 +73,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  app.settings = function settingsWithModeOneEntailment() {
+  app.settings = function settingsWithTriadicEntailment() {
     const settings = legacy.settings();
     const mode = settings.mode === 1 ? 1 : 0;
     return { ...settings, mode, n: mode === 0 ? 1 : settings.n };
@@ -74,29 +81,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   app.deriveTrial = function deriveRoutedTrial(trial) {
     if (inLegacyModeTwo) return legacy.deriveTrial(trial);
-    if (trial?.mode === 0) {
-      const evaluated = core.evaluateTrial(trial);
-      trial.letters = trial.letters || [...new Set([
-        ...trial.premises.flatMap(item => [item.subject, item.object]),
-        trial.conclusion.subject,
-        trial.conclusion.object
-      ])];
-      trial.symbols = [...trial.letters];
-      trial.expectedRelation = evaluated.expectedRelation;
-      trial.isEntailed = evaluated.isEntailed;
-      trial.isMatch = evaluated.isEntailed;
-      trial.scored = true;
-      trial.signature = [
-        'M0-SPATIAL-ENTAILMENT',
-        ...trial.premises.flatMap(item => [item.subject, item.relation, item.object]),
-        trial.conclusion.subject,
-        trial.conclusion.relation,
-        trial.conclusion.object,
-        `EXPECTED:${evaluated.expectedRelation}`,
-        `VALID:${Number(evaluated.isEntailed)}`
-      ].join('|');
-      return trial;
-    }
+    if (trial?.mode === 0) return core.hydrateTrial(trial);
     if (trial?.mode === 1) {
       return externaliseModeTwo(withLegacyModeTwo(() => legacy.deriveTrial(internaliseModeTwo(trial))));
     }
@@ -131,7 +116,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (target?.mode === 0) {
       return core.generateTrial(this.rng, {
         matchProbability: target.isEntailed ? 1 : 0,
-        interferenceLevel: Number(document.getElementById('interference-slider')?.value) || 0
+        interferenceLevel: Number(document.getElementById('interference-slider')?.value) || 0,
+        contract: target.contractId
       });
     }
     if (target?.mode === 1) {
@@ -144,13 +130,10 @@ window.addEventListener('DOMContentLoaded', () => {
     if (inLegacyModeTwo) return legacy.makeTrial();
     const settings = this.settings();
     if (settings.mode === 0) {
-      const trial = core.generateTrial(this.rng, {
+      return core.generateTrial(this.rng, {
         matchProbability: settings.matchProbability,
         interferenceLevel: Number(document.getElementById('interference-slider')?.value) || 0
       });
-      trial.mode = 0;
-      trial.scored = true;
-      return trial;
     }
     if (settings.mode === 1) {
       return externaliseModeTwo(withLegacyModeTwo(() => legacy.makeTrial()));
@@ -160,13 +143,40 @@ window.addEventListener('DOMContentLoaded', () => {
 
   app.matchSignature = function routedMatchSignature(trial, mode = trial?.mode) {
     if (Number(mode) === 0) {
-      const evaluated = core.evaluateTrial(trial);
-      return `M0-SPATIAL-ENTAILMENT|${Number(evaluated.isEntailed)}|${evaluated.expectedRelation}`;
+      const result = core.evaluateTrial(trial);
+      return [
+        'M0-TRIADIC-ENTAILMENT-V2',
+        result.contract.id,
+        `VALID:${Number(result.isEntailed)}`,
+        `POSSIBLE:${result.possibleRelations.join(',')}`,
+        `CLASS:${result.distinctionClass}`
+      ].join('|');
     }
     if (Number(mode) === 1 && legacy.matchSignature) {
       return withLegacyModeTwo(() => legacy.matchSignature(internaliseModeTwo(trial), 0));
     }
     return trial?.signature || '';
+  };
+
+  app.nextTrial = async function nextTrialWithSeparateExplanation(...args) {
+    if (explanation) {
+      explanation.textContent = '';
+      explanation.classList.remove('show');
+    }
+    return legacy.nextTrial(...args);
+  };
+
+  app.answer = function answerWithTriadicExplanation(response) {
+    const trial = this.current;
+    const shouldExplain = Boolean(
+      trial?.mode === 0 && this.running && !this.paused && this.awaiting
+    );
+    const result = legacy.answer(response);
+    if (shouldExplain && explanation) {
+      explanation.textContent = core.explainTrial(trial);
+      explanation.classList.add('show');
+    }
+    return result;
   };
 
   function syncModeInterface() {
@@ -178,16 +188,18 @@ window.addEventListener('DOMContentLoaded', () => {
         nSlider.disabled = true;
         nSlider.setAttribute('aria-disabled', 'true');
         if (nLabel) nLabel.innerHTML = 'Mode 1 inference structure: <span id="n-val">two premises + one tested conclusion</span>';
+        if (currentNHint) currentNHint.innerHTML = 'CURRENT STRUCTURE: <span id="current-n">TRIAD</span>';
       } else {
         nSlider.disabled = false;
         nSlider.removeAttribute('aria-disabled');
         nSlider.value = nSlider.dataset.modeTwoValue || nSlider.value || '1';
         if (nLabel) nLabel.innerHTML = 'N-back distance: <span id="n-val"></span>';
+        if (currentNHint) currentNHint.innerHTML = 'CURRENT N: <span id="current-n">1</span>';
       }
     }
     if (interferenceHelp) {
       interferenceHelp.textContent = mode === 0
-        ? 'Controls meta-distinction difficulty: cardinal through sixteen-way directions, premise inversion, clause order, and near-miss conclusions approaching one 22.5° step from the entailed relation.'
+        ? 'Controls logical-contract depth and meta-distinction: four-, eight- and sixteen-way resolution; inverse wording; letter-role binding; adjacent directions; equal versus unspecified distances; and necessary versus merely possible conclusions.'
         : 'Controls logical competition between ontology premises: near-miss bindings, topology, outcomes and intervening triads. Symbols remain surface carriers in Mode 2.';
     }
     app.updateLabels();
@@ -203,28 +215,31 @@ window.addEventListener('DOMContentLoaded', () => {
     testButton.addEventListener('click', () => {
       app.primeAudioFromUserGesture();
       const premise = Number(select.value) === 0
-        ? 'A is west of J; J is north of P; P is southeast of A.'
+        ? 'Contract: equal-unit vectors; exact eight-way direction. A is west of J; J is north of P; P is southeast of A.'
         : 'Inner Division U; east to Outer Multiplication M; north to Connection R.';
       app.speak(premise);
     });
   }
 
-  const audit = core.runAudit(4096);
-  if (!audit.passed) console.error('Mode 1 spatial-entailment audit failed', audit);
+  const audit = core.runAudit(8192);
+  if (!audit.passed) console.error('Mode 1 Triadic Entailment audit failed', audit);
 
-  window.__modeOneSpatialTestAPI = {
-    version: 1,
+  window.__modeOneTriadicEntailmentTestAPI = {
+    version: 2,
     ...core,
     exhaustiveAudit: audit,
     selfTestPassed: audit.passed,
     lettersDriveRelationalComputation: true,
     thirdRelationIsTestedConclusion: true,
-    scoringIdentity: 'logical entailment of the third letter-relation from the first two premises',
-    directionalResolution: 16
+    modelSetEvaluation: true,
+    logicalContracts: true,
+    scoringIdentity: 'exact necessary entailment of the third letter-relation under the active logical contract',
+    directionalResolutions: [4, 8, 16]
   };
+  window.__modeOneSpatialTestAPI = window.__modeOneTriadicEntailmentTestAPI;
 
   window.__modeReleaseTestAPI = {
-    version: 2,
+    version: 3,
     activeModes: [0, 1],
     selectableModes: [...select.options].filter(option => !option.disabled).map(option => Number(option.value)),
     futureModesDisabled: [...select.options].slice(2).every(option => option.disabled)
