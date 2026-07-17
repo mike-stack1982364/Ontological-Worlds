@@ -8,6 +8,8 @@ on:
 permissions:
   contents: read
 
+actions:
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -34,4 +36,15 @@ jobs:
       - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
       - name: Run relational logic smoke tests
-        run: node tests/interference-smoke.mjs
+        id: smoke
+        continue-on-error: true
+        run: node tests/interference-smoke.mjs > smoke-output.txt 2>&1
+      - name: Upload smoke-test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-output
+          path: smoke-output.txt
+      - name: Enforce smoke-test result
+        if: steps.smoke.outcome == 'failure'
+        run: exit 1
