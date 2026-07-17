@@ -45,6 +45,7 @@ for (const file of [
   'mode-one-interference.js',
   'mode-one-match-logic.js',
   'mode-one-spatial-core.js',
+  'mode-one-approved-trials-v7.js',
   'mode-router-v2.js',
   'audio-accessibility.js'
 ]) window.eval(fs.readFileSync(file, 'utf8'));
@@ -75,8 +76,11 @@ assert.equal(modeOne?.letteringIdentityIgnored, true, 'Mode 1 still compares ide
 assert.equal(modeOne?.modelSetEvaluation, false, 'obsolete model-set contracts remain active');
 assert.equal(modeOne?.logicalContracts, false, 'logical contracts remain active');
 assert.equal(modeOne?.visibleContractText, false, 'contract text remains visible');
+assert.equal(modeOne?.runtimeGenerator, 'approved-ten-template-orbits-v7');
 assert.equal(modeOne?.directionalResolution, 16);
 assert.deepEqual(Array.from(modeOne?.directionPools || []), [4, 8, 16]);
+assert.equal(modeOne?.exhaustiveAudit?.generatedOnlyFromApprovedTemplates, true);
+assert.equal(modeOne?.exhaustiveAudit?.approvedTemplateCount, 10);
 
 const modeSelect = window.document.getElementById('logic-mode');
 assert.equal(Array.from(releaseGate?.selectableModes || []).join(','), '0,1', 'Modes 1 and 2 are not both selectable');
@@ -152,12 +156,14 @@ interferenceSlider.value = '100';
 interferenceSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
 app.rng.s = 442211;
 const distinctions = new Set();
-for (let index = 0; index < 500; index += 1) {
+const templateCoverage = new Set();
+for (let index = 0; index < 1000; index += 1) {
   const trial = app.makeBase(0);
   assert.equal(trial.mode, 0);
   assert.equal(trial.premises.length, 2);
   assert.equal(new Set(trial.letters).size, 3);
   assert.ok(trial.conclusion?.subject && trial.conclusion?.relation && trial.conclusion?.object);
+  assert.equal(trial.generatedFromApprovedTemplate, true, 'Mode 1 escaped the approved ten trial families');
   assert.equal(Object.prototype.hasOwnProperty.call(trial, 'contractId'), false, 'contract metadata remains in Mode 1 trial');
   assert.equal(modeOne.evaluateTrial(trial).isEntailed, trial.isMatch);
   const rendered = app.renderTrial(trial);
@@ -166,7 +172,9 @@ for (let index = 0; index < 500; index += 1) {
   assert.ok(!/therefore/i.test(rendered), 'therefore entered the triad');
   assert.ok(!/undefined|null/.test(rendered), 'malformed Triadic Entailment triad');
   distinctions.add(trial.distinctionClass);
+  templateCoverage.add(trial.approvedTemplateId);
 }
+assert.deepEqual([...templateCoverage].sort((a, b) => a - b), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 assert.ok(distinctions.has('exact-relational-entailment'));
 assert.ok(modeOne.exhaustiveAudit.distinctions.includes('wrong-letter-pair'));
 assert.ok(modeOne.exhaustiveAudit.distinctions.includes('adjacent-resolution-substitution'));
@@ -175,11 +183,13 @@ assert.ok(modeOne.exhaustiveAudit.distinctions.includes('subject-object-reversal
 for (let index = 0; index < 100; index += 1) {
   const trial = modeOne.generateTrial(app.rng, { matchProbability: 0, interferenceLevel: 100 });
   assert.equal(trial.isMatch, false, 'forced NO MATCH generated a MATCH');
+  assert.equal(trial.generatedFromApprovedTemplate, true);
 }
 
 for (let index = 0; index < 100; index += 1) {
   const trial = modeOne.generateTrial(app.rng, { matchProbability: 1, interferenceLevel: 100 });
   assert.equal(trial.isMatch, true, 'forced MATCH failed relational entailment');
+  assert.equal(trial.generatedFromApprovedTemplate, true);
 }
 
 const canonical = modeOne.canonicalTrials();
@@ -232,5 +242,5 @@ for (let index = 0; index < 200; index += 1) {
 assert.ok(modeTwoMatches > 0, 'Mode 2 generated no matches');
 assert.ok(modeTwoNonMatches > 0, 'Mode 2 generated no non-matches');
 
-console.log('Exact three-statement Triadic Entailment and preserved Ontological Integration tests passed.');
+console.log('Approved-template Triadic Entailment and preserved Ontological Integration tests passed.');
 window.close();
