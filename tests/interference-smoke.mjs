@@ -71,8 +71,12 @@ assert.equal(modeTwoInterference?.premiseLogicDrivesInterference, true, 'premise
 assert.equal(legacyTriadic?.selfTestPassed, true, 'preserved triadic ontology self-test failed');
 assert.equal(modeOne?.selfTestPassed, true, 'Triadic Entailment self-test failed');
 assert.equal(modeOne?.lettersDriveRelationalComputation, true, 'letters do not bind the Mode 1 graph');
-assert.equal(modeOne?.modelSetEvaluation, true, 'Mode 1 does not evaluate admissible model sets');
-assert.deepEqual(Array.from(modeOne?.directionalResolutions || []), [4, 8, 16]);
+assert.equal(modeOne?.letteringIdentityIgnored, true, 'Mode 1 still compares identical lettering');
+assert.equal(modeOne?.modelSetEvaluation, false, 'obsolete model-set contracts remain active');
+assert.equal(modeOne?.logicalContracts, false, 'logical contracts remain active');
+assert.equal(modeOne?.visibleContractText, false, 'contract text remains visible');
+assert.equal(modeOne?.directionalResolution, 16);
+assert.deepEqual(Array.from(modeOne?.directionPools || []), [4, 8, 16]);
 
 const modeSelect = window.document.getElementById('logic-mode');
 assert.equal(Array.from(releaseGate?.selectableModes || []).join(','), '0,1', 'Modes 1 and 2 are not both selectable');
@@ -147,32 +151,26 @@ chooseMode(0);
 interferenceSlider.value = '100';
 interferenceSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
 app.rng.s = 442211;
-const contracts = new Set();
 const distinctions = new Set();
-for (let index = 0; index < 300; index += 1) {
+for (let index = 0; index < 500; index += 1) {
   const trial = app.makeBase(0);
   assert.equal(trial.mode, 0);
   assert.equal(trial.premises.length, 2);
   assert.equal(new Set(trial.letters).size, 3);
   assert.ok(trial.conclusion?.subject && trial.conclusion?.relation && trial.conclusion?.object);
-  assert.ok(trial.contractId);
+  assert.equal(Object.prototype.hasOwnProperty.call(trial, 'contractId'), false, 'contract metadata remains in Mode 1 trial');
   assert.equal(modeOne.evaluateTrial(trial).isEntailed, trial.isMatch);
   const rendered = app.renderTrial(trial);
-  const statementBlock = rendered.slice(rendered.indexOf('. ') + 2);
-  assert.equal((statementBlock.match(/;/g) || []).length, 2, 'Mode 1 lacks exactly three relational clauses');
-  assert.ok(rendered.startsWith('Contract: '), 'logical contract is not rendered');
-  assert.ok(!/therefore/i.test(rendered), 'therefore entered the premise');
-  assert.ok(!/undefined|null/.test(rendered), 'malformed Triadic Entailment premise');
-  contracts.add(trial.contractId);
+  assert.equal((rendered.match(/;/g) || []).length, 2, 'Mode 1 is not exactly three relational statements');
+  assert.ok(!/^Contract:/i.test(rendered), 'contract text is still rendered');
+  assert.ok(!/therefore/i.test(rendered), 'therefore entered the triad');
+  assert.ok(!/undefined|null/.test(rendered), 'malformed Triadic Entailment triad');
   distinctions.add(trial.distinctionClass);
 }
-assert.ok(contracts.has('UNIT_16'));
-assert.ok(contracts.has('QUAL_8'));
-assert.ok(contracts.has('QUAL_16'));
-assert.ok(distinctions.has('exact-necessary-entailment'));
-assert.ok(distinctions.has('possible-not-necessary'));
+assert.ok(distinctions.has('exact-relational-entailment'));
 assert.ok(modeOne.exhaustiveAudit.distinctions.includes('wrong-letter-pair'));
 assert.ok(modeOne.exhaustiveAudit.distinctions.includes('adjacent-resolution-substitution'));
+assert.ok(modeOne.exhaustiveAudit.distinctions.includes('subject-object-reversal'));
 
 for (let index = 0; index < 100; index += 1) {
   const trial = modeOne.generateTrial(app.rng, { matchProbability: 0, interferenceLevel: 100 });
@@ -180,14 +178,16 @@ for (let index = 0; index < 100; index += 1) {
 }
 
 for (let index = 0; index < 100; index += 1) {
-  const trial = modeOne.generateTrial(app.rng, { matchProbability: 1, interferenceLevel: 100, contract: 'UNIT_16' });
-  assert.equal(trial.isMatch, true, 'forced MATCH failed exact necessary entailment');
+  const trial = modeOne.generateTrial(app.rng, { matchProbability: 1, interferenceLevel: 100 });
+  assert.equal(trial.isMatch, true, 'forced MATCH failed relational entailment');
 }
 
 const canonical = modeOne.canonicalTrials();
 assert.equal(canonical.length, 10);
 canonical.forEach((trial, index) => {
   assert.equal(modeOne.evaluateTrial(trial).isEntailed, trial.expected, `canonical trial ${index + 1} failed`);
+  assert.equal((modeOne.renderTrial(trial).match(/;/g) || []).length, 2);
+  assert.ok(!/contract:|therefore/i.test(modeOne.renderTrial(trial)));
 });
 
 chooseMode(1);
@@ -232,5 +232,5 @@ for (let index = 0; index < 200; index += 1) {
 assert.ok(modeTwoMatches > 0, 'Mode 2 generated no matches');
 assert.ok(modeTwoNonMatches > 0, 'Mode 2 generated no non-matches');
 
-console.log('Triadic Entailment, Ontological Integration, release gate, accessibility and response-window tests passed.');
+console.log('Exact three-statement Triadic Entailment and preserved Ontological Integration tests passed.');
 window.close();
