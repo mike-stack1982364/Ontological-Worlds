@@ -18,5 +18,7 @@ jobs:
           node-version: 22
       - name: Run Mode 1 Triadic Entailment audit
         run: node tests/mode-one-spatial-entailment.test.js
+      - name: Run approved Mode 1 ten-trial audit
+        run: node tests/mode-one-approved-trials-v4.test.js
       - name: Run preserved Mode 2 Ontological Integration audit
         run: node tests/mode-one-match-logic.test.js
