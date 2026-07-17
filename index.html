@@ -18,7 +18,7 @@
       <div class="control-group">
         <label for="logic-mode">Training mode</label>
         <select id="logic-mode">
-          <option value="0">Mode 1 — Relational Logic</option>
+          <option value="0">Mode 1 — Triadic Entailment</option>
           <option value="1">Mode 2 — Ontological Category Integration</option>
           <option value="2" disabled>Mode 3 — Released in future</option>
           <option value="3" disabled>Mode 4 — Released in future</option>
@@ -120,7 +120,7 @@
       <button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button>
       <h2 id="tutorial-title">How to Train</h2>
 
-      <h3>Mode 1 — Relational Logic</h3>
+      <h3>Mode 1 — Triadic Entailment</h3>
       <p>Each trial contains exactly two spatial premises and one tested conclusion using three letter-bound objects. Example: “A is west of J; J is north of P; P is southeast of A.”</p>
       <p>Construct the relational organisation created by the first two statements. Press MATCH only when the third statement is logically entailed by that organisation. In the example, A is northwest of P, so P is southeast of A and the third statement is a MATCH.</p>
       <p>The letters are computational nodes, not decoration. Reversing a letter binding, changing which letter is the shared middle node, or confusing subject and object changes the logical result. The engine recomputes the answer from the letter graph after generation rather than trusting the intended answer branch.</p>
