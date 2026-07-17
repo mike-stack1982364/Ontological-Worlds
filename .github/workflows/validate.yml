@@ -33,6 +33,7 @@ jobs:
           node --check mode-one-approved-trials-v6.js
           node --check mode-one-approved-trials-v7.js
           node --check mode-one-nback-v8.js
+          node --check mode-one-nback-v9.js
           node --check mode-router-v2.js
           node --check audio-accessibility.js
       - name: Install DOM test runtime
