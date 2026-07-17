@@ -24,5 +24,7 @@ jobs:
         run: node tests/mode-one-nback-v8.test.js
       - name: Run 80-case complete-profile N-back audit
         run: node tests/mode-one-nback-v9.test.js
+      - name: Run live level-specific 80-case curriculum audit
+        run: node tests/mode-one-nback-v10.test.js
       - name: Run preserved Mode 2 Ontological Integration audit
         run: node tests/mode-one-match-logic.test.js
