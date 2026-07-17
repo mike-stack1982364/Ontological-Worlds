@@ -27,6 +27,9 @@ jobs:
           node --check mode-one-triadic.js
           node --check cognitive-interference-v3.js
           node --check mode-one-interference.js
+          node --check mode-one-match-logic.js
+          node --check mode-one-spatial-core.js
+          node --check mode-router-v2.js
           node --check audio-accessibility.js
       - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
