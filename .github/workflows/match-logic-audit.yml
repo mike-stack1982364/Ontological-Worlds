@@ -20,5 +20,7 @@ jobs:
         run: node tests/mode-one-spatial-entailment.test.js
       - name: Run approved-template Mode 1 audit
         run: node tests/mode-one-approved-trials-v7.test.js
+      - name: Run Mode 1 N-back levels 1–8 audit
+        run: node tests/mode-one-nback-v8.test.js
       - name: Run preserved Mode 2 Ontological Integration audit
         run: node tests/mode-one-match-logic.test.js
