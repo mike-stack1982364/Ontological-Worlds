@@ -81,6 +81,7 @@ assert.equal(modeOne?.directionalResolution, 16);
 assert.deepEqual(Array.from(modeOne?.directionPools || []), [4, 8, 16]);
 assert.equal(modeOne?.exhaustiveAudit?.generatedOnlyFromApprovedTemplates, true);
 assert.equal(modeOne?.exhaustiveAudit?.approvedTemplateCount, 10);
+assert.deepEqual(Array.from(modeOne?.exhaustiveAudit?.templateCoverage || []), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
 const modeSelect = window.document.getElementById('logic-mode');
 assert.equal(Array.from(releaseGate?.selectableModes || []).join(','), '0,1', 'Modes 1 and 2 are not both selectable');
@@ -156,7 +157,6 @@ interferenceSlider.value = '100';
 interferenceSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
 app.rng.s = 442211;
 const distinctions = new Set();
-const templateCoverage = new Set();
 for (let index = 0; index < 1000; index += 1) {
   const trial = app.makeBase(0);
   assert.equal(trial.mode, 0);
@@ -172,9 +172,7 @@ for (let index = 0; index < 1000; index += 1) {
   assert.ok(!/therefore/i.test(rendered), 'therefore entered the triad');
   assert.ok(!/undefined|null/.test(rendered), 'malformed Triadic Entailment triad');
   distinctions.add(trial.distinctionClass);
-  templateCoverage.add(trial.approvedTemplateId);
 }
-assert.deepEqual([...templateCoverage].sort((a, b) => a - b), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 assert.ok(distinctions.has('exact-relational-entailment'));
 assert.ok(modeOne.exhaustiveAudit.distinctions.includes('wrong-letter-pair'));
 assert.ok(modeOne.exhaustiveAudit.distinctions.includes('adjacent-resolution-substitution'));
