@@ -16,5 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Run Mode 1 matching audit
+      - name: Run Mode 1 spatial-entailment audit
+        run: node tests/mode-one-spatial-entailment.test.js
+      - name: Run preserved Mode 2 ontology audit
         run: node tests/mode-one-match-logic.test.js
