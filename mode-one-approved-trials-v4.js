@@ -20,7 +20,7 @@
       ],
       conclusion: { subject: 'C', relation: 'SE', object: 'A' },
       expected: true,
-      explanation: 'A is northwest of C, making C southeast of A.'
+      explanation: 'A is northwest of C, so C is southeast of A.'
     },
     {
       premises: [
@@ -29,7 +29,7 @@
       ],
       conclusion: { subject: 'F', relation: 'SW', object: 'D' },
       expected: true,
-      explanation: 'F lies one step west and one step south of D.'
+      explanation: 'F is one step west and one step south of D. Different letters and reversed wording do not alter the valid relational structure.'
     },
     {
       premises: [
@@ -47,7 +47,7 @@
       ],
       conclusion: { subject: 'K', relation: 'NE', object: 'M' },
       expected: false,
-      explanation: 'K is north-northeast of M. Northeast is adjacent, but not exact.'
+      explanation: 'K is north-northeast of M. Northeast is adjacent but not exact.'
     },
     {
       premises: [
@@ -56,7 +56,7 @@
       ],
       conclusion: { subject: 'Q', relation: 'SE', object: 'N' },
       expected: false,
-      explanation: 'N is southeast of Q, so Q is northwest of N.'
+      explanation: 'N is southeast of Q, making Q northwest of N. The tested relation reverses the letters without reversing the direction.'
     },
     {
       premises: [
@@ -65,34 +65,34 @@
       ],
       conclusion: { subject: 'S', relation: 'SW', object: 'T' },
       expected: false,
-      explanation: 'R is southwest of T. S is directly south of T, so the derived relation is attached to the wrong letter.'
+      explanation: 'R is southwest of T. S is directly south of T, so the correct derived relation has been assigned to the wrong letter.'
     },
     {
       premises: [
-        { subject: 'U', relation: 'NE', object: 'V' },
-        { subject: 'V', relation: 'SE', object: 'W' }
+        { subject: 'U', relation: 'S', object: 'V' },
+        { subject: 'V', relation: 'E', object: 'W' }
       ],
-      conclusion: { subject: 'U', relation: 'E', object: 'W' },
+      conclusion: { subject: 'U', relation: 'SE', object: 'W' },
       expected: true,
-      explanation: 'The northward and southward components cancel while the eastward components combine.'
+      explanation: 'U is one step east and one step south of W.'
     },
     {
       premises: [
-        { subject: 'X', relation: 'NE', object: 'Y' },
-        { subject: 'Z', relation: 'SE', object: 'Y' }
+        { subject: 'X', relation: 'W', object: 'Y' },
+        { subject: 'Y', relation: 'N', object: 'Z' }
       ],
-      conclusion: { subject: 'X', relation: 'E', object: 'Z' },
+      conclusion: { subject: 'X', relation: 'NNW', object: 'Z' },
       expected: false,
-      explanation: 'X is directly north of Z. The shared reference creates two branches, not an eastward chain.'
+      explanation: 'Equal transformations place X exactly northwest of Z, not north-northwest.'
     },
     {
       premises: [
-        { subject: 'B', relation: 'W', object: 'C' },
-        { subject: 'A', relation: 'N', object: 'B' }
+        { subject: 'A', relation: 'NE', object: 'B' },
+        { subject: 'B', relation: 'SE', object: 'C' }
       ],
-      conclusion: { subject: 'C', relation: 'SE', object: 'A' },
+      conclusion: { subject: 'A', relation: 'E', object: 'C' },
       expected: true,
-      explanation: 'A is northwest of C, making C southeast of A. Reordered premises and different letter positions do not alter the logic.'
+      explanation: 'The northward and southward components cancel while both eastward components remain.'
     },
     {
       premises: [
@@ -101,12 +101,12 @@
       ],
       conclusion: { subject: 'H', relation: 'E', object: 'K' },
       expected: false,
-      explanation: 'H is directly north of K. The conclusion preserves surface similarity but breaks the actual relational structure.'
+      explanation: 'H is directly north of K. The shared reference letter creates parallel branches, not the eastward chain asserted.'
     }
   ];
 
   function apply(core) {
-    if (!core || core.__approvedTriadicEntailmentV4) return core;
+    if (!core || core.__approvedTriadicEntailmentV6) return core;
 
     const originalGenerateTrial = core.generateTrial.bind(core);
     const originalRenderTrial = core.renderTrial.bind(core);
@@ -136,7 +136,7 @@
         throw new Error('Mode 1 must render exactly two premise relations and one tested relation.');
       }
       if (/contract\s*:|therefore/i.test(rendered)) {
-        throw new Error('Mode 1 premise display may not expose contracts or explanatory connectives.');
+        throw new Error('Mode 1 may not expose contracts or explanatory connectives in the three-statement trial.');
       }
       return rendered;
     };
@@ -146,8 +146,8 @@
     };
 
     core.approvedTrials = core.canonicalTrials;
-    core.version = 4;
-    core.__approvedTriadicEntailmentV4 = true;
+    core.version = 6;
+    core.__approvedTriadicEntailmentV6 = true;
     core.surfacePolicy = Object.freeze({
       statementCount: 3,
       premiseCount: 2,
@@ -155,7 +155,7 @@
       visibleContractText: false,
       thereforeInPremise: false,
       letteringIdentityAcrossTrialsRelevant: false,
-      approvedTrialSet: 'exact-ten-v5',
+      approvedTrialSet: 'exact-ten-v6',
       scoringRule: 'logical accuracy of the third relation after composing the first two letter-bound transformations'
     });
 
