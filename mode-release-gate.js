@@ -3,38 +3,39 @@
 /*
  * Public release gate.
  *
- * Mode 1 is the only selectable mode in this release. The dormant engines are
- * retained for future development and regression testing, but persisted or
- * programmatic settings cannot activate them through the live application.
+ * Modes 1 and 2 are selectable. Modes 3 through 7 remain dormant and cannot be
+ * activated by persisted or programmatic settings through the live interface.
  */
 window.addEventListener('DOMContentLoaded', () => {
   const app = window.__ontologicalWorlds;
   const select = document.getElementById('logic-mode');
   if (!app || !select) return;
 
-  const ACTIVE_MODE = 0;
-  select.value = String(ACTIVE_MODE);
+  const ACTIVE_MODES = new Set([0, 1]);
+  const normalise = value => ACTIVE_MODES.has(Number(value)) ? Number(value) : 0;
+  select.value = String(normalise(select.value));
 
   [...select.options].forEach(option => {
-    const active = Number(option.value) === ACTIVE_MODE;
+    const active = ACTIVE_MODES.has(Number(option.value));
     option.disabled = !active;
     option.setAttribute('aria-disabled', active ? 'false' : 'true');
   });
 
   const baseSettings = app.settings.bind(app);
   app.settings = function settingsWithReleaseGate() {
-    return { ...baseSettings(), mode: ACTIVE_MODE };
+    const settings = baseSettings();
+    return { ...settings, mode: normalise(settings.mode) };
   };
 
   select.addEventListener('change', () => {
-    if (Number(select.value) !== ACTIVE_MODE) select.value = String(ACTIVE_MODE);
+    select.value = String(normalise(select.value));
   });
 
   try {
     const key = 'ontological_worlds_settings_v2';
     const saved = JSON.parse(localStorage.getItem(key) || 'null');
-    if (saved && saved.mode !== ACTIVE_MODE) {
-      saved.mode = ACTIVE_MODE;
+    if (saved && !ACTIVE_MODES.has(Number(saved.mode))) {
+      saved.mode = 0;
       localStorage.setItem(key, JSON.stringify(saved));
     }
   } catch (_) {}
@@ -43,9 +44,9 @@ window.addEventListener('DOMContentLoaded', () => {
   app.saveSettings();
 
   window.__modeReleaseTestAPI = {
-    version: 1,
-    activeMode: ACTIVE_MODE,
+    version: 2,
+    activeModes: [...ACTIVE_MODES],
     selectableModes: [...select.options].filter(option => !option.disabled).map(option => Number(option.value)),
-    futureModesDisabled: [...select.options].slice(1).every(option => option.disabled)
+    futureModesDisabled: [...select.options].slice(2).every(option => option.disabled)
   };
 });

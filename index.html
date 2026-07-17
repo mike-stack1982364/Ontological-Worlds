@@ -18,8 +18,8 @@
       <div class="control-group">
         <label for="logic-mode">Training mode</label>
         <select id="logic-mode">
-          <option value="0">Mode 1 — Triadic Cardinal Streaming</option>
-          <option value="1" disabled>Mode 2 — Released in future</option>
+          <option value="0">Mode 1 — Triadic Spatial Entailment</option>
+          <option value="1">Mode 2 — Ontological Category Integration</option>
           <option value="2" disabled>Mode 3 — Released in future</option>
           <option value="3" disabled>Mode 4 — Released in future</option>
           <option value="4" disabled>Mode 5 — Released in future</option>
@@ -47,7 +47,7 @@
       <div class="control-group">
         <label for="interference-slider">Cognitive interference: <span id="interference-val">60%</span></label>
         <input id="interference-slider" type="range" min="0" max="100" step="5" value="60" aria-describedby="interference-help">
-        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls logical competition between premises: near-miss bindings, topology, outcomes and intervening triads. Symbols are not the interference mechanism.</p>
+        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls meta-distinction difficulty: directional granularity, premise inversion, clause order and the closeness of false conclusions to the exact entailed relation.</p>
       </div>
 
       <div class="control-group" aria-labelledby="accessibility-label">
@@ -119,31 +119,23 @@
     <div class="modal-inner">
       <button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button>
       <h2 id="tutorial-title">How to Train</h2>
-      <p>Listen to or read each premise, construct its complete triadic relation, reduce it to its integrated logical identity, then respond MATCH only when that derived identity matches the premise N positions earlier.</p>
 
-      <h3>Compact auditory grammar</h3>
-      <p>Every premise uses three fixed auditory clauses: transformed symbol; direction to transformed symbol; direction to transformed symbol. Example: “Inner Division U; east to Outer Multiplication M; north to Connection R.” Semicolons mark the three role boundaries.</p>
-      <p>A bare category name is the unmarked form. Therefore “Connection R” is distinct from “Inner Connection R” and “Outer Connection R”, without saying “Archetypal Connection”.</p>
+      <h3>Mode 1 — Triadic Spatial Entailment</h3>
+      <p>Each trial contains exactly two spatial premises and one tested conclusion using three letter-bound objects. Example: “A is west of J; J is north of P; P is southeast of A.”</p>
+      <p>Construct the relational organisation created by the first two statements. Press MATCH only when the third statement is logically entailed by that organisation. In the example, A is northwest of P, so P is southeast of A and the third statement is a MATCH.</p>
+      <p>The letters are computational nodes, not decoration. Reversing a letter binding, changing which letter is the shared middle node, or confusing subject and object changes the logical result. The engine recomputes the answer from the letter graph after generation rather than trusting the intended answer branch.</p>
 
-      <h3>Mode 1 — Triadic Cardinal Streaming</h3>
-      <p>Each sentence contains three independently transformed symbols. Their ontologies and forms create three symbol-level transformations; two cardinal transitions bind the roles; and the transition between those transitions creates a higher-order turn.</p>
-      <p>The engine computes a complete logic profile for cognitive interference: left and right relation categories, node synthesis, relation synthesis and final integrated synthesis. N-back scoring uses the final integrated ontology and integrated form as the trial’s abstract logical identity.</p>
+      <h3>Directional meta-distinction</h3>
+      <p>Mode 1 uses a sixteen-way directional ontology: north, north-northeast, northeast, east-northeast, east, east-southeast, southeast, south-southeast, south, south-southwest, southwest, west-southwest, west, west-northwest, northwest and north-northwest.</p>
+      <p>Higher interference makes false conclusions approach the exact answer. A conclusion one 22.5° step away remains NO MATCH even when it is broadly compatible with the same coarse direction. Premise order and wording may be inverted without changing the underlying relation.</p>
+      <p>Mode 1 is a within-trial entailment task, so its inference structure is fixed at two premises plus one tested conclusion. The N-back slider is therefore disabled in Mode 1.</p>
 
-      <h3>The ontological field</h3>
-      <p>The nine categories are All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion. Complementary mirrors are All–Completion, Difference–Encompassment, Action–Projection and Division–Multiplication; Connection mirrors itself.</p>
-      <p>Inner and Outer meanings are learned operators, not definitions repeated inside every premise. Category composition uses an explicit nine-position computational field for deterministic scoring.</p>
+      <h3>Mode 2 — Ontological Category Integration</h3>
+      <p>The previous Mode 1 system is preserved here. Each sentence contains three independently transformed symbols. Their ontology categories and forms create three node transformations; two cardinal transitions bind the roles; and the transition between those transitions creates a higher-order turn.</p>
+      <p>The nine categories are All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion. N-back scoring compares the derived integrated ontology and integrated form, while complete triadic logic drives cognitive interference. Letters remain surface carriers in Mode 2.</p>
 
       <h3>Cognitive interference</h3>
-      <p>The slider changes how each new triad competes with the complete logic of the N-back target and intervening triads. Higher settings produce near-miss role bindings, altered turns, operator permutations, competing syntheses and proactive reinstatements. Letters are assigned only after the logical lure is selected.</p>
-      <p>True MATCH trials are also logically varied: they preserve the same derived integrated identity while changing displayed ontology roles and directions. MATCH and NO MATCH are selected around comparable full-logic similarity so superficial repetition does not reveal the answer.</p>
-
-      <h3>What MATCH means</h3>
-      <p>MATCH does not mean that the letters, displayed ontology categories, forms or directions repeat. Those are the surface ingredients.</p>
-      <p>First integrate the three transformed nodes and the two directional relations. The result is one hidden logical identity: an integrated ontology plus an integrated form. Press MATCH only when that derived identity is the same as the one N trials earlier. Two trials can therefore match even when every displayed category and both directions differ.</p>
-      <p>This follows the same architecture as IMAGI-WORLD: surface premise → derived logical signature → N-back comparison. The program recomputes the answer from the signatures rather than trusting whether the generator intended a match.</p>
-
-      <h3>Future modes</h3>
-      <p>Modes 2 through 7 remain in development and are shown as “Released in future”, but cannot be selected in this release.</p>
+      <p>In Mode 1, interference controls directional resolution, premise inversion, clause order and near-miss conclusions. In Mode 2, it controls near-miss category bindings, topology, synthesis outcomes and proactive interference from intervening triads.</p>
 
       <h3>Accessibility guarantee</h3>
       <p>The program constructs one final premise string, writes that exact string to the live visual region and sends the same string to speech synthesis. The response window opens only after speech finishes; audio-only display, pause/resume replay, speech rate, volume and speech/background separation remain available.</p>
@@ -174,6 +166,8 @@
   <script src="mode-one-triadic.js"></script>
   <script src="mode-one-interference.js"></script>
   <script src="mode-one-match-logic.js"></script>
+  <script src="mode-one-spatial-core.js"></script>
+  <script src="mode-router-v2.js"></script>
   <script src="audio-accessibility.js"></script>
 </body>
 </html>
