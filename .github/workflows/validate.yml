@@ -30,6 +30,7 @@ jobs:
           node --check mode-one-match-logic.js
           node --check mode-one-spatial-core.js
           node --check mode-one-approved-trials-v4.js
+          node --check mode-one-approved-trials-v6.js
           node --check mode-router-v2.js
           node --check audio-accessibility.js
       - name: Install DOM test runtime
