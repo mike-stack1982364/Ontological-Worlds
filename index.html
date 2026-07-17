@@ -47,7 +47,7 @@
       <div class="control-group">
         <label for="interference-slider">Cognitive interference: <span id="interference-val">60%</span></label>
         <input id="interference-slider" type="range" min="0" max="100" step="5" value="60" aria-describedby="interference-help">
-        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls the proximity of competing logical profiles and their surface transformations. N-back level controls whether the comparison target is one through eight triads earlier.</p>
+        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls the proximity of competing logical profiles and their surface transformations. Each N-back level draws from its own ten-case curriculum.</p>
       </div>
 
       <div class="control-group" aria-labelledby="accessibility-label">
@@ -128,7 +128,8 @@
       <p>The visible triad contains only its three relations. It never displays a contract heading, rule label, answer explanation or “therefore.” The comparison is explained separately after the player responds.</p>
 
       <h3>N-back levels 1–8</h3>
-      <p>Level 1 compares with the immediately preceding triad. Level 8 compares with the triad eight positions back. The first N triads fill the memory buffer and are not scored. The implementation is audited against ten match or non-match comparison archetypes at every level, for eighty cases in total.</p>
+      <p>Level 1 compares with the immediately preceding triad. Level 8 compares with the triad eight positions back. The first N triads fill the memory buffer and are not scored. Each level has ten approved match or non-match archetypes, for eighty operational cases in total.</p>
+      <p>Level 1 emphasises direct entailment and binding errors; Level 2 inversion and reordering; Level 3 resolution; Level 4 model-set necessity; Level 5 rotation, reflection and chirality; Level 6 proof structure; Level 7 contract and policy distinctions; and Level 8 complete-profile integration.</p>
 
       <h3>Meta-distinction and meta-logic</h3>
       <p>The comparison profile can include proof topology, transformation mechanism, equal-unit versus unspecified-distance reasoning, four-, eight- or sixteen-way resolution, necessity versus possibility, conclusion-validity class, query orientation and whether reflection is an allowed invariant.</p>
@@ -171,7 +172,9 @@
   <script src="mode-one-approved-trials-v7.js"></script>
   <script src="mode-one-nback-v8.js"></script>
   <script src="mode-one-nback-v9.js"></script>
+  <script src="mode-one-nback-v10.js"></script>
   <script src="mode-router-v2.js"></script>
+  <script src="mode-one-completion-v10.js"></script>
   <script src="audio-accessibility.js"></script>
 </body>
 </html>
