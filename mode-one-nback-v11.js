@@ -187,11 +187,11 @@
       conclusion: { subject: 'A', relation: 'N', object: 'C' }
     }),
     profile({
-      id: 'chain-coarse8-cardinal-diagonal', label: 'eight-way cardinal-diagonal truth',
-      topology: 'chain', mechanism: 'cardinal-diagonal-composition', queryOrientation: 'direct',
+      id: 'chain-coarse8-cardinal-diagonal', label: 'eight-way orthogonal truth',
+      topology: 'chain', mechanism: 'orthogonal-composition', queryOrientation: 'direct',
       contract: CONTRACTS.unit8Truth, validityClass: 'coarse-truth-entailment', expected: true,
       proofEquivalence: 'vector-sum', dependencyClass: 'resolution-critical',
-      premises: [{ subject: 'A', relation: 'N', object: 'B' }, { subject: 'B', relation: 'NE', object: 'C' }],
+      premises: [{ subject: 'A', relation: 'N', object: 'B' }, { subject: 'B', relation: 'E', object: 'C' }],
       conclusion: { subject: 'A', relation: 'NE', object: 'C' }
     }),
     profile({
