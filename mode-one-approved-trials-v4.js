@@ -20,7 +20,7 @@
       ],
       conclusion: { subject: 'C', relation: 'SE', object: 'A' },
       expected: true,
-      explanation: 'A is northwest of C, so C is southeast of A.'
+      explanation: 'A is northwest of C, making C southeast of A.'
     },
     {
       premises: [
@@ -29,7 +29,7 @@
       ],
       conclusion: { subject: 'F', relation: 'SW', object: 'D' },
       expected: true,
-      explanation: 'F is one step west and one step south of D. Different letters and reversed wording do not alter the valid relational structure.'
+      explanation: 'F lies one step west and one step south of D.'
     },
     {
       premises: [
@@ -47,7 +47,7 @@
       ],
       conclusion: { subject: 'K', relation: 'NE', object: 'M' },
       expected: false,
-      explanation: 'K is north-northeast of M. Northeast is adjacent but not exact.'
+      explanation: 'K is north-northeast of M. Northeast is adjacent, but not exact.'
     },
     {
       premises: [
@@ -56,7 +56,7 @@
       ],
       conclusion: { subject: 'Q', relation: 'SE', object: 'N' },
       expected: false,
-      explanation: 'N is southeast of Q, making Q northwest of N. The tested relation reverses the letters without reversing the direction.'
+      explanation: 'N is southeast of Q, so Q is northwest of N.'
     },
     {
       premises: [
@@ -65,34 +65,34 @@
       ],
       conclusion: { subject: 'S', relation: 'SW', object: 'T' },
       expected: false,
-      explanation: 'R is southwest of T. S is directly south of T, so the correct derived relation has been assigned to the wrong letter.'
+      explanation: 'R is southwest of T. S is directly south of T, so the derived relation is attached to the wrong letter.'
     },
     {
       premises: [
-        { subject: 'U', relation: 'S', object: 'V' },
-        { subject: 'V', relation: 'E', object: 'W' }
+        { subject: 'U', relation: 'NE', object: 'V' },
+        { subject: 'V', relation: 'SE', object: 'W' }
       ],
-      conclusion: { subject: 'U', relation: 'SE', object: 'W' },
+      conclusion: { subject: 'U', relation: 'E', object: 'W' },
       expected: true,
-      explanation: 'U is one step east and one step south of W.'
+      explanation: 'The northward and southward components cancel while the eastward components combine.'
     },
     {
       premises: [
-        { subject: 'X', relation: 'W', object: 'Y' },
-        { subject: 'Y', relation: 'N', object: 'Z' }
+        { subject: 'X', relation: 'NE', object: 'Y' },
+        { subject: 'Z', relation: 'SE', object: 'Y' }
       ],
-      conclusion: { subject: 'X', relation: 'NNW', object: 'Z' },
+      conclusion: { subject: 'X', relation: 'E', object: 'Z' },
       expected: false,
-      explanation: 'Equal transformations place X exactly northwest of Z, not north-northwest.'
+      explanation: 'X is directly north of Z. The shared reference creates two branches, not an eastward chain.'
     },
     {
       premises: [
-        { subject: 'A', relation: 'NE', object: 'B' },
-        { subject: 'B', relation: 'SE', object: 'C' }
+        { subject: 'B', relation: 'W', object: 'C' },
+        { subject: 'A', relation: 'N', object: 'B' }
       ],
-      conclusion: { subject: 'A', relation: 'E', object: 'C' },
+      conclusion: { subject: 'C', relation: 'SE', object: 'A' },
       expected: true,
-      explanation: 'The northward and southward components cancel, while both eastward components remain.'
+      explanation: 'A is northwest of C, making C southeast of A. Reordered premises and different letter positions do not alter the logic.'
     },
     {
       premises: [
@@ -101,7 +101,7 @@
       ],
       conclusion: { subject: 'H', relation: 'E', object: 'K' },
       expected: false,
-      explanation: 'H is directly north of K. The shared reference letter creates parallel branches, not the eastward chain asserted.'
+      explanation: 'H is directly north of K. The conclusion preserves surface similarity but breaks the actual relational structure.'
     }
   ];
 
@@ -155,6 +155,7 @@
       visibleContractText: false,
       thereforeInPremise: false,
       letteringIdentityAcrossTrialsRelevant: false,
+      approvedTrialSet: 'exact-ten-v5',
       scoringRule: 'logical accuracy of the third relation after composing the first two letter-bound transformations'
     });
 

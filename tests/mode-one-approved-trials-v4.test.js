@@ -13,13 +13,27 @@ assert.strictEqual(core.surfacePolicy.statementCount, 3);
 assert.strictEqual(core.surfacePolicy.visibleContractText, false);
 assert.strictEqual(core.surfacePolicy.thereforeInPremise, false);
 assert.strictEqual(core.surfacePolicy.letteringIdentityAcrossTrialsRelevant, false);
+assert.strictEqual(core.surfacePolicy.approvedTrialSet, 'exact-ten-v5');
 
 const expectedAnswers = [true, true, true, false, false, false, true, false, true, false];
-const expectedRelations = ['SE', 'SW', 'NNE', 'NNE', 'NW', 'S', 'SE', 'NW', 'E', 'N'];
+const expectedRelations = ['SE', 'SW', 'NNE', 'NNE', 'NW', 'S', 'E', 'N', 'SE', 'N'];
+const exactRenderedTrials = [
+  'A is west of B; B is north of C; C is southeast of A.',
+  'E is south of D; F is west of E; F is southwest of D.',
+  'G is north of H; H is northeast of J; G is north-northeast of J.',
+  'K is north of L; L is northeast of M; K is northeast of M.',
+  'N is east of P; P is south of Q; Q is southeast of N.',
+  'R is west of S; S is south of T; S is southwest of T.',
+  'U is northeast of V; V is southeast of W; U is east of W.',
+  'X is northeast of Y; Z is southeast of Y; X is east of Z.',
+  'B is west of C; A is north of B; C is southeast of A.',
+  'H is northeast of J; K is southeast of J; H is east of K.'
+];
 
 trials.forEach((trial, index) => {
   const result = core.evaluateTrial(trial);
   const rendered = core.renderTrial(trial);
+  assert.strictEqual(rendered, exactRenderedTrials[index], `Trial ${index + 1} surface changed.`);
   assert.strictEqual(result.isEntailed, expectedAnswers[index], `Trial ${index + 1} answer mismatch.`);
   assert.strictEqual(result.expectedRelation, expectedRelations[index], `Trial ${index + 1} derived relation mismatch.`);
   assert.strictEqual((rendered.match(/;/g) || []).length, 2, `Trial ${index + 1} must contain exactly three statements.`);
