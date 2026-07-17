@@ -46,6 +46,7 @@ for (const file of [
   'mode-one-match-logic.js',
   'mode-one-spatial-core.js',
   'mode-one-approved-trials-v7.js',
+  'mode-one-nback-v8.js',
   'mode-router-v2.js',
   'audio-accessibility.js'
 ]) window.eval(fs.readFileSync(file, 'utf8'));
@@ -77,6 +78,10 @@ assert.equal(modeOne?.modelSetEvaluation, false, 'obsolete model-set contracts r
 assert.equal(modeOne?.logicalContracts, false, 'logical contracts remain active');
 assert.equal(modeOne?.visibleContractText, false, 'contract text remains visible');
 assert.equal(modeOne?.runtimeGenerator, 'approved-ten-template-orbits-v7');
+assert.equal(modeOne?.nBackRuntime, 'approved-logical-family-nback-v8');
+assert.equal(modeOne?.nBackEnabled, true);
+assert.deepEqual(Array.from(modeOne?.nBackLevels || []), [1, 2, 3, 4, 5, 6, 7, 8]);
+assert.equal(modeOne?.nBackPolicy?.letteringIdentityRelevant, false);
 assert.equal(modeOne?.directionalResolution, 16);
 assert.deepEqual(Array.from(modeOne?.directionPools || []), [4, 8, 16]);
 assert.equal(modeOne?.exhaustiveAudit?.generatedOnlyFromApprovedTemplates, true);
@@ -84,6 +89,7 @@ assert.equal(modeOne?.exhaustiveAudit?.approvedTemplateCount, 10);
 assert.deepEqual(Array.from(modeOne?.exhaustiveAudit?.templateCoverage || []), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
 const modeSelect = window.document.getElementById('logic-mode');
+const nSlider = window.document.getElementById('n-slider');
 assert.equal(Array.from(releaseGate?.selectableModes || []).join(','), '0,1', 'Modes 1 and 2 are not both selectable');
 assert.equal(releaseGate?.futureModesDisabled, true, 'future modes are not disabled');
 assert.equal([...modeSelect.options].filter(option => !option.disabled).length, 2, 'incorrect number of selectable modes');
@@ -95,6 +101,12 @@ modeSelect.value = '6';
 modeSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
 assert.equal(modeSelect.value, '0', 'future-mode selection was not rejected');
 assert.equal(app.settings().mode, 0, 'runtime escaped the public mode gate');
+
+assert.equal(nSlider.min, '1');
+assert.equal(nSlider.max, '8');
+assert.equal(nSlider.step, '1');
+assert.equal(nSlider.disabled, false, 'Mode 1 N-back customisation is disabled');
+assert.equal(nSlider.getAttribute('aria-valuemax'), '8');
 
 assert.equal(audioOnlyDisplay?.blurControlRemoved, true, 'blur behaviour remains');
 assert.equal(audioOnlyDisplay?.legacyControlHidden, true, 'legacy blur input is visible');
@@ -180,13 +192,12 @@ assert.ok(modeOne.exhaustiveAudit.distinctions.includes('subject-object-reversal
 
 for (let index = 0; index < 100; index += 1) {
   const trial = modeOne.generateTrial(app.rng, { matchProbability: 0, interferenceLevel: 100 });
-  assert.equal(trial.isMatch, false, 'forced NO MATCH generated a MATCH');
+  assert.equal(trial.isMatch, false, 'forced within-trial NO MATCH generated an entailment');
   assert.equal(trial.generatedFromApprovedTemplate, true);
 }
-
 for (let index = 0; index < 100; index += 1) {
   const trial = modeOne.generateTrial(app.rng, { matchProbability: 1, interferenceLevel: 100 });
-  assert.equal(trial.isMatch, true, 'forced MATCH failed relational entailment');
+  assert.equal(trial.isMatch, true, 'forced within-trial MATCH failed relational entailment');
   assert.equal(trial.generatedFromApprovedTemplate, true);
 }
 
@@ -198,8 +209,55 @@ canonical.forEach((trial, index) => {
   assert.ok(!/contract:|therefore/i.test(modeOne.renderTrial(trial)));
 });
 
+for (const level of [1, 2, 3, 4, 5, 6, 7, 8]) {
+  nSlider.value = String(level);
+  nSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
+  assert.equal(app.settings().n, level);
+  assert.equal(nSlider.getAttribute('aria-valuetext'), `N-back level ${level}`);
+  app.n = level;
+  app.trials = [];
+
+  for (let index = 0; index < level; index += 1) {
+    const warmup = app.makeTrial();
+    assert.equal(warmup.nBackLevel, level);
+    assert.equal(warmup.nBackWarmup, true);
+    assert.equal(warmup.scored, false);
+    assert.equal(warmup.isMatch, false);
+    app.trials.push(warmup);
+  }
+
+  const target = app.trials[app.trials.length - level];
+  const scored = app.makeTrial();
+  assert.equal(scored.nBackLevel, level);
+  assert.equal(scored.nBackWarmup, false);
+  assert.equal(scored.scored, true);
+  assert.equal(scored.isMatch, modeOne.nBackEquivalent(scored, target));
+  assert.equal(scored.nBackMatch, scored.isMatch);
+  assert.equal(scored.nBackTargetSignature, modeOne.nBackLogicSignature(target));
+  assert.equal((app.renderTrial(scored).match(/;/g) || []).length, 2);
+  assert.ok(!/contract:|therefore/i.test(app.renderTrial(scored)));
+}
+
+const explicitTarget = modeOne.generateTrial(app.rng, { matchProbability: 1, interferenceLevel: 100 });
+const explicitMatch = modeOne.generateNBackTrial(app.rng, explicitTarget, {
+  match: true,
+  nBackLevel: 8,
+  interferenceLevel: 100
+});
+assert.equal(explicitMatch.isMatch, true);
+assert.equal(modeOne.nBackEquivalent(explicitMatch, explicitTarget), true);
+assert.ok(explicitMatch.letters.every(letter => !explicitTarget.letters.includes(letter)), 'logic match reused target lettering');
+const explicitNonMatch = modeOne.generateNBackTrial(app.rng, explicitTarget, {
+  match: false,
+  nBackLevel: 8,
+  interferenceLevel: 100
+});
+assert.equal(explicitNonMatch.isMatch, false);
+assert.equal(modeOne.nBackEquivalent(explicitNonMatch, explicitTarget), false);
+
 chooseMode(1);
-assert.equal(window.document.getElementById('n-slider').disabled, false, 'Mode 2 N-back control remains disabled');
+assert.equal(nSlider.disabled, false, 'Mode 2 N-back control remains disabled');
+assert.equal(nSlider.max, '8');
 app.rng.s = 90210;
 const categories = new Set();
 const forms = new Set();
@@ -240,5 +298,5 @@ for (let index = 0; index < 200; index += 1) {
 assert.ok(modeTwoMatches > 0, 'Mode 2 generated no matches');
 assert.ok(modeTwoNonMatches > 0, 'Mode 2 generated no non-matches');
 
-console.log('Approved-template Triadic Entailment and preserved Ontological Integration tests passed.');
+console.log('Triadic Entailment N-back levels 1–8 and preserved Ontological Integration tests passed.');
 window.close();
