@@ -170,7 +170,8 @@ assert.ok(contracts.has('QUAL_8'));
 assert.ok(contracts.has('QUAL_16'));
 assert.ok(distinctions.has('exact-necessary-entailment'));
 assert.ok(distinctions.has('possible-not-necessary'));
-assert.ok(distinctions.has('wrong-letter-pair'));
+assert.ok(modeOne.exhaustiveAudit.distinctions.includes('wrong-letter-pair'));
+assert.ok(modeOne.exhaustiveAudit.distinctions.includes('adjacent-resolution-substitution'));
 
 for (let index = 0; index < 500; index += 1) {
   const trial = modeOne.generateTrial(app.rng, { matchProbability: 0, interferenceLevel: 100 });
