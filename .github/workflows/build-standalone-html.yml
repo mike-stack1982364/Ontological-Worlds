@@ -126,10 +126,19 @@ jobs:
       - name: Verify standalone structure
         shell: bash
         run: |
-          test -s dist/Ontological-Worlds.html
-          grep -q 'Mode 1 — Triadic Entailment' dist/Ontological-Worlds.html
-          grep -q 'Mode 2 — Ontological Integration' dist/Ontological-Worlds.html
-          ! grep -Eiq '<link[^>]+rel=["'"']stylesheet|<script[^>]+src=' dist/Ontological-Worlds.html
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          path = Path('dist/Ontological-Worlds.html')
+          assert path.is_file() and path.stat().st_size > 0
+          html = path.read_text(encoding='utf-8')
+          assert 'Mode 1 — Triadic Entailment' in html
+          assert 'Mode 2 — Ontological Integration' in html
+          assert not re.search(r'<link\b[^>]*\brel=["\']stylesheet["\']', html, re.I)
+          assert not re.search(r'<script\b[^>]*\bsrc=', html, re.I)
+          print(f'Verified standalone HTML ({path.stat().st_size:,} bytes)')
+          PY
 
       - name: Upload standalone HTML
         uses: actions/upload-artifact@v4
