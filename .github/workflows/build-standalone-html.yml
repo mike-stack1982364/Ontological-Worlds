@@ -1,0 +1,140 @@
+name: Build standalone Ontological Worlds HTML
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build self-contained HTML
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import base64
+          import mimetypes
+          import re
+          import urllib.request
+          from pathlib import Path
+          from urllib.parse import urlsplit
+
+          ROOT = Path('.').resolve()
+          source = ROOT / 'index.html'
+          output = ROOT / 'dist' / 'Ontological-Worlds.html'
+          output.parent.mkdir(parents=True, exist_ok=True)
+          html = source.read_text(encoding='utf-8')
+
+          def data_uri(data: bytes, mime: str | None) -> str:
+              media_type = mime or 'application/octet-stream'
+              return f"data:{media_type};base64,{base64.b64encode(data).decode('ascii')}"
+
+          def read_resource(reference: str, base_dir: Path) -> tuple[bytes, str | None]:
+              clean = reference.strip().strip('"\'')
+              if clean.startswith(('data:', 'blob:', '#')):
+                  raise ValueError('already embedded or fragment-only')
+              if clean.startswith(('http://', 'https://')):
+                  request = urllib.request.Request(clean, headers={'User-Agent': 'Ontological-Worlds-Standalone-Builder/1.0'})
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      payload = response.read()
+                      mime = response.headers.get_content_type()
+                  return payload, mime
+              path_part = urlsplit(clean).path
+              resource_path = (base_dir / path_part).resolve()
+              resource_path.relative_to(ROOT)
+              payload = resource_path.read_bytes()
+              return payload, mimetypes.guess_type(resource_path.name)[0]
+
+          def inline_css_urls(css: str, css_path: Path) -> str:
+              pattern = re.compile(r'url\(\s*([^\)]+?)\s*\)', re.IGNORECASE)
+
+              def replace(match: re.Match[str]) -> str:
+                  raw = match.group(1).strip()
+                  clean = raw.strip('"\'')
+                  if clean.startswith(('data:', 'blob:', '#')):
+                      return match.group(0)
+                  payload, mime = read_resource(clean, css_path.parent)
+                  return f'url("{data_uri(payload, mime)}")'
+
+              return pattern.sub(replace, css)
+
+          stylesheet_pattern = re.compile(
+              r'<link\b(?=[^>]*\brel=["\']stylesheet["\'])(?=[^>]*\bhref=["\']([^"\']+)["\'])[^>]*>',
+              re.IGNORECASE,
+          )
+
+          def replace_stylesheet(match: re.Match[str]) -> str:
+              href = match.group(1)
+              css_path = (ROOT / urlsplit(href).path).resolve()
+              css_path.relative_to(ROOT)
+              css = css_path.read_text(encoding='utf-8')
+              css = inline_css_urls(css, css_path)
+              return f'<style data-inline-source="{href}">\n{css}\n</style>'
+
+          html = stylesheet_pattern.sub(replace_stylesheet, html)
+
+          script_pattern = re.compile(
+              r'<script\b([^>]*?)\bsrc=["\']([^"\']+)["\']([^>]*)>\s*</script>',
+              re.IGNORECASE,
+          )
+
+          def replace_script(match: re.Match[str]) -> str:
+              src = match.group(2)
+              js_path = (ROOT / urlsplit(src).path).resolve()
+              js_path.relative_to(ROOT)
+              javascript = js_path.read_text(encoding='utf-8').replace('</script', '<\\/script')
+              return f'<script data-inline-source="{src}">\n{javascript}\n</script>'
+
+          html = script_pattern.sub(replace_script, html)
+
+          asset_pattern = re.compile(
+              r'(<(?:img|audio|video|source)\b[^>]*?\bsrc=["\'])([^"\']+)(["\'])',
+              re.IGNORECASE,
+          )
+
+          def replace_asset(match: re.Match[str]) -> str:
+              ref = match.group(2)
+              if ref.startswith(('data:', 'blob:', '#')):
+                  return match.group(0)
+              payload, mime = read_resource(ref, ROOT)
+              return f'{match.group(1)}{data_uri(payload, mime)}{match.group(3)}'
+
+          html = asset_pattern.sub(replace_asset, html)
+          html = html.replace(
+              '<meta charset="utf-8">',
+              '<meta charset="utf-8">\n  <meta name="generator" content="Standalone export of Ontological Worlds">',
+              1,
+          )
+
+          if stylesheet_pattern.search(html):
+              raise SystemExit('A stylesheet reference remained after bundling.')
+          if script_pattern.search(html):
+              raise SystemExit('A script source reference remained after bundling.')
+
+          output.write_text(html, encoding='utf-8')
+          print(f'Created {output} ({output.stat().st_size:,} bytes)')
+          PY
+
+      - name: Verify standalone structure
+        shell: bash
+        run: |
+          test -s dist/Ontological-Worlds.html
+          grep -q 'Mode 1 — Triadic Entailment' dist/Ontological-Worlds.html
+          grep -q 'Mode 2 — Ontological Integration' dist/Ontological-Worlds.html
+          ! grep -Eiq '<link[^>]+rel=["'"']stylesheet|<script[^>]+src=' dist/Ontological-Worlds.html
+
+      - name: Upload standalone HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ontological-Worlds-Standalone-HTML
+          path: dist/Ontological-Worlds.html
+          if-no-files-found: error
+          retention-days: 7
