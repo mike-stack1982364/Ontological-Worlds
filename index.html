@@ -7,6 +7,29 @@
   <title>Ontological-Worlds</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="light-theme.css">
+  <style>
+    #extra-training-btn{
+      width:100%;min-height:78px;padding:18px 22px;border-radius:18px;
+      border:2px solid #176aa8;background:linear-gradient(135deg,#0b4f88,#49aee7);
+      color:#fff;font-size:clamp(1rem,3.4vw,1.35rem);font-weight:900;
+      letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+      box-shadow:0 10px 24px rgba(18,79,140,.24);touch-action:manipulation;
+    }
+    #extra-training-btn:focus-visible{outline:4px solid rgba(73,174,231,.45);outline-offset:4px}
+    #extra-training-screen[hidden]{display:none!important}
+    #extra-training-screen{
+      position:fixed;inset:0;z-index:1000;background:#fff;overflow:auto;
+      padding:18px 14px 40px;
+    }
+    #extra-training-screen .extra-shell{max-width:900px;margin:0 auto}
+    #extra-training-screen .extra-header{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;
+      margin-bottom:18px;position:sticky;top:0;background:#fff;padding:8px 0 12px;z-index:2;
+    }
+    #extra-training-screen h2{margin:0;color:#124f8c;letter-spacing:.08em;text-transform:uppercase}
+    #extra-training-close-top{min-width:48px;min-height:48px;border-radius:12px;font-size:1.1rem}
+    body.extra-training-open{overflow:hidden}
+  </style>
 </head>
 <body>
   <div class="lion-backdrop" aria-hidden="true"></div>
@@ -30,10 +53,8 @@
 
       <div class="control-group">
         <label for="extra-training-btn">Extra Training</label>
-        <button id="extra-training-btn" class="small-btn" type="button" aria-expanded="false" aria-controls="extra-training-panel">Open Number N-back</button>
+        <button id="extra-training-btn" type="button" aria-expanded="false" aria-controls="extra-training-screen">Open Ordered Number N-back</button>
       </div>
-
-      <div id="extra-training-panel" hidden></div>
 
       <div class="control-group">
         <label for="n-slider">N-back level: <span id="n-val">1</span></label>
@@ -120,6 +141,16 @@
       <div id="kbd-hint" class="hint">F/J = MATCH · D/K = NO MATCH · P = PAUSE · ESC = STOP</div>
     </section>
   </main>
+
+  <section id="extra-training-screen" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="extra-training-title">
+    <div class="extra-shell">
+      <div class="extra-header">
+        <h2 id="extra-training-title">Extra Training</h2>
+        <button id="extra-training-close-top" class="small-btn" type="button" aria-label="Close Extra Training">Close</button>
+      </div>
+      <section id="extra-training-panel" class="controls" aria-label="Ordered Number N-back settings"></section>
+    </div>
+  </section>
 
   <div id="paused-overlay" aria-live="assertive"><h2>PAUSED</h2><p>Tap anywhere or press P to continue.</p></div>
 
