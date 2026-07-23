@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<title>Extra Training — Ordered Number N-back</title>
+<style>
+:root{--bg:#fff;--panel:#f4f8fc;--ink:#0b1728;--muted:#43566d;--blue:#124f8c;--blue2:#176aa8;--green:#086b3a;--red:#b42318}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);padding:12px}
+.container{max-width:900px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:8px 0 16px}
+h1{margin:0;color:var(--blue);letter-spacing:.08em;text-transform:uppercase;font-size:clamp(1.35rem,5vw,2.35rem)}
+a.back{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:12px 16px;border-radius:12px;text-decoration:none;background:#e7eef6;color:#123f6b;border:1px solid #8fa3b9;font-weight:900}
+.controls,.game{background:var(--panel);border:1px solid #aebdce;border-radius:20px;padding:22px;box-shadow:0 8px 24px rgba(15,42,70,.10);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:15px}
+label{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:1px;font-weight:800;color:var(--blue);margin-bottom:6px}
+select,input[type=number]{width:100%;padding:12px;border-radius:10px;border:1px solid #718399;background:#fff;color:var(--ink);font-size:1rem}
+.help{font-size:.76rem;line-height:1.45;color:var(--muted);margin:6px 0 0}
+.toggles{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px}.toggles label{display:flex;align-items:center;gap:7px;color:var(--muted);font-weight:700;text-transform:none;letter-spacing:0;font-size:.9rem}.toggles input{width:20px;height:20px;accent-color:var(--blue2)}
+.buttons,.responses{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+button{border:0;border-radius:12px;padding:14px 18px;font-weight:900;text-transform:uppercase;cursor:pointer;font-size:.95rem}
+button:disabled{opacity:.42;cursor:not-allowed}
+#start{background:linear-gradient(135deg,#0b4f88,#49aee7);color:#fff;min-width:160px}
+.secondary{background:#e7eef6;color:#123f6b;border:1px solid #8fa3b9}
+#match{background:#e9f8ef;color:var(--green);border:2px solid #55a879;flex:1}#no-match{background:#fff0ef;color:var(--red);border:2px solid #d78b86;flex:1}
+.clock{text-align:center;font-size:2rem;font-weight:900;color:var(--blue);font-variant-numeric:tabular-nums;margin:8px 0 14px}
+.stimulus{min-height:220px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(4.2rem,18vw,9rem);font-weight:900;line-height:1;padding:14px}.stimulus.hidden{opacity:0}
+#feedback{min-height:34px;text-align:center;font-weight:900;font-size:1.2rem}#explanation{min-height:52px;color:#30465d;line-height:1.45;text-align:center}
+.timer,.sessionbar{height:7px;background:#d7e1eb;border-radius:999px;overflow:hidden;margin-top:12px}.sessionbar{height:4px}#timerbar,#sessionprogress{height:100%;width:0;background:var(--blue2)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}.stat{background:#fff;border:1px solid #b6c4d3;border-radius:10px;padding:10px;text-align:center}.stat small{display:block;color:var(--muted);text-transform:uppercase}.stat strong{color:var(--blue)}
+@media(max-width:560px){header{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:repeat(2,1fr)}.responses{flex-direction:column}}
+</style>
+</head>
+<body>
+<main class="container">
+<header><h1>Extra Training — Ordered Number N-back</h1><a class="back" href="index.html">← Main Training</a></header>
+<div id="clock" class="clock">00:00</div>
+<section class="controls">
+<p class="help" style="font-size:.9rem;margin:0 0 16px">Digits 1–9. A match exists only when the same number appears in the same sequence position as it did exactly N trials earlier. Repeated numbers in different positions are interference, not matches.</p>
+<div class="grid">
+<div><label for="n">N-back level</label><select id="n"></select></div>
+<div><label for="count">Numbers per trial</label><select id="count"><option value="1">1 number</option><option value="2">2 numbers</option><option value="3" selected>3 numbers</option></select></div>
+<div><label for="response">Trial response time</label><select id="response"><option value="1">1 second</option><option value="2">2 seconds</option><option value="3" selected>3 seconds</option><option value="5">5 seconds</option><option value="8">8 seconds</option><option value="12">12 seconds</option><option value="20">20 seconds</option></select></div>
+<div><label for="session">Session length</label><select id="session"><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15" selected>15 minutes</option><option value="20">20 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option><option value="open">Open-ended session</option></select></div>
+<div><label for="probability">Match probability</label><select id="probability"><option value="20">20%</option><option value="30">30%</option><option value="35" selected>35%</option><option value="40">40%</option><option value="50">50%</option><option value="60">60%</option></select></div>
+<div><label for="interference">Cognitive interference</label><select id="interference"><option value="0">None</option><option value="25">Low</option><option value="50">Moderate</option><option value="75" selected>High</option><option value="100">Maximum</option></select><p class="help">Higher stages reuse recent digits, transpose remembered digits and create near-matches with misleading slot order.</p></div>
+<div><label for="rate">Number speech speed</label><select id="rate"><option value="average">Average</option><option value="moderately-fast">Moderately fast</option><option value="fast">Fast</option><option value="very-fast">Very fast</option><option value="extremely-fast">Extremely fast</option><option value="incredibly-fast">Incredibly fast</option><option value="ultra-fast">Ultra fast</option></select></div>
+<div><label for="spacing">Time between spoken numbers</label><select id="spacing"><option value="average">Average</option><option value="moderately-fast">Moderately fast</option><option value="fast">Fast</option><option value="very-fast">Very fast</option><option value="extremely-fast">Extremely fast</option><option value="incredibly-fast">Incredibly fast</option><option value="ultra-fast">Ultra fast — minimum possible gap</option></select></div>
+<div><label for="volume">Speech volume</label><select id="volume"><option value="0.4">40%</option><option value="0.6">60%</option><option value="0.8" selected>80%</option><option value="1">100%</option></select></div>
+</div>
+<div class="toggles"><label><input id="speak" type="checkbox" checked> Speak stimuli</label><label><input id="audio-only" type="checkbox"> Audio-only display</label><label><input id="keyboard" type="checkbox" checked> Keyboard controls</label><label><input id="haptic" type="checkbox" checked> Haptics</label></div>
+<div class="buttons"><button id="start">Start</button><button id="pause" class="secondary" disabled>Pause</button><button id="stop" class="secondary" disabled>Stop</button><button id="test" class="secondary">Test speech</button></div>
+</section>
+<section class="game">
+<div id="stimulus" class="stimulus">READY</div><div id="feedback"></div><div id="explanation"></div>
+<div class="responses"><button id="match" disabled>Match</button><button id="no-match" disabled>No Match</button></div>
+<div class="timer"><div id="timerbar"></div></div><div class="sessionbar"><div id="sessionprogress"></div></div>
+<div class="stats"><div class="stat"><small>Trials</small><strong id="trials">0</strong></div><div class="stat"><small>Hits</small><strong id="hits">0</strong></div><div class="stat"><small>Accuracy</small><strong id="accuracy">0%</strong></div><div class="stat"><small>d′</small><strong id="dprime">0.00</strong></div></div>
+</section>
+</main>
+<script>
+'use strict';
+(()=>{
+const $=id=>document.getElementById(id),digits=[1,2,3,4,5,6,7,8,9],words=['zero','one','two','three','four','five','six','seven','eight','nine'];
+const rates={average:1,'moderately-fast':1.3,fast:1.65,'very-fast':2.1,'extremely-fast':2.8,'incredibly-fast':4,'ultra-fast':6};
+const separators={average:'. ','moderately-fast':', ',fast:' ','very-fast':'\u2009','extremely-fast':'\u200A','incredibly-fast':'\u2060','ultra-fast':'\u200B'};
+$('n').innerHTML=Array.from({length:20},(_,i)=>`<option value="${i+1}"${i===1?' selected':''}>${i+1}-back</option>`).join('');
+const state={running:false,paused:false,awaiting:false,trials:[],current:null,timer:null,clock:null,started:0,ends:0,score:{shown:0,scored:0,correct:0,hits:0,misses:0,falseAlarms:0,correctRejects:0}};
+const pick=a=>a[Math.floor(Math.random()*a.length)],shuffle=a=>[...a].sort(()=>Math.random()-.5);
+const settings=()=>({n:+$('n').value,count:+$('count').value,response:+$('response').value,session:$('session').value,prob:+$('probability').value/100,interference:+$('interference').value,rate:$('rate').value,spacing:$('spacing').value,volume:+$('volume').value,speak:$('speak').checked,audioOnly:$('audio-only').checked,keyboard:$('keyboard').checked,haptic:$('haptic').checked});
+function sameSlots(values,target){const out=[];if(!target)return out;for(let i=0;i<values.length;i++)if(values[i]===target[i])out.push(i);return out}
+function derange(v){if(v.length===1)return[pick(digits.filter(d=>d!==v[0]))];if(v.length===2)return[v[1],v[0]];return pick([[v[1],v[2],v[0]],[v[2],v[0],v[1]]])}
+function makeValues(target,count,wantMatch,interference){if(!target)return Array.from({length:count},()=>pick(digits));const recent=state.trials.slice(-8).flatMap(t=>t.values||[]),lure=interference/100;let out=[];if(wantMatch){const slots=new Set(shuffle([...Array(count).keys()]).slice(0,count===1?1:(Math.random()<.82?1:2))),moved=derange(target.slice(0,count));for(let i=0;i<count;i++){if(slots.has(i)){out[i]=target[i];continue}const pool=[...target.filter((v,j)=>j!==i&&v!==target[i]),...moved.filter(v=>v!==target[i]),...(Math.random()<lure?recent.filter(v=>v!==target[i]):[]),...digits.filter(v=>v!==target[i])];out[i]=pick(pool)}}else{out=count>1&&Math.random()<.35+.6*lure?derange(target.slice(0,count)):[];if(!out.length){for(let i=0;i<count;i++){const pool=[...(Math.random()<lure?target.filter((v,j)=>j!==i&&v!==target[i]):[]),...(Math.random()<lure?recent.filter(v=>v!==target[i]):[]),...digits.filter(v=>v!==target[i])];out[i]=pick(pool)}}for(let i=0;i<count;i++)if(out[i]===target[i])out[i]=pick(digits.filter(v=>v!==target[i]))}return out}
+function makeTrial(){const s=settings(),targetTrial=state.trials[state.trials.length-s.n],target=targetTrial?.values,want=!!target&&Math.random()<s.prob,values=makeValues(target,s.count,want,s.interference),positions=sameSlots(values,target);return{values,target:target?[...target]:null,positions,match:positions.length>0,scored:!!target}}
+function speakTrial(values){const s=settings();if(!s.speak||!window.speechSynthesis)return Promise.resolve();try{speechSynthesis.cancel();speechSynthesis.resume()}catch(_){}const phrase=values.map(v=>words[v]).join(separators[s.spacing]);return new Promise(resolve=>{const u=new SpeechSynthesisUtterance(phrase);u.lang='en-AU';u.rate=rates[s.rate];u.pitch=1;u.volume=s.volume;let done=false;const finish=()=>{if(!done){done=true;resolve()}};u.onend=finish;u.onerror=finish;speechSynthesis.speak(u);setTimeout(finish,3500)})}
+function updateStats(){$('trials').textContent=state.score.shown;$('hits').textContent=state.score.hits;$('accuracy').textContent=(state.score.scored?Math.round(state.score.correct/state.score.scored*100):0)+'%';const hr=(state.score.hits+.5)/(state.score.hits+state.score.misses+1),fr=(state.score.falseAlarms+.5)/(state.score.falseAlarms+state.score.correctRejects+1);$('dprime').textContent=(2*(hr-fr)).toFixed(2)}
+function clock(){clearInterval(state.clock);state.started=Date.now();if(settings().session==='open'){state.clock=setInterval(()=>{const e=Date.now()-state.started,m=Math.floor(e/60000),s=Math.floor(e%60000/1000);$('clock').textContent=`OPEN · ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`},250);return}state.ends=state.started+(+settings().session)*60000;state.clock=setInterval(()=>{const r=Math.max(0,state.ends-Date.now()),m=Math.floor(r/60000),s=Math.floor(r%60000/1000);$('clock').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;$('sessionprogress').style.width=(100*(1-r/((+settings().session)*60000)))+'%';if(r<=0)stop('SESSION COMPLETE')},250)}
+async function next(){if(!state.running||state.paused)return;state.awaiting=false;clearTimeout(state.timer);const t=makeTrial();state.current=t;state.trials.push(t);state.score.shown++;$('stimulus').textContent=t.values.join(', ');$('stimulus').classList.toggle('hidden',settings().audioOnly);$('feedback').textContent='';$('explanation').textContent='';$('match').disabled=$('no-match').disabled=true;updateStats();await speakTrial(t.values);if(!state.running||state.paused||state.current!==t)return;state.awaiting=true;$('match').disabled=$('no-match').disabled=false;const ms=settings().response*1000;$('timerbar').style.transition='none';$('timerbar').style.width='100%';requestAnimationFrame(()=>requestAnimationFrame(()=>{$('timerbar').style.transition=`width ${ms}ms linear`;$('timerbar').style.width='0%'}));state.timer=setTimeout(()=>answer(null),ms)}
+function buzz(x){if(settings().haptic&&navigator.vibrate)try{navigator.vibrate(x)}catch(_){}}
+function answer(response){if(!state.running||!state.awaiting)return;state.awaiting=false;clearTimeout(state.timer);$('match').disabled=$('no-match').disabled=true;const t=state.current;if(!t.scored){$('feedback').textContent='MEMORY FILL';$('explanation').textContent=`Store this ordered ${t.values.length}-number sequence.`}else{const ok=response!==null&&response===t.match;state.score.scored++;if(ok)state.score.correct++;if(t.match&&response===true)state.score.hits++;else if(t.match)state.score.misses++;else if(response===true)state.score.falseAlarms++;else if(response===false)state.score.correctRejects++;$('feedback').textContent=response===null?'TIMEOUT':ok?'CORRECT':'INCORRECT';$('feedback').style.color=ok?'#086b3a':'#b42318';buzz(ok?45:[70,40,70]);const slots=t.positions.map(i=>['first','second','third'][i]).join(', ');$('explanation').textContent=t.match?`MATCH at the ${slots} position${t.positions.length>1?'s':''}. Current ${t.values.join(', ')}; ${settings().n}-back target ${t.target.join(', ')}.`:`NO MATCH. Repeated digits in different positions do not count. Current ${t.values.join(', ')}; ${settings().n}-back target ${t.target.join(', ')}.`}updateStats();setTimeout(next,450)}
+function start(){if(state.running)return;state.running=true;state.paused=false;state.trials=[];state.current=null;state.awaiting=false;state.score={shown:0,scored:0,correct:0,hits:0,misses:0,falseAlarms:0,correctRejects:0};$('start').disabled=true;$('pause').disabled=$('stop').disabled=false;updateStats();clock();next()}
+function stop(msg='READY'){state.running=false;state.paused=false;state.awaiting=false;clearTimeout(state.timer);clearInterval(state.clock);try{speechSynthesis.cancel()}catch(_){}$('start').disabled=false;$('pause').disabled=$('stop').disabled=true;$('match').disabled=$('no-match').disabled=true;$('stimulus').classList.remove('hidden');$('stimulus').textContent=msg}
+function pause(){if(!state.running)return;state.paused=!state.paused;$('pause').textContent=state.paused?'Resume':'Pause';clearTimeout(state.timer);try{state.paused?speechSynthesis.pause():speechSynthesis.resume()}catch(_){}if(!state.paused)next()}
+$('start').onclick=start;$('stop').onclick=()=>stop();$('pause').onclick=pause;$('match').onclick=()=>answer(true);$('no-match').onclick=()=>answer(false);$('test').onclick=()=>speakTrial([6,8,9]);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.running)stop();if(!settings().keyboard||!state.awaiting)return;if(['f','j'].includes(e.key.toLowerCase()))answer(true);if(['d','k'].includes(e.key.toLowerCase()))answer(false)});
+})();
+</script>
+</body>
+</html>
