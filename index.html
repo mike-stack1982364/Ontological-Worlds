@@ -10,17 +10,19 @@
   <style>
     #extra-training-launcher-wrap{margin-top:10px}
     #extra-training-btn{
-      display:flex!important;align-items:center;justify-content:space-between;gap:9px;
-      width:50%!important;min-height:56px!important;padding:12px 14px!important;
-      margin:0 auto!important;
+      display:flex!important;align-items:center;justify-content:space-between;gap:8px;
+      width:50%!important;height:56px!important;min-height:56px!important;max-height:56px!important;
+      padding:0 14px!important;margin:0 auto!important;
       border-radius:11px!important;border:2px solid #0b4f88!important;
       background:linear-gradient(135deg,#083b69,#176aa8 58%,#49aee7)!important;
-      color:#fff!important;font-size:clamp(.78rem,2.1vw,1rem)!important;font-weight:900!important;
-      letter-spacing:.04em;text-transform:uppercase;cursor:pointer!important;
-      box-shadow:0 7px 17px rgba(18,79,140,.28)!important;touch-action:manipulation;
+      color:#fff!important;font-size:clamp(.74rem,1.8vw,.95rem)!important;font-weight:900!important;
+      line-height:1.05!important;letter-spacing:.035em;text-transform:uppercase;cursor:pointer!important;
+      box-shadow:0 6px 14px rgba(18,79,140,.26)!important;touch-action:manipulation;
       user-select:none;-webkit-user-select:none;position:relative;z-index:3;
+      box-sizing:border-box!important;
     }
-    #extra-training-btn::after{content:'›';font-size:1.2em;line-height:.8;font-weight:500}
+    #extra-training-btn span{display:block;white-space:normal;text-align:left}
+    #extra-training-btn::after{content:'›';font-size:1.15em;line-height:1;font-weight:500;flex:0 0 auto}
     #extra-training-btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
     #extra-training-btn:active{transform:translateY(1px) scale(.995)}
     #extra-training-btn:focus-visible{outline:4px solid rgba(73,174,231,.5);outline-offset:4px}
@@ -33,7 +35,7 @@
     #extra-training-close-top{min-width:56px;min-height:52px;border-radius:12px;font-size:1.05rem}
     body.extra-training-open{overflow:hidden}
     @media(max-width:560px){
-      #extra-training-btn{width:64%!important;min-height:52px!important;font-size:.78rem!important;padding:10px 12px!important}
+      #extra-training-btn{width:50%!important;height:52px!important;min-height:52px!important;max-height:52px!important;font-size:.72rem!important;padding:0 10px!important}
     }
   </style>
 </head>
