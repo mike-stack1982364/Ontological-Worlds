@@ -6,18 +6,40 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const style = document.createElement('style');
   style.textContent = `
+    #extra-training-launcher-wrap{
+      display:flex!important;
+      flex-direction:column!important;
+      align-items:center!important;
+    }
+    #extra-training-launcher-wrap>label,
+    #extra-training-launcher-help{
+      align-self:stretch!important;
+    }
     #extra-training-btn{
+      width:50%!important;
+      min-width:220px!important;
+      max-width:460px!important;
       min-height:56px!important;
-      padding:12px 14px!important;
-      border-radius:14px!important;
+      padding:10px 14px!important;
+      border-radius:11px!important;
       border-width:2px!important;
-      font-size:clamp(.9rem,2.4vw,1.15rem)!important;
-      gap:10px!important;
-      box-shadow:0 8px 18px rgba(18,79,140,.28)!important;
+      font-size:clamp(.78rem,2vw,1rem)!important;
+      line-height:1.15!important;
+      gap:9px!important;
+      letter-spacing:.04em!important;
+      box-shadow:0 7px 17px rgba(18,79,140,.24)!important;
+      margin-left:auto!important;
+      margin-right:auto!important;
     }
     #extra-training-btn::after{
-      font-size:1.7em!important;
-      line-height:.7!important;
+      font-size:1.3em!important;
+      line-height:.8!important;
+    }
+    @media(max-width:560px){
+      #extra-training-btn{
+        width:50%!important;
+        min-width:210px!important;
+      }
     }
   `;
   document.head.appendChild(style);
@@ -34,7 +56,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   button.setAttribute('aria-label', 'Open dedicated Ordered Number N-back training screen');
   button.setAttribute('title', 'Open dedicated Ordered Number N-back training screen');
-  button.style.cursor = 'pointer';
+  button.style.setProperty('cursor', 'pointer', 'important');
 
   button.addEventListener('click', navigate, true);
   button.addEventListener('pointerup', navigate, true);
@@ -44,8 +66,8 @@ window.addEventListener('DOMContentLoaded', () => {
   }, true);
 
   window.__extraTrainingNumberNBack = {
-    version: 7,
-    launcher: 'direct-page-navigation-half-size',
+    version: 8,
+    launcher: 'direct-page-navigation-half-width-half-height',
     destination,
     dedicatedScreen: true,
     positionalIdentity: true,
