@@ -4,11 +4,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const app = window.__ontologicalWorlds;
   const controls = document.querySelector('.controls');
   const logicMode = document.getElementById('logic-mode');
+  const extraSelect = document.getElementById('extra-training-select');
   const premiseDisplay = document.getElementById('premise-display');
   const explanation = document.getElementById('trial-explanation');
-  if (!app || !controls || !logicMode || !premiseDisplay) return;
+  if (!app || !controls || !logicMode || !extraSelect || !premiseDisplay) return;
 
-  const EXTRA_VALUE = 'extra-number-nback';
+  const EXTRA_VALUE = 'number-nback';
   const numberWords = ['zero','one','two','three','four','five','six','seven','eight','nine'];
   const speechRates = {
     average: 1,
@@ -38,21 +39,14 @@ window.addEventListener('DOMContentLoaded', () => {
     updateLabels: app.updateLabels.bind(app)
   };
 
-  let extraActive = false;
   let extraTrials = [];
-
-  const option = document.createElement('option');
-  option.value = EXTRA_VALUE;
-  option.textContent = 'Extra Training — Standard Number N-back';
-  logicMode.insertAdjacentElement('afterend', option);
-  logicMode.appendChild(option);
 
   const panel = document.createElement('div');
   panel.id = 'extra-training-panel';
   panel.hidden = true;
   panel.innerHTML = `
     <div class="control-group">
-      <label>Extra Training</label>
+      <label>Extra Training — Standard Number N-back</label>
       <p style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:6px">Ordered number N-back using digits 1–9. A number matches only when it occupies the same sequence position as the corresponding number exactly N trials back.</p>
     </div>
     <div class="control-group">
@@ -78,7 +72,7 @@ window.addEventListener('DOMContentLoaded', () => {
     <div class="control-group">
       <div class="toggle-row"><label><input id="extra-speak" type="checkbox" checked> Speak number trials</label></div>
     </div>`;
-  logicMode.closest('.control-group').insertAdjacentElement('afterend', panel);
+  extraSelect.closest('.control-group').insertAdjacentElement('afterend', panel);
 
   const $ = id => document.getElementById(id);
   const settings = () => ({
@@ -90,7 +84,7 @@ window.addEventListener('DOMContentLoaded', () => {
     matchProbability: Number(document.getElementById('prob-slider')?.value || 35) / 100
   });
 
-  function isExtraMode() { return logicMode.value === EXTRA_VALUE; }
+  function isExtraMode() { return extraSelect.value === EXTRA_VALUE; }
   function sameSlots(values, target) {
     const slots = [];
     for (let i = 0; i < values.length; i++) if (values[i] === target[i]) slots.push(i);
@@ -166,7 +160,7 @@ window.addEventListener('DOMContentLoaded', () => {
     return trial?.mode === EXTRA_VALUE ? renderExtra(trial) : legacy.renderTrial(trial);
   };
   app.speak = function routedSpeak(text) {
-    if (extraActive && app.current?.mode === EXTRA_VALUE) return speakExtra(app.current);
+    if (isExtraMode() && app.current?.mode === EXTRA_VALUE) return speakExtra(app.current);
     return legacy.speak(text);
   };
   app.answer = function routedAnswer(response) {
@@ -181,9 +175,10 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   function sync() {
-    extraActive = isExtraMode();
-    panel.hidden = !extraActive;
-    if (extraActive) {
+    const active = isExtraMode();
+    panel.hidden = !active;
+    logicMode.disabled = active;
+    if (active) {
       extraTrials = [];
       const n = Number($('extra-n').value);
       document.getElementById('n-slider').value = String(Math.min(8,n));
@@ -196,12 +191,13 @@ window.addEventListener('DOMContentLoaded', () => {
     legacy.updateLabels();
   }
 
-  logicMode.addEventListener('change', sync);
+  extraSelect.addEventListener('change', sync);
   panel.querySelectorAll('select,input').forEach(el=>el.addEventListener('change',()=>{extraTrials=[];}));
   sync();
 
   window.__extraTrainingNumberNBack = {
-    version: 1,
+    version: 2,
+    selector: 'extra-training-select',
     modeValue: EXTRA_VALUE,
     positionalIdentity: true,
     digitRange: [1,9],
