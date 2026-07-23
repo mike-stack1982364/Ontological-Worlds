@@ -3,11 +3,13 @@
 window.addEventListener('DOMContentLoaded', () => {
   const app = window.__ontologicalWorlds;
   const button = document.getElementById('extra-training-btn');
+  const screen = document.getElementById('extra-training-screen');
   const panel = document.getElementById('extra-training-panel');
+  const topClose = document.getElementById('extra-training-close-top');
   const logicMode = document.getElementById('logic-mode');
   const premiseDisplay = document.getElementById('premise-display');
   const explanation = document.getElementById('trial-explanation');
-  if (!app || !button || !panel || !logicMode || !premiseDisplay) return;
+  if (!app || !button || !screen || !panel || !topClose || !logicMode || !premiseDisplay) return;
 
   const EXTRA_MODE = 'extra-number-nback';
   const digits = [1,2,3,4,5,6,7,8,9];
@@ -38,8 +40,7 @@ window.addEventListener('DOMContentLoaded', () => {
     speak: app.speak.bind(app),
     answer: app.answer.bind(app),
     updateLabels: app.updateLabels.bind(app),
-    start: app.start.bind(app),
-    stop: app.stop.bind(app)
+    start: app.start.bind(app)
   };
 
   let active = false;
@@ -59,7 +60,7 @@ window.addEventListener('DOMContentLoaded', () => {
     <div class="control-group"><label for="extra-rate">Number speech speed</label><select id="extra-rate"><option value="average">Average</option><option value="moderately-fast">Moderately fast</option><option value="fast">Fast</option><option value="very-fast">Very fast</option><option value="extremely-fast">Extremely fast</option><option value="incredibly-fast">Incredibly fast</option><option value="ultra-fast">Ultra fast</option></select></div>
     <div class="control-group"><label for="extra-spacing">Time between spoken numbers</label><select id="extra-spacing"><option value="average">Average</option><option value="moderately-fast">Moderately fast</option><option value="fast">Fast</option><option value="very-fast">Very fast</option><option value="extremely-fast">Extremely fast</option><option value="incredibly-fast">Incredibly fast</option><option value="ultra-fast">Ultra fast — minimum possible gap</option></select></div>
     <div class="control-group"><div class="toggle-row"><label><input id="extra-speak" type="checkbox" checked> Speak stimuli</label><label><input id="extra-audio-only" type="checkbox"> Audio-only display</label></div></div>
-    <div class="button-group"><button id="extra-test" class="small-btn" type="button">Test Number Speech</button><button id="extra-close" class="small-btn" type="button">Close Extra Training</button></div>`;
+    <div class="button-group"><button id="extra-test" class="small-btn" type="button">Test Number Speech</button><button id="extra-close" class="small-btn" type="button">Return to Main Training</button></div>`;
 
   const $ = id => document.getElementById(id);
   const settings = () => ({
@@ -88,8 +89,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function derange(values) {
     if (values.length===1) return [pick(digits.filter(d=>d!==values[0]))];
     if (values.length===2) return [values[1],values[0]];
-    const rotations=[[values[1],values[2],values[0]],[values[2],values[0],values[1]]];
-    return pick(rotations);
+    return pick([[values[1],values[2],values[0]],[values[2],values[0],values[1]]]);
   }
 
   function makeValues(target,count,wantMatch,interference) {
@@ -97,7 +97,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const recent = recentDigits();
     const lureChance = interference/100;
     let out=[];
-
     if (wantMatch) {
       const exactSlots = new Set(shuffle([...Array(count).keys()]).slice(0,count===1?1:(Math.random()<0.82?1:2)));
       const moved = derange(target.slice(0,count));
@@ -168,27 +167,31 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function openPanel() {
+  function openScreen() {
     active=true;
-    panel.hidden=false;
-    button.textContent='Extra Training Active';
+    extraTrials=[];
+    screen.hidden=false;
+    screen.setAttribute('aria-hidden','false');
+    document.body.classList.add('extra-training-open');
     button.setAttribute('aria-expanded','true');
     logicMode.disabled=true;
-    extraTrials=[];
     premiseDisplay.classList.add('number-stimulus');
     syncLegacyControls();
+    requestAnimationFrame(()=>topClose.focus());
   }
 
-  function closePanel() {
+  function closeScreen() {
+    if (app.running) app.stop(true);
     active=false;
-    panel.hidden=true;
-    button.textContent='Open Number N-back';
+    extraTrials=[];
+    screen.hidden=true;
+    screen.setAttribute('aria-hidden','true');
+    document.body.classList.remove('extra-training-open');
     button.setAttribute('aria-expanded','false');
     logicMode.disabled=false;
-    premiseDisplay.classList.remove('number-stimulus');
-    premiseDisplay.classList.remove('hidden-mode');
-    extraTrials=[];
+    premiseDisplay.classList.remove('number-stimulus','hidden-mode');
     legacy.updateLabels();
+    button.focus();
   }
 
   function syncLegacyControls() {
@@ -246,7 +249,6 @@ window.addEventListener('DOMContentLoaded', () => {
       extraTrials=[];
       const s=settings();
       if(s.session==='open'){
-        const originalStop=this.stop.bind(this);
         const result=await legacy.start();
         this.endsAt=Number.MAX_SAFE_INTEGER;
         return result;
@@ -255,20 +257,26 @@ window.addEventListener('DOMContentLoaded', () => {
     return legacy.start();
   };
 
-  button.addEventListener('click',()=>active?closePanel():openPanel());
-  $('extra-close').addEventListener('click',closePanel);
+  const launch = event => {
+    event.preventDefault();
+    event.stopPropagation();
+    openScreen();
+  };
+  button.addEventListener('click',launch);
+  button.addEventListener('pointerup',event=>{if(event.pointerType!=='mouse')launch(event);});
+  topClose.addEventListener('click',closeScreen);
+  $('extra-close').addEventListener('click',closeScreen);
   $('extra-test').addEventListener('click',()=>speakExtra({values:[6,8,9]}));
   panel.querySelectorAll('select,input').forEach(el=>el.addEventListener('change',()=>{extraTrials=[];syncLegacyControls();}));
+  screen.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeScreen();}});
 
   window.__extraTrainingNumberNBack={
-    version:3,
-    launcher:'button',
+    version:4,
+    launcher:'full-width-button',
+    navigation:'dedicated-full-screen',
     positionalIdentity:true,
-    digits:[1,9],
+    digitRange:[1,9],
     numbersPerTrial:[1,2,3],
-    nBackLevels:[1,20],
-    cognitiveInterference:true,
-    speechProfiles:Object.keys(rateMap),
-    spacingProfiles:Object.keys(separators)
+    interferenceLevels:[0,25,50,75,100]
   };
 });
