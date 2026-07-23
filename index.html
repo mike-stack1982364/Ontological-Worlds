@@ -29,6 +29,14 @@
       </div>
 
       <div class="control-group">
+        <label for="extra-training-select">Extra Training</label>
+        <select id="extra-training-select">
+          <option value="none">None</option>
+          <option value="number-nback">Standard Number N-back</option>
+        </select>
+      </div>
+
+      <div class="control-group">
         <label for="n-slider">N-back level: <span id="n-val">1</span></label>
         <input id="n-slider" type="range" min="1" max="8" step="1" value="1" aria-valuemin="1" aria-valuemax="8" aria-valuetext="N-back level 1">
       </div>
@@ -178,5 +186,6 @@
   <script src="mode-one-completion-v10.js"></script>
   <script src="mode-one-completion-v11.js"></script>
   <script src="audio-accessibility.js"></script>
+  <script src="extra-training-number-nback.js"></script>
 </body>
 </html>
