@@ -8,26 +8,28 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="light-theme.css">
   <style>
+    #extra-training-launcher-wrap{margin-top:10px}
     #extra-training-btn{
-      width:100%;min-height:78px;padding:18px 22px;border-radius:18px;
-      border:2px solid #176aa8;background:linear-gradient(135deg,#0b4f88,#49aee7);
-      color:#fff;font-size:clamp(1rem,3.4vw,1.35rem);font-weight:900;
-      letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
-      box-shadow:0 10px 24px rgba(18,79,140,.24);touch-action:manipulation;
+      display:flex!important;align-items:center;justify-content:space-between;gap:18px;
+      width:100%!important;min-height:112px!important;padding:24px 28px!important;
+      border-radius:22px!important;border:3px solid #0b4f88!important;
+      background:linear-gradient(135deg,#083b69,#176aa8 58%,#49aee7)!important;
+      color:#fff!important;font-size:clamp(1.2rem,4.2vw,1.8rem)!important;font-weight:950!important;
+      letter-spacing:.06em;text-transform:uppercase;cursor:pointer!important;
+      box-shadow:0 14px 34px rgba(18,79,140,.34)!important;touch-action:manipulation;
+      user-select:none;-webkit-user-select:none;position:relative;z-index:3;
     }
-    #extra-training-btn:focus-visible{outline:4px solid rgba(73,174,231,.45);outline-offset:4px}
+    #extra-training-btn::after{content:'›';font-size:2.4em;line-height:.6;font-weight:500}
+    #extra-training-btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+    #extra-training-btn:active{transform:translateY(1px) scale(.995)}
+    #extra-training-btn:focus-visible{outline:5px solid rgba(73,174,231,.5);outline-offset:5px}
+    #extra-training-launcher-help{margin:10px 2px 0;color:#43566d;font-size:.82rem;line-height:1.45;font-weight:650}
     #extra-training-screen[hidden]{display:none!important}
-    #extra-training-screen{
-      position:fixed;inset:0;z-index:1000;background:#fff;overflow:auto;
-      padding:18px 14px 40px;
-    }
+    #extra-training-screen{position:fixed;inset:0;z-index:10000;background:#fff;overflow:auto;padding:18px 14px 40px}
     #extra-training-screen .extra-shell{max-width:900px;margin:0 auto}
-    #extra-training-screen .extra-header{
-      display:flex;align-items:center;justify-content:space-between;gap:14px;
-      margin-bottom:18px;position:sticky;top:0;background:#fff;padding:8px 0 12px;z-index:2;
-    }
+    #extra-training-screen .extra-header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;position:sticky;top:0;background:#fff;padding:8px 0 12px;z-index:2}
     #extra-training-screen h2{margin:0;color:#124f8c;letter-spacing:.08em;text-transform:uppercase}
-    #extra-training-close-top{min-width:48px;min-height:48px;border-radius:12px;font-size:1.1rem}
+    #extra-training-close-top{min-width:56px;min-height:52px;border-radius:12px;font-size:1.05rem}
     body.extra-training-open{overflow:hidden}
   </style>
 </head>
@@ -51,9 +53,12 @@
         </select>
       </div>
 
-      <div class="control-group">
+      <div id="extra-training-launcher-wrap" class="control-group">
         <label for="extra-training-btn">Extra Training</label>
-        <button id="extra-training-btn" type="button" aria-expanded="false" aria-controls="extra-training-screen">Open Ordered Number N-back</button>
+        <button id="extra-training-btn" type="button" aria-expanded="false" aria-controls="extra-training-screen" onclick="window.openExtraTrainingScreenFallback && window.openExtraTrainingScreenFallback(event)">
+          <span>Open Ordered Number N-back</span>
+        </button>
+        <p id="extra-training-launcher-help">Opens a separate full-screen number N-back trainer with 1–3 ordered numbers per trial, position-specific matching and dedicated cognitive-interference controls.</p>
       </div>
 
       <div class="control-group">
@@ -151,6 +156,19 @@
       <section id="extra-training-panel" class="controls" aria-label="Ordered Number N-back settings"></section>
     </div>
   </section>
+
+  <script>
+    window.openExtraTrainingScreenFallback=function(event){
+      if(event){event.preventDefault();event.stopPropagation();}
+      var screen=document.getElementById('extra-training-screen');
+      var button=document.getElementById('extra-training-btn');
+      if(!screen)return;
+      screen.hidden=false;
+      screen.setAttribute('aria-hidden','false');
+      document.body.classList.add('extra-training-open');
+      if(button)button.setAttribute('aria-expanded','true');
+    };
+  </script>
 
   <div id="paused-overlay" aria-live="assertive"><h2>PAUSED</h2><p>Tap anywhere or press P to continue.</p></div>
 
