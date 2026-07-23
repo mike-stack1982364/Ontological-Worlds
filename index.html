@@ -29,12 +29,11 @@
       </div>
 
       <div class="control-group">
-        <label for="extra-training-select">Extra Training</label>
-        <select id="extra-training-select">
-          <option value="none">None</option>
-          <option value="number-nback">Standard Number N-back</option>
-        </select>
+        <label for="extra-training-btn">Extra Training</label>
+        <button id="extra-training-btn" class="small-btn" type="button" aria-expanded="false" aria-controls="extra-training-panel">Open Number N-back</button>
       </div>
+
+      <div id="extra-training-panel" hidden></div>
 
       <div class="control-group">
         <label for="n-slider">N-back level: <span id="n-val">1</span></label>
@@ -128,28 +127,10 @@
     <div class="modal-inner">
       <button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button>
       <h2 id="tutorial-title">How to Train</h2>
-
       <h3>Mode 1 — Triadic Entailment</h3>
-      <p>Every trial contains exactly three relational statements using three letters. The first two statements construct the relation among the letters. The third statement is part of the triad’s logical profile: it may be exactly entailed, approximately related, reversed, attached to the wrong letters or valid under a different rule.</p>
-      <p>Choose N-back 1 through N-back 8. After the initial memory-fill trials, press MATCH when the current triad preserves the logical components required by the active comparison criterion relative to the triad N positions back. Press NO MATCH when a criterion-relevant component changes.</p>
-      <p>Letter identity never defines a match. Consistent renaming may change every letter while preserving the match. Absolute direction may also change through a lawful rotation, reflection or inverse reformulation. Repeated lettering and similar wording do not create a match when binding, proof, modality, precision, reference frame, criterion or rule regime changes.</p>
-      <p>The visible triad contains only its three relations. It never displays a contract heading, rule label, answer explanation or “therefore.” Match and non-match explanations remain separate and appear only after the player responds.</p>
-
-      <h3>N-back levels 1–8</h3>
-      <p>Level 1 compares with the immediately preceding triad. Level 8 compares with the triad eight positions back. The first N triads fill the memory buffer and are not scored. Each level contains twenty distinct approved comparison archetypes: ten MATCH and ten NO MATCH, producing 160 operational cases in total.</p>
-      <p>Level 1 regulates direct entailment, binding and local-versus-global validity. Level 2 regulates inversion, renaming and endpoint roles. Level 3 regulates four-, eight- and sixteen-way precision. Level 4 regulates metric assumptions and model-set modality. Level 5 regulates rotation, reflection, chirality and reference frames. Level 6 separates same answers from identical or equivalent proofs. Level 7 regulates evaluation policies and criteria. Level 8 integrates proof, contract, counterfactual dependency and minimal rule revision.</p>
-
-      <h3>Meta-distinction and meta-logic</h3>
-      <p>The comparison profile can include binding structure, proof topology, proof identity, proof equivalence, composition mechanism, equal-unit versus unspecified-distance reasoning, directional resolution, modal force, precision, query orientation, reference frame, chirality, evaluation policy, criterion, rule regime, revision state and counterfactual dependency.</p>
-      <p>Matches preserve the components required by the active comparison criterion. Non-matches are generated as adjacent logical alternatives: exact versus coarse, necessary versus merely possible, correct endpoint versus locally true but globally irrelevant, same answer versus different proof, rotation versus reflection, stable rule versus minimally revised rule, or one criterion of validity versus another.</p>
-
+      <p>Every trial contains exactly three relational statements using three letters. The first two statements construct the relation among the letters. The third statement is part of the triad’s logical profile.</p>
       <h3>Mode 2 — Ontological Integration</h3>
-      <p>The previous ontology-category system is preserved here. Each sentence contains three independently transformed symbols. Their ontology categories and forms create three node transformations; two cardinal transitions bind the roles; and the transition between those transitions creates a higher-order turn.</p>
-      <p>The nine categories are All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion. N-back levels 1–8 compare the derived integrated ontology and integrated form, while complete triadic logic drives cognitive interference. Letters remain surface carriers in Mode 2.</p>
-
-      <h3>Accessibility guarantee</h3>
-      <p>The program constructs one final three-statement string, writes that exact string to the live visual region and sends the same string to speech synthesis. The response window opens only after speech finishes; audio-only display, pause/resume replay, speech rate, volume and speech/background separation remain available.</p>
-      <p>This is a theoretically motivated relational-integration design. It is not validated evidence that training will increase general fluid intelligence.</p>
+      <p>The previous ontology-category system is preserved here.</p>
       <button id="dismiss-tutorial" class="small-btn" type="button">Close</button>
     </div>
   </section>
