@@ -10,20 +10,21 @@
   <style>
     #extra-training-launcher-wrap{margin-top:10px}
     #extra-training-btn{
-      display:flex!important;align-items:center;justify-content:space-between;gap:18px;
-      width:100%!important;min-height:112px!important;padding:24px 28px!important;
-      border-radius:22px!important;border:3px solid #0b4f88!important;
+      display:flex!important;align-items:center;justify-content:space-between;gap:9px;
+      width:50%!important;min-height:56px!important;padding:12px 14px!important;
+      margin:0 auto!important;
+      border-radius:11px!important;border:2px solid #0b4f88!important;
       background:linear-gradient(135deg,#083b69,#176aa8 58%,#49aee7)!important;
-      color:#fff!important;font-size:clamp(1.2rem,4.2vw,1.8rem)!important;font-weight:950!important;
-      letter-spacing:.06em;text-transform:uppercase;cursor:pointer!important;
-      box-shadow:0 14px 34px rgba(18,79,140,.34)!important;touch-action:manipulation;
+      color:#fff!important;font-size:clamp(.78rem,2.1vw,1rem)!important;font-weight:900!important;
+      letter-spacing:.04em;text-transform:uppercase;cursor:pointer!important;
+      box-shadow:0 7px 17px rgba(18,79,140,.28)!important;touch-action:manipulation;
       user-select:none;-webkit-user-select:none;position:relative;z-index:3;
     }
-    #extra-training-btn::after{content:'›';font-size:2.4em;line-height:.6;font-weight:500}
+    #extra-training-btn::after{content:'›';font-size:1.2em;line-height:.8;font-weight:500}
     #extra-training-btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
     #extra-training-btn:active{transform:translateY(1px) scale(.995)}
-    #extra-training-btn:focus-visible{outline:5px solid rgba(73,174,231,.5);outline-offset:5px}
-    #extra-training-launcher-help{margin:10px 2px 0;color:#43566d;font-size:.82rem;line-height:1.45;font-weight:650}
+    #extra-training-btn:focus-visible{outline:4px solid rgba(73,174,231,.5);outline-offset:4px}
+    #extra-training-launcher-help{margin:8px 2px 0;color:#43566d;font-size:.76rem;line-height:1.4;font-weight:650}
     #extra-training-screen[hidden]{display:none!important}
     #extra-training-screen{position:fixed;inset:0;z-index:10000;background:#fff;overflow:auto;padding:18px 14px 40px}
     #extra-training-screen .extra-shell{max-width:900px;margin:0 auto}
@@ -31,6 +32,9 @@
     #extra-training-screen h2{margin:0;color:#124f8c;letter-spacing:.08em;text-transform:uppercase}
     #extra-training-close-top{min-width:56px;min-height:52px;border-radius:12px;font-size:1.05rem}
     body.extra-training-open{overflow:hidden}
+    @media(max-width:560px){
+      #extra-training-btn{width:64%!important;min-height:52px!important;font-size:.78rem!important;padding:10px 12px!important}
+    }
   </style>
 </head>
 <body>
@@ -160,13 +164,7 @@
   <script>
     window.openExtraTrainingScreenFallback=function(event){
       if(event){event.preventDefault();event.stopPropagation();}
-      var screen=document.getElementById('extra-training-screen');
-      var button=document.getElementById('extra-training-btn');
-      if(!screen)return;
-      screen.hidden=false;
-      screen.setAttribute('aria-hidden','false');
-      document.body.classList.add('extra-training-open');
-      if(button)button.setAttribute('aria-expanded','true');
+      window.location.assign('extra-training.html');
     };
   </script>
 
