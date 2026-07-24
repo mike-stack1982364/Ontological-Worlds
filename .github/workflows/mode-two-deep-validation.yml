@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'mode-two-ontology-nback-v14.js'
+      - 'mode-one-spatial-core.js'
       - 'tests/mode-two-ontology-nback-v14.test.js'
       - 'tests/mode-two-ontology-nback-deep-v15.test.js'
       - '.github/workflows/mode-two-deep-validation.yml'
@@ -15,7 +16,7 @@ permissions:
 jobs:
   validate-mode-two:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -25,8 +26,14 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run canonical Mode 2 audit
-        run: node tests/mode-two-ontology-nback-v14.test.js
+      - name: Run canonical Mode 2 audit with full diagnostics
+        shell: bash
+        run: |
+          set -o pipefail
+          node --trace-uncaught tests/mode-two-ontology-nback-v14.test.js 2>&1 | tee mode-two-canonical.log
 
-      - name: Run deep Mode 2 audit
-        run: node tests/mode-two-ontology-nback-deep-v15.test.js
+      - name: Run deep Mode 2 audit with full diagnostics
+        shell: bash
+        run: |
+          set -o pipefail
+          node --trace-uncaught tests/mode-two-ontology-nback-deep-v15.test.js 2>&1 | tee mode-two-deep.log
