@@ -190,7 +190,7 @@
     const perLevel = [];
     let totalEvaluations = 0;
     let matches = 0;
-    let nonMatches = 0;
+    let nonMatchCount = 0;
 
     for (const level of LEVELS) {
       const levelResult = {
@@ -209,7 +209,7 @@
         for (let profileIndex = 0; profileIndex < profiles.length; profileIndex += 1) {
           const target = profiles[profileIndex];
           const matchCurrent = equivalentSurface(target, repetition + profileIndex);
-          const nonMatches = [mutateFamily(target), mutateOrder(target), mutateDirection(target)];
+          const nonMatchVariants = [mutateFamily(target), mutateOrder(target), mutateDirection(target)];
 
           const prefix = [];
           for (let filler = 0; filler < level; filler += 1) {
@@ -233,14 +233,14 @@
             if (failures.length < 100) failures.push({ level, type: 'wrong-offset', profileIndex, repetition, matchResult });
           }
 
-          for (const current of nonMatches) {
+          for (const current of nonMatchVariants) {
             const history = [...prefix, current];
             const result = evaluateHistory(history, level, level);
             levelResult.evaluations += 1;
             totalEvaluations += 1;
             if (!result.isMatch) {
               levelResult.nonMatches += 1;
-              nonMatches += 1;
+              nonMatchCount += 1;
             } else {
               levelResult.falseMatches += 1;
               if (failures.length < 100) failures.push({ level, type: 'false-match', profileIndex, repetition, result });
@@ -258,7 +258,7 @@
     const expectedMatches = LEVELS.length * profiles.length * repetitionsPerProfile;
     const expectedNonMatches = expectedMatches * 3;
     return Object.freeze({
-      passed: failures.length === 0 && matches === expectedMatches && nonMatches === expectedNonMatches,
+      passed: failures.length === 0 && matches === expectedMatches && nonMatchCount === expectedNonMatches,
       mode: 2,
       nBackLevels: LEVELS,
       ontologyFamilies: Object.keys(FAMILY_MEMBERS).length,
@@ -268,11 +268,11 @@
       repetitionsPerProfile,
       totalEvaluations,
       matches,
-      nonMatches,
+      nonMatches: nonMatchCount,
       expectedMatches,
       expectedNonMatches,
       matchRate: matches / totalEvaluations,
-      nonMatchRate: nonMatches / totalEvaluations,
+      nonMatchRate: nonMatchCount / totalEvaluations,
       failures,
       perLevel,
       invariants: Object.freeze({
