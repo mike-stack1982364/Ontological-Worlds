@@ -33,7 +33,17 @@ The level progression is:
 
 ### Mode 2 — Ontological Integration
 
-Mode 2 preserves the ontology-category integration system using the categories All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion.
+Mode 2 uses the ontology categories All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion.
+
+At every N-back level from 1 through 8, the current ontology trial is compared with the trial exactly N positions back. A MATCH requires all three logical dimensions to agree:
+
+1. ontology family;
+2. exact Inner/Outer/Archetypal form order;
+3. composed direction.
+
+The ontology families are All–Completion, Difference–Encompassment, Action–Projection, Division–Multiplication and Connection. Substituting one category for its paired category preserves a match. Arbitrary letter changes also preserve a match. A change in family, exact form order or composed direction produces NO MATCH.
+
+The deterministic Mode 2 audit enumerates 480 canonical logical profiles: five ontology families × six form orders × sixteen ordered cardinal-direction pairs. It tests every profile at every N-back level 1–8, verifies the exact historical offset and applies one equivalent MATCH transformation plus three independent NO MATCH mutations for family, order and direction. With 128 repetitions per profile, this produces 1,966,080 comparisons: 491,520 MATCH and 1,474,560 NO MATCH evaluations. The required error count is zero.
 
 ## Mode 0 exact relational matching
 
@@ -43,6 +53,6 @@ The dedicated deterministic audit applies ten canonical MATCH/NO MATCH structure
 
 ## Validation
 
-The repository audits all 160 Mode 1 comparisons, requires 20 unique cases at every N-back level, verifies the 80/80 answer balance, recomputes logical equivalence independently, prevents letter overlap between compared surfaces, enforces the three-statement premise format and preserves Mode 2 regression coverage.
+The repository audits all 160 Mode 1 comparisons, requires 20 unique cases at every N-back level, verifies the 80/80 answer balance, recomputes logical equivalence independently, prevents letter overlap between compared surfaces, enforces the three-statement premise format and independently audits Mode 2 ontology matching across N-back levels 1–8.
 
 This is a theoretically motivated cognitive-training design. It is not validated evidence that training increases general fluid intelligence or GAMSAT performance.
