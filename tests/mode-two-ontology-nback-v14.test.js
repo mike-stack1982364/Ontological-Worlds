@@ -8,7 +8,9 @@ const modeTwo = require(path.join(__dirname, '..', 'mode-two-ontology-nback-v14.
 assert.deepStrictEqual([...modeTwo.LEVELS], [1, 2, 3, 4, 5, 6, 7, 8]);
 assert.strictEqual(modeTwo.version, 18);
 assert.deepStrictEqual([...modeTwo.FORM_ORDERS], ['IO', 'OI']);
-assert.deepStrictEqual(modeTwo.FORM_NAMES, { I: 'Inner', O: 'Outer' });
+assert.deepStrictEqual(Object.keys(modeTwo.FORM_NAMES).sort(), ['I', 'O']);
+assert.strictEqual(modeTwo.FORM_NAMES.I, 'Inner');
+assert.strictEqual(modeTwo.FORM_NAMES.O, 'Outer');
 assert.strictEqual(Object.values(modeTwo.FORM_NAMES).some(value => /archetypal/i.test(value)), false);
 
 for (const [index, trial] of core.canonicalTrials().entries()) {
