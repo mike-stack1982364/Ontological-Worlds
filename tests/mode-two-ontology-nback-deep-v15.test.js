@@ -86,6 +86,7 @@ let metadataNeutralityChecks = 0;
 let renamingChecks = 0;
 let orderChecks = 0;
 let inversionChecks = 0;
+let renderedOutputChecks = 0;
 for (let seed = 1; seed <= 4096; seed += 1) {
   const rng = new Rng(seed);
   for (let index = 0; index < 256; index += 1) {
@@ -97,11 +98,19 @@ for (let seed = 1; seed <= 4096; seed += 1) {
     assert.strictEqual(modeTwo.evaluate(trial).isMatch, expected);
     generatedParityChecks += 1;
 
+    const rendered = modeTwo.renderOntologicalTrial(trial);
+    assert.doesNotMatch(rendered, /archetypal/i);
+    assert.strictEqual((rendered.match(/\b(?:Inner|Outer)\b/g) || []).length, 2);
+    renderedOutputChecks += 1;
+
     if (index % 31 === 0) {
       const metadata = JSON.parse(JSON.stringify(trial));
       metadata.ontologyCategories = ['All', 'Projection', 'Completion'];
-      metadata.order = 'AOI';
+      metadata.order = 'OI';
       assert.strictEqual(modeTwo.evaluate(metadata).isMatch, expected);
+      const metadataRendered = modeTwo.renderOntologicalTrial(metadata);
+      assert.doesNotMatch(metadataRendered, /archetypal/i);
+      assert.strictEqual((metadataRendered.match(/\b(?:Inner|Outer)\b/g) || []).length, 2);
       metadataNeutralityChecks += 1;
 
       const letters = trial.letters;
@@ -125,6 +134,7 @@ for (let seed = 1; seed <= 4096; seed += 1) {
   }
 }
 assert.strictEqual(generatedParityChecks, 1048576);
+assert.strictEqual(renderedOutputChecks, 1048576);
 
 let warmupChecks = 0;
 for (const level of LEVELS) {
@@ -169,6 +179,7 @@ assert.strictEqual(audit.matches, 1048576);
 assert.strictEqual(audit.nonMatches, 1048576);
 assert.strictEqual(audit.matchRate, 0.5);
 assert.strictEqual(audit.nonMatchRate, 0.5);
+assert.strictEqual(audit.renderChecks, 2097152);
 assert.strictEqual(audit.failures.length, 0);
 for (const level of audit.perLevel) {
   assert.strictEqual(level.evaluations, 262144);
@@ -181,12 +192,14 @@ for (const level of audit.perLevel) {
   assert.strictEqual(level.renamingFailures, 0);
   assert.strictEqual(level.premiseOrderFailures, 0);
   assert.strictEqual(level.inversionFailures, 0);
+  assert.strictEqual(level.renderFailures, 0);
 }
 
 console.log(JSON.stringify({
   passed: true,
   canonicalChecks,
   generatedParityChecks,
+  renderedOutputChecks,
   metadataNeutralityChecks,
   renamingChecks,
   orderChecks,
@@ -201,6 +214,7 @@ console.log(JSON.stringify({
     nonMatches: audit.nonMatches,
     matchRate: audit.matchRate,
     nonMatchRate: audit.nonMatchRate,
+    renderChecks: audit.renderChecks,
     failures: audit.failures.length,
     perLevel: audit.perLevel
   }
