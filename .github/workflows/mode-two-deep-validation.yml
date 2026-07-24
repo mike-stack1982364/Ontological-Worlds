@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  validate-mode-two:
+  canonical-mode-two:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -32,8 +32,36 @@ jobs:
           set -o pipefail
           node --trace-uncaught tests/mode-two-ontology-nback-v14.test.js 2>&1 | tee mode-two-canonical.log
 
+      - name: Upload canonical diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mode-two-canonical-diagnostics
+          path: mode-two-canonical.log
+          if-no-files-found: warn
+
+  deep-mode-two:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Run deep Mode 2 audit with full diagnostics
         shell: bash
         run: |
           set -o pipefail
           node --trace-uncaught tests/mode-two-ontology-nback-deep-v15.test.js 2>&1 | tee mode-two-deep.log
+
+      - name: Upload deep diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mode-two-deep-diagnostics
+          path: mode-two-deep.log
+          if-no-files-found: warn
