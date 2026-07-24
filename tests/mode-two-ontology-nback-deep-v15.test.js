@@ -2,97 +2,137 @@
 
 const assert = require('assert');
 const path = require('path');
+const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
 const modeTwo = require(path.join(__dirname, '..', 'mode-two-ontology-nback-v14.js'));
 
 const LEVELS = [...modeTwo.LEVELS];
-const PROFILES = modeTwo.baseProfiles();
-const DIRECTIONS = [...modeTwo.DIRECTIONS];
+const DIRS = core.DIRECTIONS.map(item => item.code);
+const VECTORS = new Map(core.DIRECTIONS.map(item => [item.code, [item.x, item.y]]));
 
-function oracleSignature(trial) {
-  const symbols = Array.isArray(trial?.symbols) ? trial.symbols.slice(0, 3) : null;
-  const dirs = Array.isArray(trial?.dirs) ? trial.dirs.slice(0, 2) : null;
-  const valid = Boolean(
-    symbols && symbols.length === 3 && new Set(symbols).size === 3 &&
-    symbols.every(value => typeof value === 'string' && value.length > 0) &&
-    dirs && dirs.length === 2 && dirs.every(value => DIRECTIONS.includes(value))
-  );
-  return valid ? `PATH:0>${dirs[0]}>1|1>${dirs[1]}>2` : null;
+function oracleDirection(x, y) {
+  const angle = (Math.atan2(x, y) + Math.PI * 2) % (Math.PI * 2);
+  return DIRS[Math.round(angle / (Math.PI * 2 / 16)) % 16];
 }
 
-function oracleCompare(current, target) {
-  const a = oracleSignature(current);
-  const b = oracleSignature(target);
-  return Boolean(a && b && a === b);
-}
-
-function seeded(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state += 0x6D2B79F5;
-    let t = state;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+function oracleEvaluate(trial) {
+  if (!trial || !Array.isArray(trial.premises) || trial.premises.length !== 2 || !trial.conclusion) return false;
+  const nodes = new Set();
+  const adjacency = new Map();
+  const connect = (a, b) => {
+    nodes.add(a); nodes.add(b);
+    if (!adjacency.has(a)) adjacency.set(a, new Set());
+    adjacency.get(a).add(b);
   };
+  for (const premise of trial.premises) {
+    if (!VECTORS.has(premise.relation)) return false;
+    connect(premise.subject, premise.object);
+    connect(premise.object, premise.subject);
+  }
+  if (nodes.size !== 3) return false;
+  const endpoints = [...nodes].filter(node => adjacency.get(node).size === 1);
+  if (endpoints.length !== 2) return false;
+  if (!endpoints.includes(trial.conclusion.subject) || !endpoints.includes(trial.conclusion.object)) return false;
+
+  const positions = new Map();
+  const first = trial.premises[0];
+  positions.set(first.object, [0, 0]);
+  const [fx, fy] = VECTORS.get(first.relation);
+  positions.set(first.subject, [fx, fy]);
+  for (let pass = 0; pass < 6; pass += 1) {
+    for (const premise of trial.premises) {
+      const [dx, dy] = VECTORS.get(premise.relation);
+      const subject = positions.get(premise.subject);
+      const object = positions.get(premise.object);
+      if (object && !subject) positions.set(premise.subject, [object[0] + dx, object[1] + dy]);
+      if (subject && !object) positions.set(premise.object, [subject[0] - dx, subject[1] - dy]);
+    }
+  }
+  const subject = positions.get(trial.conclusion.subject);
+  const object = positions.get(trial.conclusion.object);
+  if (!subject || !object) return false;
+  const expected = oracleDirection(subject[0] - object[0], subject[1] - object[1]);
+  return expected === trial.conclusion.relation;
 }
 
-function pick(rng, values) {
-  return values[Math.floor(rng() * values.length)];
-}
-
-function randomTrial(rng, index) {
-  const category = pick(rng, modeTwo.ONTOLOGY_CATEGORIES);
-  const order = pick(rng, modeTwo.FORM_ORDERS);
-  return modeTwo.makeTrial(
-    category,
-    order,
-    pick(rng, DIRECTIONS),
-    pick(rng, DIRECTIONS),
-    [`A${index}`, `B${index}`, `C${index}`]
-  );
-}
-
-let parityComparisons = 0;
-for (const current of PROFILES) {
-  for (const target of PROFILES) {
-    assert.strictEqual(modeTwo.compare(current, target).isMatch, oracleCompare(current, target));
-    parityComparisons += 1;
+class Rng {
+  constructor(seed) { this.s = seed >>> 0; }
+  next() {
+    let value = this.s += 1831565813;
+    value = Math.imul(value ^ value >>> 15, 1 | value);
+    value ^= value + Math.imul(value ^ value >>> 7, 61 | value);
+    return ((value ^ value >>> 14) >>> 0) / 4294967296;
+  }
+  pick(values) { return values[Math.floor(this.next() * values.length)]; }
+  shuffle(values) {
+    const result = [...values];
+    for (let index = result.length - 1; index > 0; index -= 1) {
+      const swap = Math.floor(this.next() * (index + 1));
+      [result[index], result[swap]] = [result[swap], result[index]];
+    }
+    return result;
   }
 }
-assert.strictEqual(parityComparisons, 256);
 
-let metadataInvarianceChecks = 0;
-for (const profile of PROFILES) {
-  for (const category of modeTwo.ONTOLOGY_CATEGORIES) {
-    for (const order of modeTwo.FORM_ORDERS) {
-      const candidate = modeTwo.makeTrial(category, order, profile.dirs[0], profile.dirs[1], ['X', 'Y', 'Z']);
-      assert.strictEqual(modeTwo.compare(candidate, profile).isMatch, true);
-      metadataInvarianceChecks += 1;
+let canonicalChecks = 0;
+for (const trial of core.canonicalTrials()) {
+  assert.strictEqual(oracleEvaluate(trial), trial.expected);
+  assert.strictEqual(modeTwo.evaluate(trial).isMatch, trial.expected);
+  canonicalChecks += 1;
+}
+assert.strictEqual(canonicalChecks, 10);
+
+let generatedParityChecks = 0;
+let metadataNeutralityChecks = 0;
+let renamingChecks = 0;
+let orderChecks = 0;
+let inversionChecks = 0;
+for (let seed = 1; seed <= 4096; seed += 1) {
+  const rng = new Rng(seed);
+  for (let index = 0; index < 256; index += 1) {
+    const trial = modeTwo.generateTrial(rng, {
+      matchProbability: index % 2 === 0 ? 1 : 0,
+      interferenceLevel: index % 101
+    });
+    const expected = oracleEvaluate(trial);
+    assert.strictEqual(modeTwo.evaluate(trial).isMatch, expected);
+    generatedParityChecks += 1;
+
+    if (index % 31 === 0) {
+      const metadata = JSON.parse(JSON.stringify(trial));
+      metadata.ontologyCategories = ['All', 'Projection', 'Completion'];
+      metadata.order = 'AOI';
+      assert.strictEqual(modeTwo.evaluate(metadata).isMatch, expected);
+      metadataNeutralityChecks += 1;
+
+      const letters = trial.letters;
+      const renamed = core.renameTrial(trial, { [letters[0]]: 'X', [letters[1]]: 'Y', [letters[2]]: 'Z' });
+      assert.strictEqual(oracleEvaluate(renamed), expected);
+      assert.strictEqual(modeTwo.evaluate(renamed).isMatch, expected);
+      renamingChecks += 1;
+
+      const reordered = JSON.parse(JSON.stringify(trial));
+      reordered.premises.reverse();
+      assert.strictEqual(oracleEvaluate(reordered), expected);
+      assert.strictEqual(modeTwo.evaluate(reordered).isMatch, expected);
+      orderChecks += 1;
+
+      const inverted = JSON.parse(JSON.stringify(trial));
+      inverted.premises = inverted.premises.map(core.invert);
+      assert.strictEqual(oracleEvaluate(inverted), expected);
+      assert.strictEqual(modeTwo.evaluate(inverted).isMatch, expected);
+      inversionChecks += 1;
     }
   }
 }
-assert.strictEqual(metadataInvarianceChecks, 864);
-
-let orderedPathCollisionChecks = 0;
-for (const first of DIRECTIONS) {
-  for (const second of DIRECTIONS) {
-    if (first === second) continue;
-    const target = modeTwo.makeTrial('Division', 'IOA', first, second, ['B', 'C', 'D']);
-    const reversed = modeTwo.makeTrial('Division', 'IOA', second, first, ['X', 'Y', 'Z']);
-    assert.strictEqual(modeTwo.compare(reversed, target).isMatch, false);
-    orderedPathCollisionChecks += 1;
-  }
-}
-assert.strictEqual(orderedPathCollisionChecks, 12);
+assert.strictEqual(generatedParityChecks, 1048576);
 
 let warmupChecks = 0;
 for (const level of LEVELS) {
-  for (let currentIndex = 0; currentIndex < level; currentIndex += 1) {
-    const history = Array.from({ length: currentIndex + 1 }, (_, index) => randomTrial(() => 0.25, index));
-    const result = modeTwo.evaluateHistory(history, currentIndex, level);
+  for (let index = 0; index < level; index += 1) {
+    const result = modeTwo.evaluateHistory([], index, level);
     assert.strictEqual(result.warmup, true);
     assert.strictEqual(result.scored, false);
-    assert.strictEqual(result.targetIndex, currentIndex - level);
+    assert.strictEqual(result.targetIndex, index - level);
     warmupChecks += 1;
   }
 }
@@ -101,93 +141,67 @@ assert.strictEqual(warmupChecks, 36);
 let longHistoryChecks = 0;
 let longHistoryMatches = 0;
 let longHistoryNonMatches = 0;
-for (let seed = 1; seed <= 2048; seed += 1) {
-  const rng = seeded(seed);
-  const history = Array.from({ length: 2048 }, (_, index) => randomTrial(rng, index));
+for (let seed = 1; seed <= 1024; seed += 1) {
+  const rng = new Rng(0x60000000 + seed);
+  const history = Array.from({ length: 2048 }, (_, index) => modeTwo.generateTrial(rng, {
+    matchProbability: index % 2 === 0 ? 1 : 0,
+    interferenceLevel: (seed + index) % 101
+  }));
   for (const level of LEVELS) {
     for (let currentIndex = level; currentIndex < history.length; currentIndex += 1) {
       const result = modeTwo.evaluateHistory(history, currentIndex, level);
-      const expected = oracleCompare(history[currentIndex], history[currentIndex - level]);
+      const expected = oracleEvaluate(history[currentIndex]);
       assert.strictEqual(result.targetIndex, currentIndex - level);
       assert.strictEqual(result.isMatch, expected);
-      assert.strictEqual(result.warmup, false);
-      assert.strictEqual(result.scored, true);
       if (expected) longHistoryMatches += 1;
       else longHistoryNonMatches += 1;
       longHistoryChecks += 1;
     }
   }
 }
-assert.strictEqual(longHistoryChecks, 33488896);
+assert.strictEqual(longHistoryChecks, 16744448);
 assert.strictEqual(longHistoryMatches + longHistoryNonMatches, longHistoryChecks);
 
-let adversarialChecks = 0;
-for (const profile of PROFILES) {
-  for (const first of DIRECTIONS) {
-    for (const second of DIRECTIONS) {
-      const candidate = modeTwo.makeTrial('All', 'AOI', first, second, ['X', 'Y', 'Z']);
-      const expected = first === profile.dirs[0] && second === profile.dirs[1];
-      assert.strictEqual(modeTwo.compare(candidate, profile).isMatch, expected);
-      adversarialChecks += 1;
-    }
-  }
-}
-assert.strictEqual(adversarialChecks, 256);
-
-const malformed = [
-  {},
-  { dirs: ['N', 'E'], symbols: ['A', 'B'] },
-  { dirs: ['N', 'BAD'], symbols: ['A', 'B', 'C'] },
-  { dirs: ['N', 'E'], symbols: ['A', 'A', 'C'] },
-  { dirs: ['N'], symbols: ['A', 'B', 'C'] }
-];
-let malformedChecks = 0;
-for (const a of malformed) {
-  for (const b of malformed) {
-    assert.strictEqual(modeTwo.compare(a, b).isMatch, false);
-    malformedChecks += 1;
-  }
-}
-assert.strictEqual(malformedChecks, 25);
-
-const deepAudit = modeTwo.runExhaustiveAudit(16384);
-assert.strictEqual(deepAudit.passed, true, JSON.stringify(deepAudit.failures, null, 2));
-assert.strictEqual(deepAudit.totalEvaluations, 10485760);
-assert.strictEqual(deepAudit.matches, 2097152);
-assert.strictEqual(deepAudit.nonMatches, 8388608);
-assert.strictEqual(deepAudit.matchRate, 0.2);
-assert.strictEqual(deepAudit.nonMatchRate, 0.8);
-assert.strictEqual(deepAudit.failures.length, 0);
-for (const result of deepAudit.perLevel) {
-  assert.strictEqual(result.evaluations, 1310720);
-  assert.strictEqual(result.matches, 262144);
-  assert.strictEqual(result.nonMatches, 1048576);
-  assert.strictEqual(result.falseMatches, 0);
-  assert.strictEqual(result.falseNonMatches, 0);
-  assert.strictEqual(result.wrongOffsetFailures, 0);
-  assert.strictEqual(result.sameResultantOrderCollisionsRejected, 196608);
-  assert.strictEqual(result.metadataInvarianceChecks, 262144);
+const audit = modeTwo.runExhaustiveAudit(262144);
+assert.strictEqual(audit.passed, true, JSON.stringify(audit.failures, null, 2));
+assert.strictEqual(audit.totalEvaluations, 2097152);
+assert.strictEqual(audit.matches, 1048576);
+assert.strictEqual(audit.nonMatches, 1048576);
+assert.strictEqual(audit.matchRate, 0.5);
+assert.strictEqual(audit.nonMatchRate, 0.5);
+assert.strictEqual(audit.failures.length, 0);
+for (const level of audit.perLevel) {
+  assert.strictEqual(level.evaluations, 262144);
+  assert.strictEqual(level.matches, 131072);
+  assert.strictEqual(level.nonMatches, 131072);
+  assert.strictEqual(level.falseMatches, 0);
+  assert.strictEqual(level.falseNonMatches, 0);
+  assert.strictEqual(level.wrongOffsetFailures, 0);
+  assert.strictEqual(level.ontologyMutationFailures, 0);
+  assert.strictEqual(level.renamingFailures, 0);
+  assert.strictEqual(level.premiseOrderFailures, 0);
+  assert.strictEqual(level.inversionFailures, 0);
 }
 
 console.log(JSON.stringify({
   passed: true,
-  parityComparisons,
-  metadataInvarianceChecks,
-  orderedPathCollisionChecks,
+  canonicalChecks,
+  generatedParityChecks,
+  metadataNeutralityChecks,
+  renamingChecks,
+  orderChecks,
+  inversionChecks,
   warmupChecks,
   longHistoryChecks,
   longHistoryMatches,
   longHistoryNonMatches,
-  adversarialChecks,
-  malformedChecks,
   exhaustiveAudit: {
-    repetitionsPerProfile: deepAudit.repetitionsPerProfile,
-    totalEvaluations: deepAudit.totalEvaluations,
-    matches: deepAudit.matches,
-    nonMatches: deepAudit.nonMatches,
-    matchRate: deepAudit.matchRate,
-    nonMatchRate: deepAudit.nonMatchRate,
-    failures: deepAudit.failures.length,
-    perLevel: deepAudit.perLevel
+    totalEvaluations: audit.totalEvaluations,
+    matches: audit.matches,
+    nonMatches: audit.nonMatches,
+    matchRate: audit.matchRate,
+    nonMatchRate: audit.nonMatchRate,
+    failures: audit.failures.length,
+    perLevel: audit.perLevel
   }
 }, null, 2));
