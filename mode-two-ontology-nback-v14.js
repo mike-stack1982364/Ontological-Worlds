@@ -30,71 +30,65 @@
     connection: Object.freeze(['Connection'])
   });
 
-  function directionVector(direction) {
-    return { N: [0, 1], E: [1, 0], S: [0, -1], W: [-1, 0] }[direction];
+  function validDirection(direction) {
+    return DIRECTIONS.includes(direction) ? direction : null;
   }
 
-  function composeDirection(first, second) {
-    const a = directionVector(first);
-    const b = directionVector(second);
-    if (!a || !b) return null;
-    const x = a[0] + b[0];
-    const y = a[1] + b[1];
-    if (x === 0 && y === 0) return 'BALANCE';
-    if (Math.abs(x) > Math.abs(y)) return x > 0 ? 'E' : 'W';
-    if (Math.abs(y) > Math.abs(x)) return y > 0 ? 'N' : 'S';
-    return `${y > 0 ? 'N' : 'S'}${x > 0 ? 'E' : 'W'}`;
+  function trialSymbols(trial) {
+    const symbols = Array.isArray(trial?.symbols) ? trial.symbols.slice(0, 3) : null;
+    if (!symbols || symbols.length !== 3 || symbols.some(value => typeof value !== 'string' || !value.length)) return null;
+    if (new Set(symbols).size !== 3) return null;
+    return symbols;
   }
 
-  function ontologyCategory(trial) {
-    const name = trial?.ontology?.name || trial?.ontologyName || trial?.ontology;
-    return ONTOLOGY_CATEGORIES.includes(name) ? name : null;
-  }
-
-  function ontologyFamily(trial) {
-    const category = ontologyCategory(trial);
-    return category ? ONTOLOGY_FAMILIES[category] : null;
-  }
-
-  function formOrder(trial) {
-    const order = trial?.order || trial?.formOrder || null;
-    return FORM_ORDERS.includes(order) ? order : null;
-  }
-
-  function composedDirection(trial) {
-    if (trial?.composedDirection) return trial.composedDirection;
+  function trialDirections(trial) {
     if (!Array.isArray(trial?.dirs) || trial.dirs.length < 2) return null;
-    return composeDirection(trial.dirs[0], trial.dirs[1]);
+    const first = validDirection(trial.dirs[0]);
+    const second = validDirection(trial.dirs[1]);
+    return first && second ? [first, second] : null;
+  }
+
+  function canonicalPath(trial) {
+    const symbols = trialSymbols(trial);
+    const directions = trialDirections(trial);
+    if (!symbols || !directions) return null;
+    return Object.freeze({
+      nodes: Object.freeze([0, 1, 2]),
+      edges: Object.freeze([
+        Object.freeze({ from: 0, direction: directions[0], to: 1 }),
+        Object.freeze({ from: 1, direction: directions[1], to: 2 })
+      ])
+    });
   }
 
   function signatureObject(trial) {
+    const path = canonicalPath(trial);
     return Object.freeze({
-      category: ontologyCategory(trial),
-      order: formOrder(trial),
-      direction: composedDirection(trial)
+      valid: Boolean(path),
+      firstDirection: path ? path.edges[0].direction : null,
+      secondDirection: path ? path.edges[1].direction : null,
+      topology: path ? '0>1>2' : null
     });
   }
 
   function signature(trial) {
     const value = signatureObject(trial);
-    return `ONTO:${value.category}:${value.order}:${value.direction}`;
+    return value.valid
+      ? `PATH:0>${value.firstDirection}>1|1>${value.secondDirection}>2`
+      : 'PATH:INVALID';
   }
 
   function compare(current, target) {
     const currentSignature = signatureObject(current);
     const targetSignature = signatureObject(target);
-    const valid = Boolean(
-      currentSignature.category && targetSignature.category &&
-      currentSignature.order && targetSignature.order &&
-      currentSignature.direction && targetSignature.direction
-    );
+    const valid = currentSignature.valid && targetSignature.valid;
     const dimensions = Object.freeze({
-      category: valid && currentSignature.category === targetSignature.category,
-      order: valid && currentSignature.order === targetSignature.order,
-      direction: valid && currentSignature.direction === targetSignature.direction
+      topology: valid && currentSignature.topology === targetSignature.topology,
+      firstDirection: valid && currentSignature.firstDirection === targetSignature.firstDirection,
+      secondDirection: valid && currentSignature.secondDirection === targetSignature.secondDirection
     });
     return Object.freeze({
-      isMatch: valid && dimensions.category && dimensions.order && dimensions.direction,
+      isMatch: valid && dimensions.topology && dimensions.firstDirection && dimensions.secondDirection,
       valid,
       currentSignature,
       targetSignature,
@@ -105,7 +99,7 @@
   }
 
   function evaluateHistory(history, currentIndex, nBackLevel) {
-    const level = Math.max(1, Math.min(8, Math.round(Number(nBackLevel) || 1)));
+    const level = Math.max(1, Math.min(8, Math.round(Number(nBackLevel) || 1));
     const targetIndex = currentIndex - level;
     if (targetIndex < 0) {
       return Object.freeze({ nBackLevel: level, currentIndex, targetIndex, warmup: true, isMatch: false, scored: false });
@@ -114,71 +108,51 @@
     return Object.freeze({ ...result, nBackLevel: level, currentIndex, targetIndex, warmup: false, scored: true });
   }
 
-  function makeTrial(category, order, firstDirection, secondDirection) {
+  function makeTrial(category, order, firstDirection, secondDirection, symbols = ['B', 'C', 'D']) {
     return {
       mode: 1,
       publicMode: 2,
       ontology: { name: category, family: ONTOLOGY_FAMILIES[category] },
       order,
       dirs: [firstDirection, secondDirection],
-      symbols: ['B', 'C', 'D'],
-      signature: `ONTO:${category}:${order}:${composeDirection(firstDirection, secondDirection)}`
+      symbols: [...symbols],
+      signature: `PATH:0>${firstDirection}>1|1>${secondDirection}>2`
     };
   }
 
-  function mutateCategory(trial) {
-    const original = ontologyCategory(trial);
-    const index = ONTOLOGY_CATEGORIES.indexOf(original);
-    return makeTrial(ONTOLOGY_CATEGORIES[(index + 1) % ONTOLOGY_CATEGORIES.length], formOrder(trial), trial.dirs[0], trial.dirs[1]);
+  function equivalentSurface(trial, variant = 0) {
+    const symbolSets = [
+      ['X', 'Y', 'Z'], ['H', 'J', 'K'], ['P', 'Q', 'R'], ['L', 'M', 'N']
+    ];
+    const symbols = symbolSets[Math.abs(variant) % symbolSets.length];
+    const category = ONTOLOGY_CATEGORIES[(Math.abs(variant) + 3) % ONTOLOGY_CATEGORIES.length];
+    const order = FORM_ORDERS[(Math.abs(variant) + 2) % FORM_ORDERS.length];
+    return makeTrial(category, order, trial.dirs[0], trial.dirs[1], symbols);
   }
 
-  function pairedCategoryMutation(trial) {
-    const original = ontologyCategory(trial);
-    const family = ontologyFamily(trial);
-    const members = FAMILY_MEMBERS[family] || [];
-    const paired = members.find(category => category !== original);
-    return paired ? makeTrial(paired, formOrder(trial), trial.dirs[0], trial.dirs[1]) : mutateCategory(trial);
+  function mutateFirstDirection(trial) {
+    const next = DIRECTIONS[(DIRECTIONS.indexOf(trial.dirs[0]) + 1) % DIRECTIONS.length];
+    return makeTrial('Connection', 'AOI', next, trial.dirs[1], ['X', 'Y', 'Z']);
   }
 
-  function mutateOrder(trial) {
-    const original = formOrder(trial);
-    const order = FORM_ORDERS[(FORM_ORDERS.indexOf(original) + 1) % FORM_ORDERS.length];
-    return makeTrial(ontologyCategory(trial), order, trial.dirs[0], trial.dirs[1]);
+  function mutateSecondDirection(trial) {
+    const next = DIRECTIONS[(DIRECTIONS.indexOf(trial.dirs[1]) + 1) % DIRECTIONS.length];
+    return makeTrial('Difference', 'OAI', trial.dirs[0], next, ['H', 'J', 'K']);
   }
 
-  function mutateDirection(trial) {
-    const original = composedDirection(trial);
-    for (const first of DIRECTIONS) {
-      for (const second of DIRECTIONS) {
-        if (composeDirection(first, second) !== original) {
-          return makeTrial(ontologyCategory(trial), formOrder(trial), first, second);
-        }
-      }
-    }
-    throw new Error('Unable to mutate direction');
+  function reversePathOrder(trial) {
+    return makeTrial('Completion', 'IAO', trial.dirs[1], trial.dirs[0], ['P', 'Q', 'R']);
   }
 
-  function equivalentSurface(trial, variant) {
-    const swap = variant % 2 === 1;
-    const equivalent = makeTrial(
-      ontologyCategory(trial),
-      formOrder(trial),
-      swap ? trial.dirs[1] : trial.dirs[0],
-      swap ? trial.dirs[0] : trial.dirs[1]
-    );
-    equivalent.symbols = variant % 3 === 0 ? ['X', 'Y', 'Z'] : ['H', 'J', 'K'];
-    return equivalent;
+  function duplicateLetterRole(trial) {
+    return makeTrial('Action', 'IOA', trial.dirs[0], trial.dirs[1], ['X', 'X', 'Z']);
   }
 
   function baseProfiles() {
     const profiles = [];
-    for (const category of ONTOLOGY_CATEGORIES) {
-      for (const order of FORM_ORDERS) {
-        for (const first of DIRECTIONS) {
-          for (const second of DIRECTIONS) {
-            profiles.push(makeTrial(category, order, first, second));
-          }
-        }
+    for (const first of DIRECTIONS) {
+      for (const second of DIRECTIONS) {
+        profiles.push(makeTrial('Connection', 'IOA', first, second));
       }
     }
     return profiles;
@@ -193,7 +167,7 @@
     return history;
   }
 
-  function runExhaustiveAudit(repetitionsPerProfile = 128) {
+  function runExhaustiveAudit(repetitionsPerProfile = 4096) {
     const profiles = baseProfiles();
     const failures = [];
     const perLevel = [];
@@ -212,7 +186,8 @@
         falseMatches: 0,
         falseNonMatches: 0,
         wrongOffsetFailures: 0,
-        pairedCategoryFalseMatches: 0
+        sameResultantOrderCollisionsRejected: 0,
+        metadataInvarianceChecks: 0
       };
 
       for (let repetition = 0; repetition < repetitionsPerProfile; repetition += 1) {
@@ -220,16 +195,16 @@
           const target = profiles[profileIndex];
           const matchCurrent = equivalentSurface(target, repetition + profileIndex);
           const nonMatchVariants = [
-            pairedCategoryMutation(target),
-            mutateCategory(target),
-            mutateOrder(target),
-            mutateDirection(target)
+            mutateFirstDirection(target),
+            mutateSecondDirection(target),
+            reversePathOrder(target),
+            duplicateLetterRole(target)
           ];
 
-          const matchHistory = buildHistory(target, matchCurrent, level, profiles, profileIndex);
-          const matchResult = evaluateHistory(matchHistory, level, level);
+          const matchResult = evaluateHistory(buildHistory(target, matchCurrent, level, profiles, profileIndex), level, level);
           levelResult.evaluations += 1;
           totalEvaluations += 1;
+          levelResult.metadataInvarianceChecks += 1;
           if (matchResult.isMatch) {
             levelResult.matches += 1;
             matches += 1;
@@ -243,17 +218,17 @@
           }
 
           for (let variantIndex = 0; variantIndex < nonMatchVariants.length; variantIndex += 1) {
-            const current = nonMatchVariants[variantIndex];
-            const history = buildHistory(target, current, level, profiles, profileIndex);
-            const result = evaluateHistory(history, level, level);
+            const result = evaluateHistory(buildHistory(target, nonMatchVariants[variantIndex], level, profiles, profileIndex), level, level);
             levelResult.evaluations += 1;
             totalEvaluations += 1;
             if (!result.isMatch) {
               levelResult.nonMatches += 1;
               nonMatchCount += 1;
+              if (variantIndex === 2 && target.dirs[0] !== target.dirs[1]) {
+                levelResult.sameResultantOrderCollisionsRejected += 1;
+              }
             } else {
               levelResult.falseMatches += 1;
-              if (variantIndex === 0) levelResult.pairedCategoryFalseMatches += 1;
               if (failures.length < 100) failures.push({ level, type: 'false-match', variantIndex, profileIndex, repetition, result });
             }
             if (result.targetIndex !== 0) {
@@ -272,11 +247,7 @@
       passed: failures.length === 0 && matches === expectedMatches && nonMatchCount === expectedNonMatches,
       mode: 2,
       nBackLevels: LEVELS,
-      ontologyCategories: ONTOLOGY_CATEGORIES.length,
-      ontologyFamilies: Object.keys(FAMILY_MEMBERS).length,
-      formOrders: FORM_ORDERS.length,
-      cardinalDirectionPairs: DIRECTIONS.length * DIRECTIONS.length,
-      canonicalProfiles: profiles.length,
+      canonicalOrderedPaths: profiles.length,
       repetitionsPerProfile,
       totalEvaluations,
       matches,
@@ -289,13 +260,15 @@
       perLevel,
       invariants: Object.freeze({
         exactHistoricalOffsetRequired: true,
-        exactOntologyCategoryRequired: true,
-        sameFamilyDifferentCategoryRejected: true,
-        exactFormOrderRequired: true,
-        composedDirectionRequired: true,
-        letterIdentityRelevant: false,
-        directionOperandOrderRelevantOnlyThroughComposition: true,
-        incompleteSignaturesRejected: true
+        orderedCompassPathRequired: true,
+        consistentLetterRenamingAllowed: true,
+        letterRoleTopologyRequired: true,
+        directionOrderRequired: true,
+        sameResultantDifferentOrderRejected: true,
+        ontologyCategoryRelevant: false,
+        ontologyFamilyRelevant: false,
+        formOrderRelevant: false,
+        incompleteOrAliasedLetterRolesRejected: true
       })
     });
   }
@@ -304,7 +277,7 @@
     const app = root.__ontologicalWorlds;
     if (!app || app.__modeTwoOntologyNBackV14) return;
     const originalMatchSignature = typeof app.matchSignature === 'function' ? app.matchSignature.bind(app) : null;
-    app.matchSignature = function modeTwoOntologySignature(trial, mode = trial?.mode) {
+    app.matchSignature = function modeTwoPathSignature(trial, mode = trial?.mode) {
       if (Number(mode) === 1 || Number(trial?.publicMode) === 2) return signature(trial);
       return originalMatchSignature ? originalMatchSignature(trial, mode) : trial?.signature || '';
     };
@@ -315,23 +288,26 @@
   }
 
   return Object.freeze({
-    version: 14,
+    version: 16,
     LEVELS,
     DIRECTIONS,
     FORM_ORDERS,
     ONTOLOGY_CATEGORIES,
     ONTOLOGY_FAMILIES,
     FAMILY_MEMBERS,
-    composeDirection,
-    ontologyCategory,
-    ontologyFamily,
-    formOrder,
-    composedDirection,
+    canonicalPath,
     signatureObject,
     signature,
     compare,
     evaluateHistory,
+    makeTrial,
+    equivalentSurface,
+    mutateFirstDirection,
+    mutateSecondDirection,
+    reversePathOrder,
+    duplicateLetterRole,
     baseProfiles,
+    buildHistory,
     runExhaustiveAudit,
     installBrowser
   });
