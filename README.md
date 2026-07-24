@@ -35,6 +35,12 @@ The level progression is:
 
 Mode 2 preserves the ontology-category integration system using the categories All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion.
 
+## Mode 0 exact relational matching
+
+The Mode 0 spatial oracle applies one exact rule at every N-back memory distance from 1 through 8: MATCH only when the asserted direction is exactly entailed for the tested ordered letter pair at sixteen-direction resolution. It rejects adjacent sectors, reversed endpoints without direction inversion, correct relations assigned to the wrong letter, and incorrect shared-anchor branch comparisons. Letter renaming, premise order, logically equivalent statement inversion and global rotation do not change the verdict.
+
+The dedicated deterministic audit applies ten canonical MATCH/NO MATCH structures at every level and runs 4,096 transformed simulations per structure. This produces 327,680 comparisons in total: 163,840 MATCH and 163,840 NO MATCH, with independent recomputation from the relation graph on every simulation.
+
 ## Validation
 
 The repository audits all 160 Mode 1 comparisons, requires 20 unique cases at every N-back level, verifies the 80/80 answer balance, recomputes logical equivalence independently, prevents letter overlap between compared surfaces, enforces the three-statement premise format and preserves Mode 2 regression coverage.
