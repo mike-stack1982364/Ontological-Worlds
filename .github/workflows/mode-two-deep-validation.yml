@@ -1,0 +1,32 @@
+name: Mode 2 Deep Validation
+
+on:
+  pull_request:
+    paths:
+      - 'mode-two-ontology-nback-v14.js'
+      - 'tests/mode-two-ontology-nback-v14.test.js'
+      - 'tests/mode-two-ontology-nback-deep-v15.test.js'
+      - '.github/workflows/mode-two-deep-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-mode-two:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run canonical Mode 2 audit
+        run: node tests/mode-two-ontology-nback-v14.test.js
+
+      - name: Run deep Mode 2 audit
+        run: node tests/mode-two-ontology-nback-deep-v15.test.js
