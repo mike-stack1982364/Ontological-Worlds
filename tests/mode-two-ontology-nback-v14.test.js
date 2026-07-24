@@ -6,15 +6,22 @@ const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
 const modeTwo = require(path.join(__dirname, '..', 'mode-two-ontology-nback-v14.js'));
 
 assert.deepStrictEqual([...modeTwo.LEVELS], [1, 2, 3, 4, 5, 6, 7, 8]);
-assert.strictEqual(modeTwo.version, 17);
+assert.strictEqual(modeTwo.version, 18);
+assert.deepStrictEqual([...modeTwo.FORM_ORDERS], ['IO', 'OI']);
+assert.deepStrictEqual(modeTwo.FORM_NAMES, { I: 'Inner', O: 'Outer' });
+assert.strictEqual(Object.values(modeTwo.FORM_NAMES).some(value => /archetypal/i.test(value)), false);
 
 for (const [index, trial] of core.canonicalTrials().entries()) {
-  const decorated = modeTwo.decorateTrial(trial, ['Completion', 'Multiplication', 'Difference'], 'IOA');
+  const decorated = modeTwo.decorateTrial(trial, ['Completion', 'Multiplication', 'Difference'], 'IO');
   const result = modeTwo.evaluate(decorated);
   assert.strictEqual(result.isMatch, trial.expected, `canonical ${index + 1}`);
 
-  const metadataChanged = modeTwo.decorateTrial(trial, ['Action', 'All', 'Division'], 'AOI');
+  const metadataChanged = modeTwo.decorateTrial(trial, ['Action', 'All', 'Division'], 'OI');
   assert.strictEqual(modeTwo.evaluate(metadataChanged).isMatch, trial.expected, `metadata invariance ${index + 1}`);
+
+  const rendered = modeTwo.renderOntologicalTrial(decorated);
+  assert.doesNotMatch(rendered, /archetypal/i);
+  assert.strictEqual((rendered.match(/\b(?:Inner|Outer)\b/g) || []).length, 2);
 }
 
 const matchTrial = modeTwo.decorateTrial({
@@ -24,7 +31,7 @@ const matchTrial = modeTwo.decorateTrial({
   ],
   conclusion: { subject: 'C', relation: 'SE', object: 'A' },
   letters: ['A', 'B', 'C']
-}, ['Completion', 'Multiplication', 'Difference'], 'IOA');
+}, ['Completion', 'Multiplication', 'Difference'], 'IO');
 
 const noMatchTrial = modeTwo.decorateTrial({
   premises: [
@@ -33,13 +40,16 @@ const noMatchTrial = modeTwo.decorateTrial({
   ],
   conclusion: { subject: 'K', relation: 'NE', object: 'M' },
   letters: ['K', 'L', 'M']
-}, ['All', 'Projection', 'Connection'], 'OAI');
+}, ['All', 'Projection', 'Connection'], 'OI');
 
 assert.strictEqual(modeTwo.evaluate(matchTrial).isMatch, true);
 assert.strictEqual(modeTwo.evaluate(noMatchTrial).isMatch, false);
-assert.match(modeTwo.renderOntologicalTrial(matchTrial), /Completion/);
-assert.match(modeTwo.renderOntologicalTrial(matchTrial), /Multiplication/);
-assert.match(modeTwo.renderOntologicalTrial(matchTrial), /Difference/);
+const renderedMatch = modeTwo.renderOntologicalTrial(matchTrial);
+assert.match(renderedMatch, /Inner Completion/);
+assert.match(renderedMatch, /Outer Multiplication/);
+assert.match(renderedMatch, /Difference C is southeast of A/);
+assert.doesNotMatch(renderedMatch, /Archetypal/i);
+assert.strictEqual((renderedMatch.match(/\b(?:Inner|Outer)\b/g) || []).length, 2);
 
 for (const level of modeTwo.LEVELS) {
   const history = [];
@@ -59,11 +69,14 @@ assert.strictEqual(audit.nonMatches, 524288);
 assert.strictEqual(audit.matchRate, 0.5);
 assert.strictEqual(audit.nonMatchRate, 0.5);
 assert.strictEqual(audit.failures.length, 0);
+assert.strictEqual(audit.renderChecks, 1048576);
 assert.strictEqual(audit.invariants.modeOneRelationalEntailmentCopiedExactly, true);
 assert.strictEqual(audit.invariants.ontologyCategoriesScoringNeutral, true);
 assert.strictEqual(audit.invariants.formOrderScoringNeutral, true);
 assert.strictEqual(audit.invariants.sixteenDirectionResolution, true);
 assert.strictEqual(audit.invariants.allNBackLevelsUseSameEvaluator, true);
+assert.strictEqual(audit.invariants.conclusionHasNoFormPrefix, true);
+assert.strictEqual(audit.invariants.archetypalWordForbiddenInModeTwoOutput, true);
 assert.strictEqual(audit.perLevel.length, 8);
 for (const level of audit.perLevel) {
   assert.strictEqual(level.evaluations, 131072);
@@ -76,6 +89,7 @@ for (const level of audit.perLevel) {
   assert.strictEqual(level.renamingFailures, 0);
   assert.strictEqual(level.premiseOrderFailures, 0);
   assert.strictEqual(level.inversionFailures, 0);
+  assert.strictEqual(level.renderFailures, 0);
 }
 
 console.log(JSON.stringify({
@@ -87,6 +101,7 @@ console.log(JSON.stringify({
   nonMatches: audit.nonMatches,
   matchRate: audit.matchRate,
   nonMatchRate: audit.nonMatchRate,
+  renderChecks: audit.renderChecks,
   ontologyMutationChecks: audit.ontologyMutationChecks,
   renamingChecks: audit.renamingChecks,
   premiseOrderChecks: audit.premiseOrderChecks,
