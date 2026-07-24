@@ -10,6 +10,7 @@ const DIRS = core.DIRECTIONS.map(item => item.code);
 const VECTORS = new Map(core.DIRECTIONS.map(item => [item.code, [item.x, item.y]]));
 
 function oracleDirection(x, y) {
+  if (Math.abs(x) < 1e-8 && Math.abs(y) < 1e-8) return 'BALANCE';
   const angle = (Math.atan2(x, y) + Math.PI * 2) % (Math.PI * 2);
   return DIRS[Math.round(angle / (Math.PI * 2 / 16)) % 16];
 }
@@ -51,7 +52,7 @@ function oracleEvaluate(trial) {
   const object = positions.get(trial.conclusion.object);
   if (!subject || !object) return false;
   const expected = oracleDirection(subject[0] - object[0], subject[1] - object[1]);
-  return expected === trial.conclusion.relation;
+  return expected !== 'BALANCE' && expected === trial.conclusion.relation;
 }
 
 class Rng {
@@ -80,6 +81,87 @@ for (const trial of core.canonicalTrials()) {
   canonicalChecks += 1;
 }
 assert.strictEqual(canonicalChecks, 10);
+
+let exhaustiveDirectionPairChecks = 0;
+let exhaustiveTrueChecks = 0;
+let exhaustiveFalseChecks = 0;
+let exhaustiveWrongPairChecks = 0;
+let exhaustiveNBackChecks = 0;
+for (const firstDirection of DIRS) {
+  for (const secondDirection of DIRS) {
+    const [ax, ay] = VECTORS.get(firstDirection);
+    const [bx, by] = VECTORS.get(secondDirection);
+    const forward = oracleDirection(ax + bx, ay + by);
+    if (forward === 'BALANCE') continue;
+    const reverse = core.opposite(forward);
+    const basePremises = [
+      { subject: 'A', relation: firstDirection, object: 'B' },
+      { subject: 'B', relation: secondDirection, object: 'C' }
+    ];
+
+    const equivalentPremiseSets = [
+      basePremises,
+      [...basePremises].reverse(),
+      basePremises.map(core.invert),
+      basePremises.map(core.invert).reverse()
+    ];
+
+    for (const premises of equivalentPremiseSets) {
+      const trueForward = modeTwo.decorateTrial({
+        premises,
+        conclusion: { subject: 'A', relation: forward, object: 'C' },
+        letters: ['A', 'B', 'C']
+      }, ['All', 'Projection', 'Completion'], 'IO');
+      const trueReverse = modeTwo.decorateTrial({
+        premises,
+        conclusion: { subject: 'C', relation: reverse, object: 'A' },
+        letters: ['A', 'B', 'C']
+      }, ['Difference', 'Action', 'Division'], 'OI');
+
+      for (const trial of [trueForward, trueReverse]) {
+        assert.strictEqual(oracleEvaluate(trial), true);
+        assert.strictEqual(modeTwo.evaluate(trial).isMatch, true);
+        const rendered = modeTwo.renderOntologicalTrial(trial);
+        assert.doesNotMatch(rendered, /archetypal/i);
+        assert.strictEqual((rendered.match(/\b(?:Inner|Outer)\b/g) || []).length, 2);
+        exhaustiveTrueChecks += 1;
+
+        for (const level of LEVELS) {
+          const history = Array.from({ length: level }, () => trueForward);
+          history.push(trial);
+          const historyResult = modeTwo.evaluateHistory(history, level, level);
+          assert.strictEqual(historyResult.targetIndex, 0);
+          assert.strictEqual(historyResult.isMatch, true);
+          exhaustiveNBackChecks += 1;
+        }
+      }
+
+      for (const asserted of DIRS) {
+        if (asserted === forward) continue;
+        const falseTrial = modeTwo.decorateTrial({
+          premises,
+          conclusion: { subject: 'A', relation: asserted, object: 'C' },
+          letters: ['A', 'B', 'C']
+        }, ['Connection', 'Encompassment', 'Multiplication'], 'IO');
+        assert.strictEqual(oracleEvaluate(falseTrial), false);
+        assert.strictEqual(modeTwo.evaluate(falseTrial).isMatch, false);
+        exhaustiveFalseChecks += 1;
+      }
+
+      for (const wrongPair of [['A', 'B'], ['B', 'C'], ['B', 'A'], ['C', 'B']]) {
+        const wrongPairTrial = modeTwo.decorateTrial({
+          premises,
+          conclusion: { subject: wrongPair[0], relation: forward, object: wrongPair[1] },
+          letters: ['A', 'B', 'C']
+        }, ['Completion', 'All', 'Difference'], 'OI');
+        assert.strictEqual(oracleEvaluate(wrongPairTrial), false);
+        assert.strictEqual(modeTwo.evaluate(wrongPairTrial).isMatch, false);
+        exhaustiveWrongPairChecks += 1;
+      }
+      exhaustiveDirectionPairChecks += 1;
+    }
+  }
+}
 
 let generatedParityChecks = 0;
 let metadataNeutralityChecks = 0;
@@ -198,6 +280,11 @@ for (const level of audit.perLevel) {
 console.log(JSON.stringify({
   passed: true,
   canonicalChecks,
+  exhaustiveDirectionPairChecks,
+  exhaustiveTrueChecks,
+  exhaustiveFalseChecks,
+  exhaustiveWrongPairChecks,
+  exhaustiveNBackChecks,
   generatedParityChecks,
   renderedOutputChecks,
   metadataNeutralityChecks,
