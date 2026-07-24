@@ -11,6 +11,10 @@
   const LEVELS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8]);
   const DIRECTIONS = Object.freeze(['N', 'E', 'S', 'W']);
   const FORM_ORDERS = Object.freeze(['IOA', 'OIA', 'IAO', 'OAI', 'AIO', 'AOI']);
+  const ONTOLOGY_CATEGORIES = Object.freeze([
+    'All', 'Difference', 'Action', 'Division', 'Connection',
+    'Multiplication', 'Projection', 'Encompassment', 'Completion'
+  ]);
   const ONTOLOGY_FAMILIES = Object.freeze({
     All: 'all-completion', Completion: 'all-completion',
     Difference: 'difference-encompassment', Encompassment: 'difference-encompassment',
@@ -42,14 +46,19 @@
     return `${y > 0 ? 'N' : 'S'}${x > 0 ? 'E' : 'W'}`;
   }
 
-  function ontologyFamily(trial) {
-    if (trial?.ontology?.family) return trial.ontology.family;
+  function ontologyCategory(trial) {
     const name = trial?.ontology?.name || trial?.ontologyName || trial?.ontology;
-    return ONTOLOGY_FAMILIES[name] || null;
+    return ONTOLOGY_CATEGORIES.includes(name) ? name : null;
+  }
+
+  function ontologyFamily(trial) {
+    const category = ontologyCategory(trial);
+    return category ? ONTOLOGY_FAMILIES[category] : null;
   }
 
   function formOrder(trial) {
-    return trial?.order || trial?.formOrder || null;
+    const order = trial?.order || trial?.formOrder || null;
+    return FORM_ORDERS.includes(order) ? order : null;
   }
 
   function composedDirection(trial) {
@@ -60,7 +69,7 @@
 
   function signatureObject(trial) {
     return Object.freeze({
-      family: ontologyFamily(trial),
+      category: ontologyCategory(trial),
       order: formOrder(trial),
       direction: composedDirection(trial)
     });
@@ -68,24 +77,24 @@
 
   function signature(trial) {
     const value = signatureObject(trial);
-    return `ONTO:${value.family}:${value.order}:${value.direction}`;
+    return `ONTO:${value.category}:${value.order}:${value.direction}`;
   }
 
   function compare(current, target) {
     const currentSignature = signatureObject(current);
     const targetSignature = signatureObject(target);
     const valid = Boolean(
-      currentSignature.family && targetSignature.family &&
+      currentSignature.category && targetSignature.category &&
       currentSignature.order && targetSignature.order &&
       currentSignature.direction && targetSignature.direction
     );
     const dimensions = Object.freeze({
-      family: valid && currentSignature.family === targetSignature.family,
+      category: valid && currentSignature.category === targetSignature.category,
       order: valid && currentSignature.order === targetSignature.order,
       direction: valid && currentSignature.direction === targetSignature.direction
     });
     return Object.freeze({
-      isMatch: valid && dimensions.family && dimensions.order && dimensions.direction,
+      isMatch: valid && dimensions.category && dimensions.order && dimensions.direction,
       valid,
       currentSignature,
       targetSignature,
@@ -105,31 +114,36 @@
     return Object.freeze({ ...result, nBackLevel: level, currentIndex, targetIndex, warmup: false, scored: true });
   }
 
-  function makeTrial(family, order, firstDirection, secondDirection, ontologyName) {
-    const members = FAMILY_MEMBERS[family];
-    const name = ontologyName || members[0];
+  function makeTrial(category, order, firstDirection, secondDirection) {
     return {
       mode: 1,
       publicMode: 2,
-      ontology: { name, family },
+      ontology: { name: category, family: ONTOLOGY_FAMILIES[category] },
       order,
       dirs: [firstDirection, secondDirection],
       symbols: ['B', 'C', 'D'],
-      signature: `ONTO:${family}:${order}:${composeDirection(firstDirection, secondDirection)}`
+      signature: `ONTO:${category}:${order}:${composeDirection(firstDirection, secondDirection)}`
     };
   }
 
-  function mutateFamily(trial) {
-    const families = Object.keys(FAMILY_MEMBERS);
-    const original = ontologyFamily(trial);
-    const family = families[(families.indexOf(original) + 1) % families.length];
-    return makeTrial(family, formOrder(trial), trial.dirs[0], trial.dirs[1]);
+  function mutateCategory(trial) {
+    const original = ontologyCategory(trial);
+    const index = ONTOLOGY_CATEGORIES.indexOf(original);
+    return makeTrial(ONTOLOGY_CATEGORIES[(index + 1) % ONTOLOGY_CATEGORIES.length], formOrder(trial), trial.dirs[0], trial.dirs[1]);
+  }
+
+  function pairedCategoryMutation(trial) {
+    const original = ontologyCategory(trial);
+    const family = ontologyFamily(trial);
+    const members = FAMILY_MEMBERS[family] || [];
+    const paired = members.find(category => category !== original);
+    return paired ? makeTrial(paired, formOrder(trial), trial.dirs[0], trial.dirs[1]) : mutateCategory(trial);
   }
 
   function mutateOrder(trial) {
     const original = formOrder(trial);
     const order = FORM_ORDERS[(FORM_ORDERS.indexOf(original) + 1) % FORM_ORDERS.length];
-    return makeTrial(ontologyFamily(trial), order, trial.dirs[0], trial.dirs[1]);
+    return makeTrial(ontologyCategory(trial), order, trial.dirs[0], trial.dirs[1]);
   }
 
   function mutateDirection(trial) {
@@ -137,7 +151,7 @@
     for (const first of DIRECTIONS) {
       for (const second of DIRECTIONS) {
         if (composeDirection(first, second) !== original) {
-          return makeTrial(ontologyFamily(trial), formOrder(trial), first, second);
+          return makeTrial(ontologyCategory(trial), formOrder(trial), first, second);
         }
       }
     }
@@ -145,27 +159,24 @@
   }
 
   function equivalentSurface(trial, variant) {
-    const members = FAMILY_MEMBERS[ontologyFamily(trial)];
-    const ontologyName = members[variant % members.length];
     const swap = variant % 2 === 1;
-    return makeTrial(
-      ontologyFamily(trial),
+    const equivalent = makeTrial(
+      ontologyCategory(trial),
       formOrder(trial),
       swap ? trial.dirs[1] : trial.dirs[0],
-      swap ? trial.dirs[0] : trial.dirs[1],
-      ontologyName
+      swap ? trial.dirs[0] : trial.dirs[1]
     );
+    equivalent.symbols = variant % 3 === 0 ? ['X', 'Y', 'Z'] : ['H', 'J', 'K'];
+    return equivalent;
   }
 
   function baseProfiles() {
     const profiles = [];
-    let index = 0;
-    for (const family of Object.keys(FAMILY_MEMBERS)) {
+    for (const category of ONTOLOGY_CATEGORIES) {
       for (const order of FORM_ORDERS) {
         for (const first of DIRECTIONS) {
           for (const second of DIRECTIONS) {
-            profiles.push(makeTrial(family, order, first, second, FAMILY_MEMBERS[family][index % FAMILY_MEMBERS[family].length]));
-            index += 1;
+            profiles.push(makeTrial(category, order, first, second));
           }
         }
       }
@@ -200,14 +211,20 @@
         nonMatches: 0,
         falseMatches: 0,
         falseNonMatches: 0,
-        wrongOffsetFailures: 0
+        wrongOffsetFailures: 0,
+        pairedCategoryFalseMatches: 0
       };
 
       for (let repetition = 0; repetition < repetitionsPerProfile; repetition += 1) {
         for (let profileIndex = 0; profileIndex < profiles.length; profileIndex += 1) {
           const target = profiles[profileIndex];
           const matchCurrent = equivalentSurface(target, repetition + profileIndex);
-          const nonMatchVariants = [mutateFamily(target), mutateOrder(target), mutateDirection(target)];
+          const nonMatchVariants = [
+            pairedCategoryMutation(target),
+            mutateCategory(target),
+            mutateOrder(target),
+            mutateDirection(target)
+          ];
 
           const matchHistory = buildHistory(target, matchCurrent, level, profiles, profileIndex);
           const matchResult = evaluateHistory(matchHistory, level, level);
@@ -225,7 +242,8 @@
             if (failures.length < 100) failures.push({ level, type: 'wrong-offset', profileIndex, repetition, matchResult });
           }
 
-          for (const current of nonMatchVariants) {
+          for (let variantIndex = 0; variantIndex < nonMatchVariants.length; variantIndex += 1) {
+            const current = nonMatchVariants[variantIndex];
             const history = buildHistory(target, current, level, profiles, profileIndex);
             const result = evaluateHistory(history, level, level);
             levelResult.evaluations += 1;
@@ -235,7 +253,8 @@
               nonMatchCount += 1;
             } else {
               levelResult.falseMatches += 1;
-              if (failures.length < 100) failures.push({ level, type: 'false-match', profileIndex, repetition, result });
+              if (variantIndex === 0) levelResult.pairedCategoryFalseMatches += 1;
+              if (failures.length < 100) failures.push({ level, type: 'false-match', variantIndex, profileIndex, repetition, result });
             }
             if (result.targetIndex !== 0) {
               levelResult.wrongOffsetFailures += 1;
@@ -248,11 +267,12 @@
     }
 
     const expectedMatches = LEVELS.length * profiles.length * repetitionsPerProfile;
-    const expectedNonMatches = expectedMatches * 3;
+    const expectedNonMatches = expectedMatches * 4;
     return Object.freeze({
       passed: failures.length === 0 && matches === expectedMatches && nonMatchCount === expectedNonMatches,
       mode: 2,
       nBackLevels: LEVELS,
+      ontologyCategories: ONTOLOGY_CATEGORIES.length,
       ontologyFamilies: Object.keys(FAMILY_MEMBERS).length,
       formOrders: FORM_ORDERS.length,
       cardinalDirectionPairs: DIRECTIONS.length * DIRECTIONS.length,
@@ -269,10 +289,10 @@
       perLevel,
       invariants: Object.freeze({
         exactHistoricalOffsetRequired: true,
-        ontologyFamilyRequired: true,
+        exactOntologyCategoryRequired: true,
+        sameFamilyDifferentCategoryRejected: true,
         exactFormOrderRequired: true,
         composedDirectionRequired: true,
-        categorySubstitutionWithinFamilyAllowed: true,
         letterIdentityRelevant: false,
         directionOperandOrderRelevantOnlyThroughComposition: true,
         incompleteSignaturesRejected: true
@@ -299,9 +319,11 @@
     LEVELS,
     DIRECTIONS,
     FORM_ORDERS,
+    ONTOLOGY_CATEGORIES,
     ONTOLOGY_FAMILIES,
     FAMILY_MEMBERS,
     composeDirection,
+    ontologyCategory,
     ontologyFamily,
     formOrder,
     composedDirection,
