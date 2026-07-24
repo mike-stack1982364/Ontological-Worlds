@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en-AU">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ontological Worlds</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#ffffff">
+  <title>Ontological-Worlds</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="light-theme.css">
   <style>
     #extra-training-launcher-wrap{margin-top:10px}
     #extra-training-btn{
@@ -24,10 +26,12 @@
     #extra-training-btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
     #extra-training-btn:active{transform:translateY(1px) scale(.995)}
     #extra-training-btn:focus-visible{outline:4px solid rgba(73,174,231,.5);outline-offset:4px}
-    #extra-training-screen{position:fixed;inset:0;z-index:10000;background:#f4f8fb;overflow:auto;display:none}
-    #extra-training-screen[aria-hidden="false"]{display:block}
-    #extra-training-screen-inner{width:min(100%,920px);margin:0 auto;min-height:100vh;padding:12px 14px 40px;box-sizing:border-box}
-    #extra-training-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    #extra-training-launcher-help{margin:8px 2px 0;color:#43566d;font-size:.76rem;line-height:1.4;font-weight:650}
+    #extra-training-screen[hidden]{display:none!important}
+    #extra-training-screen{position:fixed;inset:0;z-index:10000;background:#fff;overflow:auto;padding:18px 14px 40px}
+    #extra-training-screen .extra-shell{max-width:900px;margin:0 auto}
+    #extra-training-screen .extra-header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;position:sticky;top:0;background:#fff;padding:8px 0 12px;z-index:2}
+    #extra-training-screen h2{margin:0;color:#124f8c;letter-spacing:.08em;text-transform:uppercase}
     #extra-training-close-top{min-width:56px;min-height:52px;border-radius:12px;font-size:1.05rem}
     body.extra-training-open{overflow:hidden}
     @media(max-width:560px){
@@ -36,79 +40,128 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>Ontological Worlds</h1>
-    <div class="header-controls">
-      <button id="tutorial-btn" class="small-btn" type="button">Tutorial</button>
-      <button id="history-btn" class="small-btn" type="button">History</button>
-    </div>
-  </header>
+  <div class="lion-backdrop" aria-hidden="true"></div>
+  <main class="container">
+    <h1>Ontological-Worlds</h1>
+    <div id="session-countdown" class="session-countdown idle" role="timer" aria-label="Session time remaining">00:00</div>
 
-  <main>
-    <section id="controls" aria-label="Training controls">
+    <section class="controls" aria-label="Game settings">
       <div class="control-group">
-        <label for="mode-select">Training Mode</label>
-        <select id="mode-select">
+        <label for="logic-mode">Training mode</label>
+        <select id="logic-mode">
           <option value="0">Mode 1 — Triadic Entailment</option>
           <option value="1">Mode 2 — Ontological Integration</option>
+          <option value="2" disabled>Mode 3 — Released in future</option>
+          <option value="3" disabled>Mode 4 — Released in future</option>
+          <option value="4" disabled>Mode 5 — Released in future</option>
+          <option value="5" disabled>Mode 6 — Released in future</option>
+          <option value="6" disabled>Mode 7 — Released in future</option>
         </select>
+      </div>
+
+      <div id="extra-training-launcher-wrap" class="control-group">
+        <label for="extra-training-btn">Extra Training</label>
+        <button id="extra-training-btn" type="button" aria-expanded="false" aria-controls="extra-training-screen" onclick="window.openExtraTrainingScreenFallback && window.openExtraTrainingScreenFallback(event)">
+          <span>Open Ordered Number N-back</span>
+        </button>
+        <p id="extra-training-launcher-help">Opens a separate full-screen number N-back trainer with 1–3 ordered numbers per trial, position-specific matching and dedicated cognitive-interference controls.</p>
       </div>
 
       <div class="control-group">
-        <label for="nback-select">N-back level</label>
-        <select id="nback-select">
-          <option value="1">1-back</option>
-          <option value="2">2-back</option>
-          <option value="3">3-back</option>
-          <option value="4">4-back</option>
-          <option value="5">5-back</option>
-          <option value="6">6-back</option>
-          <option value="7">7-back</option>
-          <option value="8">8-back</option>
-        </select>
+        <label for="n-slider">N-back level: <span id="n-val">1</span></label>
+        <input id="n-slider" type="range" min="1" max="8" step="1" value="1" aria-valuemin="1" aria-valuemax="8" aria-valuetext="N-back level 1">
       </div>
-
+      <div class="control-group">
+        <label for="spt-slider">Response window: <span id="spt-val">8.0s</span></label>
+        <input id="spt-slider" type="range" min="2" max="300" step="0.5" value="8">
+      </div>
+      <div class="control-group">
+        <label for="session-slider">Session: <span id="session-val">15 MIN</span></label>
+        <input id="session-slider" type="range" min="1" max="120" step="1" value="15">
+      </div>
+      <div class="control-group">
+        <label for="prob-slider">Match probability: <span id="prob-val">35%</span></label>
+        <input id="prob-slider" type="range" min="15" max="60" step="1" value="35">
+      </div>
       <div class="control-group">
         <label for="interference-slider">Cognitive interference: <span id="interference-val">60%</span></label>
-        <input id="interference-slider" type="range" min="0" max="100" step="5" value="60">
+        <input id="interference-slider" type="range" min="0" max="100" step="5" value="60" aria-describedby="interference-help">
+        <p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls the proximity of competing logical profiles and their surface transformations. Each N-back level draws from its own twenty-case meta-logical curriculum.</p>
+      </div>
+
+      <div class="control-group" aria-labelledby="accessibility-label">
+        <label id="accessibility-label">Premise accessibility</label>
+        <p style="font-size:.75rem;color:#43566d;line-height:1.45;margin-bottom:10px">Every generated triad is supplied through two parallel channels: visible text for deaf or hard-of-hearing players and optional speech for blind or vision-impaired players. Both channels use the same canonical three-statement string.</p>
+        <div class="toggle-row">
+          <label><input id="audio-only" type="checkbox"> Audio-only display</label>
+          <label><input id="keyboard" type="checkbox" checked> Keyboard controls</label>
+          <label><input id="haptic" type="checkbox" checked> Haptics</label>
+          <label><input id="adaptive" type="checkbox"> Adaptive N</label>
+        </div>
+        <input id="hide-text" type="checkbox" hidden aria-hidden="true" tabindex="-1">
       </div>
 
       <div class="control-group">
-        <label for="trial-count">Trials</label>
-        <select id="trial-count">
-          <option value="20">20</option>
-          <option value="40">40</option>
-          <option value="60">60</option>
-          <option value="80">80</option>
-        </select>
+        <label for="rate-slider">Spoken-premise rate: <span id="rate-val">0.85x</span></label>
+        <input id="rate-slider" type="range" min="0.4" max="1.6" step="0.05" value="0.85">
+      </div>
+      <div class="control-group">
+        <label for="premise-vol">Spoken-premise volume: <span id="premise-vol-val">70%</span></label>
+        <input id="premise-vol" type="range" min="0" max="100" step="1" value="70">
+        <div class="vol-meter" aria-hidden="true"><div id="premise-vol-meter"></div></div>
+        <button id="premise-test-btn" class="small-btn" type="button" style="margin-top:10px">🔊 Test premise volume</button>
       </div>
 
-      <button id="start-btn" class="primary-btn" type="button">Start Training</button>
-      <div id="extra-training-launcher-wrap">
-        <button id="extra-training-btn" type="button" onclick="window.openExtraTrainingScreenFallback(event)"><span>Extra Training — Number N-back</span></button>
+      <div class="control-group">
+        <div class="toggle-row"><label><input id="delta-bg" type="checkbox"> 1 Hz binaural background</label></div>
+        <label for="delta-vol" style="margin-top:10px">Background volume: <span id="delta-vol-val">35%</span></label>
+        <input id="delta-vol" type="range" min="0" max="100" step="1" value="35">
+        <label for="speech-boost" style="margin-top:10px">Speech/background separation: <span id="speech-boost-val">140%</span></label>
+        <input id="speech-boost" type="range" min="100" max="300" step="5" value="140">
+      </div>
+
+      <div class="button-group">
+        <button id="start-btn" type="button">Start</button>
+        <button id="pause-btn" type="button" disabled>Pause</button>
+        <button id="stop-btn" type="button" disabled>Stop</button>
+      </div>
+      <div class="button-group">
+        <button id="tutorial-btn" class="small-btn" type="button">Tutorial</button>
+        <button id="history-btn" class="small-btn" type="button">History</button>
       </div>
     </section>
 
-    <section id="training" class="hidden" aria-live="polite">
-      <div id="status-bar">
-        <span id="trial-progress">Trial 0 / 0</span>
-        <span id="score-display">Score: 0</span>
+    <section class="game-area" aria-label="Training trial">
+      <div id="countdown-box" aria-live="assertive"></div>
+      <div id="premise-display" class="premise-display" role="status" aria-live="polite" aria-atomic="true">SYSTEM_READY</div>
+      <div id="feedback" role="status" aria-live="assertive"></div>
+      <div id="trial-explanation" role="status" aria-live="polite" style="min-height:2.8em;margin:10px auto 14px;max-width:900px;font-size:.88rem;line-height:1.45;color:#30465d"></div>
+      <div class="response-buttons">
+        <button id="match-btn" type="button" disabled aria-label="Match">Match</button>
+        <button id="no-match-btn" type="button" disabled aria-label="No match">No Match</button>
       </div>
-      <div id="stimulus" tabindex="0"></div>
-      <div id="response-controls">
-        <button id="no-match-btn" class="response-btn" type="button">NO MATCH</button>
-        <button id="match-btn" class="response-btn" type="button">MATCH</button>
+      <div class="timer-container" aria-hidden="true"><div id="timer-bar"></div></div>
+      <div class="session-bar" aria-hidden="true"><div id="session-progress"></div></div>
+      <div class="stats" aria-label="Session statistics">
+        <div class="stat-box"><div class="stat-label">Trials</div><div id="trial-count" class="stat-value">0</div></div>
+        <div class="stat-box"><div class="stat-label">Hits</div><div id="hits" class="stat-value">0</div></div>
+        <div class="stat-box"><div class="stat-label">Accuracy</div><div id="accuracy" class="stat-value">0%</div></div>
+        <div class="stat-box"><div class="stat-label">d′</div><div id="dprime" class="stat-value">0.00</div></div>
       </div>
-      <div id="feedback" aria-live="assertive"></div>
-      <button id="pause-btn" class="small-btn" type="button">Pause</button>
-    </section>
-
-    <section id="results" class="hidden">
-      <h2>Session Complete</h2>
-      <div id="results-summary"></div>
-      <button id="restart-btn" class="primary-btn" type="button">Train Again</button>
+      <div class="hint">CURRENT N-BACK LEVEL: <span id="current-n">1</span></div>
+      <div id="kbd-hint" class="hint">F/J = MATCH · D/K = NO MATCH · P = PAUSE · ESC = STOP</div>
     </section>
   </main>
+
+  <section id="extra-training-screen" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="extra-training-title">
+    <div class="extra-shell">
+      <div class="extra-header">
+        <h2 id="extra-training-title">Extra Training</h2>
+        <button id="extra-training-close-top" class="small-btn" type="button" aria-label="Close Extra Training">Close</button>
+      </div>
+      <section id="extra-training-panel" class="controls" aria-label="Ordered Number N-back settings"></section>
+    </div>
+  </section>
 
   <script>
     window.openExtraTrainingScreenFallback=function(event){
