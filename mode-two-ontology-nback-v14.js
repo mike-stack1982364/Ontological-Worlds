@@ -12,14 +12,10 @@
   const DIRECTIONS = Object.freeze(['N', 'E', 'S', 'W']);
   const FORM_ORDERS = Object.freeze(['IOA', 'OIA', 'IAO', 'OAI', 'AIO', 'AOI']);
   const ONTOLOGY_FAMILIES = Object.freeze({
-    All: 'all-completion',
-    Completion: 'all-completion',
-    Difference: 'difference-encompassment',
-    Encompassment: 'difference-encompassment',
-    Action: 'action-projection',
-    Projection: 'action-projection',
-    Division: 'division-multiplication',
-    Multiplication: 'division-multiplication',
+    All: 'all-completion', Completion: 'all-completion',
+    Difference: 'difference-encompassment', Encompassment: 'difference-encompassment',
+    Action: 'action-projection', Projection: 'action-projection',
+    Division: 'division-multiplication', Multiplication: 'division-multiplication',
     Connection: 'connection'
   });
   const FAMILY_MEMBERS = Object.freeze({
@@ -35,10 +31,11 @@
   }
 
   function composeDirection(first, second) {
-    const [x1, y1] = directionVector(first);
-    const [x2, y2] = directionVector(second);
-    const x = x1 + x2;
-    const y = y1 + y2;
+    const a = directionVector(first);
+    const b = directionVector(second);
+    if (!a || !b) return null;
+    const x = a[0] + b[0];
+    const y = a[1] + b[1];
     if (x === 0 && y === 0) return 'BALANCE';
     if (Math.abs(x) > Math.abs(y)) return x > 0 ? 'E' : 'W';
     if (Math.abs(y) > Math.abs(x)) return y > 0 ? 'N' : 'S';
@@ -77,13 +74,19 @@
   function compare(current, target) {
     const currentSignature = signatureObject(current);
     const targetSignature = signatureObject(target);
+    const valid = Boolean(
+      currentSignature.family && targetSignature.family &&
+      currentSignature.order && targetSignature.order &&
+      currentSignature.direction && targetSignature.direction
+    );
     const dimensions = Object.freeze({
-      family: currentSignature.family === targetSignature.family,
-      order: currentSignature.order === targetSignature.order,
-      direction: currentSignature.direction === targetSignature.direction
+      family: valid && currentSignature.family === targetSignature.family,
+      order: valid && currentSignature.order === targetSignature.order,
+      direction: valid && currentSignature.direction === targetSignature.direction
     });
     return Object.freeze({
-      isMatch: dimensions.family && dimensions.order && dimensions.direction,
+      isMatch: valid && dimensions.family && dimensions.order && dimensions.direction,
+      valid,
       currentSignature,
       targetSignature,
       dimensions,
@@ -96,24 +99,10 @@
     const level = Math.max(1, Math.min(8, Math.round(Number(nBackLevel) || 1)));
     const targetIndex = currentIndex - level;
     if (targetIndex < 0) {
-      return Object.freeze({
-        nBackLevel: level,
-        currentIndex,
-        targetIndex,
-        warmup: true,
-        isMatch: false,
-        scored: false
-      });
+      return Object.freeze({ nBackLevel: level, currentIndex, targetIndex, warmup: true, isMatch: false, scored: false });
     }
     const result = compare(history[currentIndex], history[targetIndex]);
-    return Object.freeze({
-      ...result,
-      nBackLevel: level,
-      currentIndex,
-      targetIndex,
-      warmup: false,
-      scored: true
-    });
+    return Object.freeze({ ...result, nBackLevel: level, currentIndex, targetIndex, warmup: false, scored: true });
   }
 
   function makeTrial(family, order, firstDirection, secondDirection, ontologyName) {
@@ -184,6 +173,15 @@
     return profiles;
   }
 
+  function buildHistory(target, current, level, profiles, profileIndex) {
+    const history = [target];
+    for (let filler = 1; filler < level; filler += 1) {
+      history.push(profiles[(profileIndex + filler) % profiles.length]);
+    }
+    history.push(current);
+    return history;
+  }
+
   function runExhaustiveAudit(repetitionsPerProfile = 128) {
     const profiles = baseProfiles();
     const failures = [];
@@ -211,13 +209,7 @@
           const matchCurrent = equivalentSurface(target, repetition + profileIndex);
           const nonMatchVariants = [mutateFamily(target), mutateOrder(target), mutateDirection(target)];
 
-          const prefix = [];
-          for (let filler = 0; filler < level; filler += 1) {
-            prefix.push(profiles[(profileIndex + filler + 1) % profiles.length]);
-          }
-          prefix[0] = target;
-
-          const matchHistory = [...prefix, matchCurrent];
+          const matchHistory = buildHistory(target, matchCurrent, level, profiles, profileIndex);
           const matchResult = evaluateHistory(matchHistory, level, level);
           levelResult.evaluations += 1;
           totalEvaluations += 1;
@@ -234,7 +226,7 @@
           }
 
           for (const current of nonMatchVariants) {
-            const history = [...prefix, current];
+            const history = buildHistory(target, current, level, profiles, profileIndex);
             const result = evaluateHistory(history, level, level);
             levelResult.evaluations += 1;
             totalEvaluations += 1;
@@ -282,7 +274,8 @@
         composedDirectionRequired: true,
         categorySubstitutionWithinFamilyAllowed: true,
         letterIdentityRelevant: false,
-        directionOperandOrderRelevantOnlyThroughComposition: true
+        directionOperandOrderRelevantOnlyThroughComposition: true,
+        incompleteSignaturesRejected: true
       })
     });
   }
@@ -290,16 +283,11 @@
   function installBrowser(root) {
     const app = root.__ontologicalWorlds;
     if (!app || app.__modeTwoOntologyNBackV14) return;
-
-    const originalMatchSignature = typeof app.matchSignature === 'function'
-      ? app.matchSignature.bind(app)
-      : null;
-
+    const originalMatchSignature = typeof app.matchSignature === 'function' ? app.matchSignature.bind(app) : null;
     app.matchSignature = function modeTwoOntologySignature(trial, mode = trial?.mode) {
       if (Number(mode) === 1 || Number(trial?.publicMode) === 2) return signature(trial);
       return originalMatchSignature ? originalMatchSignature(trial, mode) : trial?.signature || '';
     };
-
     app.modeTwoOntologyCompare = compare;
     app.modeTwoOntologyEvaluateHistory = evaluateHistory;
     app.modeTwoOntologyRunAudit = runExhaustiveAudit;
