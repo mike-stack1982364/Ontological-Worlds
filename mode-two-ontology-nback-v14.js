@@ -13,8 +13,8 @@
     'All', 'Difference', 'Action', 'Division', 'Connection',
     'Multiplication', 'Projection', 'Encompassment', 'Completion'
   ]);
-  const FORM_ORDERS = Object.freeze(['IOA', 'OIA', 'IAO', 'OAI', 'AIO', 'AOI']);
-  const FORM_NAMES = Object.freeze({ I: 'Inner', O: 'Outer', A: 'Archetypal' });
+  const FORM_ORDERS = Object.freeze(['IO', 'OI']);
+  const FORM_NAMES = Object.freeze({ I: 'Inner', O: 'Outer' });
   const core = root?.__modeOneTriadicEntailmentCore || root?.__modeOneSpatialCore ||
     (typeof require === 'function' ? require('./mode-one-spatial-core.js') : null);
 
@@ -31,7 +31,7 @@
     const categories = Array.isArray(trial?.ontologyCategories) && trial.ontologyCategories.length === 3
       ? trial.ontologyCategories.slice()
       : ['Completion', 'Multiplication', 'Difference'];
-    const order = FORM_ORDERS.includes(trial?.order) ? trial.order : 'IOA';
+    const order = FORM_ORDERS.includes(trial?.order) ? trial.order : 'IO';
     return { categories, order };
   }
 
@@ -40,7 +40,7 @@
     copy.mode = 1;
     copy.publicMode = 2;
     copy.ontologyCategories = [...categories];
-    copy.order = order;
+    copy.order = FORM_ORDERS.includes(order) ? order : 'IO';
     copy.ontologyScoringNeutral = true;
     copy.isMatch = requireCore().evaluateTrial(copy).isEntailed;
     copy.signature = relationalSignature(copy);
@@ -50,7 +50,7 @@
   function relationalSignature(trial) {
     const result = requireCore().evaluateTrial(trial);
     return [
-      'MODE2-RELATIONAL-ENTAILMENT-V1',
+      'MODE2-RELATIONAL-ENTAILMENT-V2',
       `EXPECTED:${result.expectedRelation}`,
       `ASSERTED:${result.assertedRelation}`,
       `PAIR:${result.queryPairValid ? 'ENDPOINTS' : 'WRONG'}`,
@@ -108,7 +108,7 @@
       const direction = c.direction(statement.relation).name;
       if (index === 0) return `${forms[0]} ${categories[0]} ${statement.subject} is ${direction} of ${statement.object}`;
       if (index === 1) return `${forms[1]} ${categories[1]} ${statement.subject} is ${direction} of ${statement.object}`;
-      return `${forms[2]} ${categories[2]} ${statement.subject} is ${direction} of ${statement.object}`;
+      return `${categories[2]} ${statement.subject} is ${direction} of ${statement.object}`;
     }).join('; ') + '.';
   }
 
@@ -148,6 +148,7 @@
     let renamingChecks = 0;
     let premiseOrderChecks = 0;
     let inversionChecks = 0;
+    let renderChecks = 0;
 
     class AuditRng {
       constructor(seed) { this.s = seed >>> 0; }
@@ -181,7 +182,8 @@
         ontologyMutationFailures: 0,
         renamingFailures: 0,
         premiseOrderFailures: 0,
-        inversionFailures: 0
+        inversionFailures: 0,
+        renderFailures: 0
       };
 
       const history = [];
@@ -204,12 +206,18 @@
         } else if (result.isMatch) levelResult.falseMatches += 1;
         else levelResult.falseNonMatches += 1;
 
+        const rendered = renderOntologicalTrial(trial);
+        if (/archetypal/i.test(rendered) || !/^(Inner|Outer)\s/.test(rendered) || (rendered.match(/\b(?:Inner|Outer)\b/g) || []).length !== 2) {
+          levelResult.renderFailures += 1;
+        }
+        renderChecks += 1;
+
         if (index % 17 === 0) {
           const baseline = evaluate(trial).isMatch;
 
           const ontologyMutated = clone(trial);
           ontologyMutated.ontologyCategories = ['All', 'Action', 'Division'];
-          ontologyMutated.order = 'AOI';
+          ontologyMutated.order = 'OI';
           if (evaluate(ontologyMutated).isMatch !== baseline) levelResult.ontologyMutationFailures += 1;
           ontologyMutationChecks += 1;
 
@@ -245,6 +253,7 @@
       if (level.renamingFailures) failures.push(`level-${level.nBackLevel}-rename-${level.renamingFailures}`);
       if (level.premiseOrderFailures) failures.push(`level-${level.nBackLevel}-order-${level.premiseOrderFailures}`);
       if (level.inversionFailures) failures.push(`level-${level.nBackLevel}-invert-${level.inversionFailures}`);
+      if (level.renderFailures) failures.push(`level-${level.nBackLevel}-render-${level.renderFailures}`);
     });
 
     return Object.freeze({
@@ -261,6 +270,7 @@
       renamingChecks,
       premiseOrderChecks,
       inversionChecks,
+      renderChecks,
       canonicalChecks: c.canonicalTrials().length,
       failures,
       perLevel,
@@ -275,7 +285,9 @@
         subjectObjectReversalRejected: true,
         wrongLetterPairRejected: true,
         adjacentDirectionRejected: true,
-        allNBackLevelsUseSameEvaluator: true
+        allNBackLevelsUseSameEvaluator: true,
+        conclusionHasNoFormPrefix: true,
+        archetypalWordForbiddenInModeTwoOutput: true
       })
     });
   }
@@ -316,19 +328,23 @@
       return originalRenderTrial(trial);
     };
 
-    app.matchSignature = function modeTwoRelationalSignature(trial, mode = trial?.mode) {
+    app.matchSignature = function modeTwoRelationalMatchSignature(trial, mode = trial?.mode) {
       if (Number(mode) === 1 || Number(trial?.publicMode) === 2) return relationalSignature(trial);
       return originalMatchSignature ? originalMatchSignature(trial, mode) : trial?.signature || '';
     };
 
+    app.modeTwoOntologyCompare = compare;
     app.modeTwoOntologyEvaluate = evaluate;
     app.modeTwoOntologyEvaluateHistory = evaluateHistory;
+    app.modeTwoOntologyGenerateTrial = generateTrial;
+    app.modeTwoOntologyGenerateNBackTrial = generateNBackTrial;
+    app.modeTwoOntologyRenderTrial = renderOntologicalTrial;
     app.modeTwoOntologyRunAudit = runExhaustiveAudit;
     app.__modeTwoOntologyNBackV14 = true;
   }
 
   return Object.freeze({
-    version: 17,
+    version: 18,
     LEVELS,
     ONTOLOGY_CATEGORIES,
     FORM_ORDERS,
