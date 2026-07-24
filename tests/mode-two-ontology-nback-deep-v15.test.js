@@ -6,14 +6,13 @@ const modeTwo = require(path.join(__dirname, '..', 'mode-two-ontology-nback-v14.
 
 const LEVELS = [...modeTwo.LEVELS];
 const PROFILES = modeTwo.baseProfiles();
-const FAMILIES = Object.keys(modeTwo.FAMILY_MEMBERS);
+const CATEGORIES = [...modeTwo.ONTOLOGY_CATEGORIES];
 const ORDERS = [...modeTwo.FORM_ORDERS];
 const DIRECTIONS = [...modeTwo.DIRECTIONS];
 
-function oracleFamily(trial) {
+function oracleCategory(trial) {
   const name = trial?.ontology?.name || trial?.ontologyName || trial?.ontology;
-  const family = trial?.ontology?.family;
-  return family || modeTwo.ONTOLOGY_FAMILIES[name] || null;
+  return CATEGORIES.includes(name) ? name : null;
 }
 
 function oracleDirection(trial) {
@@ -31,9 +30,10 @@ function oracleDirection(trial) {
 }
 
 function oracleSignature(trial) {
+  const order = trial?.order || trial?.formOrder || null;
   return {
-    family: oracleFamily(trial),
-    order: trial?.order || trial?.formOrder || null,
+    category: oracleCategory(trial),
+    order: ORDERS.includes(order) ? order : null,
     direction: oracleDirection(trial)
   };
 }
@@ -41,7 +41,8 @@ function oracleSignature(trial) {
 function oracleCompare(current, target) {
   const a = oracleSignature(current);
   const b = oracleSignature(target);
-  return a.family === b.family && a.order === b.order && a.direction === b.direction;
+  return Boolean(a.category && b.category && a.order && b.order && a.direction && b.direction) &&
+    a.category === b.category && a.order === b.order && a.direction === b.direction;
 }
 
 function seeded(seed) {
@@ -60,12 +61,11 @@ function pick(rng, values) {
 }
 
 function randomTrial(rng) {
-  const family = pick(rng, FAMILIES);
-  const members = modeTwo.FAMILY_MEMBERS[family];
+  const category = pick(rng, CATEGORIES);
   return {
     mode: 1,
     publicMode: 2,
-    ontology: { name: pick(rng, members), family },
+    ontology: { name: category, family: modeTwo.ONTOLOGY_FAMILIES[category] },
     order: pick(rng, ORDERS),
     dirs: [pick(rng, DIRECTIONS), pick(rng, DIRECTIONS)],
     symbols: [String.fromCharCode(65 + Math.floor(rng() * 26)), String.fromCharCode(65 + Math.floor(rng() * 26)), String.fromCharCode(65 + Math.floor(rng() * 26))]
@@ -79,7 +79,7 @@ for (const current of PROFILES) {
     parityComparisons += 1;
   }
 }
-assert.strictEqual(parityComparisons, 230400);
+assert.strictEqual(parityComparisons, 746496);
 
 let warmupChecks = 0;
 for (const level of LEVELS) {
@@ -97,9 +97,9 @@ assert.strictEqual(warmupChecks, 36);
 let longHistoryChecks = 0;
 let longHistoryMatches = 0;
 let longHistoryNonMatches = 0;
-for (let seed = 1; seed <= 512; seed += 1) {
+for (let seed = 1; seed <= 1024; seed += 1) {
   const rng = seeded(seed);
-  const history = Array.from({ length: 512 }, () => randomTrial(rng));
+  const history = Array.from({ length: 1024 }, () => randomTrial(rng));
   for (const level of LEVELS) {
     for (let currentIndex = level; currentIndex < history.length; currentIndex += 1) {
       const result = modeTwo.evaluateHistory(history, currentIndex, level);
@@ -114,27 +114,38 @@ for (let seed = 1; seed <= 512; seed += 1) {
     }
   }
 }
-assert.strictEqual(longHistoryChecks, 2078720);
+assert.strictEqual(longHistoryChecks, 8359936);
 assert.strictEqual(longHistoryMatches + longHistoryNonMatches, longHistoryChecks);
 
+let pairedCategoryRejections = 0;
 let adversarialChecks = 0;
 for (const profile of PROFILES) {
-  const family = oracleFamily(profile);
-  const members = modeTwo.FAMILY_MEMBERS[family];
-  const sameFamilyName = members[(members.indexOf(profile.ontology.name) + 1) % members.length];
+  const category = oracleCategory(profile);
+  const family = modeTwo.ONTOLOGY_FAMILIES[category];
+  const paired = modeTwo.FAMILY_MEMBERS[family].find(value => value !== category);
   const equivalent = {
     ...profile,
-    ontology: { name: sameFamilyName, family },
+    ontology: { name: category, family },
     dirs: [profile.dirs[1], profile.dirs[0]],
     symbols: ['X', 'Y', 'Z']
   };
   assert.strictEqual(modeTwo.compare(equivalent, profile).isMatch, true);
   adversarialChecks += 1;
 
-  for (const otherFamily of FAMILIES.filter(value => value !== family)) {
+  if (paired) {
+    const pairedCollision = {
+      ...equivalent,
+      ontology: { name: paired, family }
+    };
+    assert.strictEqual(modeTwo.compare(pairedCollision, profile).isMatch, false);
+    pairedCategoryRejections += 1;
+    adversarialChecks += 1;
+  }
+
+  for (const otherCategory of CATEGORIES.filter(value => value !== category)) {
     const collision = {
       ...equivalent,
-      ontology: { name: modeTwo.FAMILY_MEMBERS[otherFamily][0], family: otherFamily }
+      ontology: { name: otherCategory, family: modeTwo.ONTOLOGY_FAMILIES[otherCategory] }
     };
     assert.strictEqual(modeTwo.compare(collision, profile).isMatch, false);
     adversarialChecks += 1;
@@ -154,21 +165,41 @@ for (const profile of PROFILES) {
     }
   }
 }
-assert.strictEqual(adversarialChecks, 12480);
+assert.strictEqual(pairedCategoryRejections, 768);
+assert.strictEqual(adversarialChecks, 26784);
+
+const malformed = [
+  {},
+  { ontology: { name: 'Division' }, order: 'IOA' },
+  { ontology: { name: 'NotACategory' }, order: 'IOA', dirs: ['N', 'E'] },
+  { ontology: { name: 'Division' }, order: 'BAD', dirs: ['N', 'E'] },
+  { ontology: { name: 'Division' }, order: 'IOA', dirs: ['BAD', 'E'] }
+];
+let malformedChecks = 0;
+for (const a of malformed) {
+  for (const b of malformed) {
+    assert.strictEqual(modeTwo.compare(a, b).isMatch, false);
+    malformedChecks += 1;
+  }
+}
+assert.strictEqual(malformedChecks, 25);
 
 const deepAudit = modeTwo.runExhaustiveAudit(512);
 assert.strictEqual(deepAudit.passed, true, JSON.stringify(deepAudit.failures, null, 2));
-assert.strictEqual(deepAudit.totalEvaluations, 7864320);
-assert.strictEqual(deepAudit.matches, 1966080);
-assert.strictEqual(deepAudit.nonMatches, 5898240);
+assert.strictEqual(deepAudit.totalEvaluations, 17694720);
+assert.strictEqual(deepAudit.matches, 3538944);
+assert.strictEqual(deepAudit.nonMatches, 14155776);
+assert.strictEqual(deepAudit.matchRate, 0.2);
+assert.strictEqual(deepAudit.nonMatchRate, 0.8);
 assert.strictEqual(deepAudit.failures.length, 0);
 for (const result of deepAudit.perLevel) {
-  assert.strictEqual(result.evaluations, 983040);
-  assert.strictEqual(result.matches, 245760);
-  assert.strictEqual(result.nonMatches, 737280);
+  assert.strictEqual(result.evaluations, 2211840);
+  assert.strictEqual(result.matches, 442368);
+  assert.strictEqual(result.nonMatches, 1769472);
   assert.strictEqual(result.falseMatches, 0);
   assert.strictEqual(result.falseNonMatches, 0);
   assert.strictEqual(result.wrongOffsetFailures, 0);
+  assert.strictEqual(result.pairedCategoryFalseMatches, 0);
 }
 
 console.log(JSON.stringify({
@@ -178,7 +209,9 @@ console.log(JSON.stringify({
   longHistoryChecks,
   longHistoryMatches,
   longHistoryNonMatches,
+  pairedCategoryRejections,
   adversarialChecks,
+  malformedChecks,
   exhaustiveAudit: {
     repetitionsPerProfile: deepAudit.repetitionsPerProfile,
     totalEvaluations: deepAudit.totalEvaluations,
