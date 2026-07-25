@@ -10,7 +10,6 @@
 })(typeof window !== 'undefined' ? window : globalThis, root => {
   const LEVELS = Object.freeze([1,2,3,4,5,6,7,8]);
   const LETTER_POOL = 'ABCDEFGHJKLMNPQRSTUVWXYZ'.split('');
-  const ALL_MASKS = Object.freeze([[false,false,false],[true,false,false],[false,true,false],[false,false,true],[true,true,false],[true,false,true],[false,true,true],[true,true,true]]);
   const core = root?.__modeOneTriadicEntailmentCore || root?.__modeOneSpatialCore || (typeof require === 'function' ? require('./mode-one-spatial-core.js') : null);
   function requireCore() { if (!core) throw new Error('Mode 1 conflict matrix requires the spatial core.'); return core; }
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -73,18 +72,20 @@
     trial.mode = 0; trial.publicMode = 1; trial.directionResolution = Number(target.directionResolution || 16);
     return trial;
   }
-  function resolutionMutationDistances(resolution, interferenceLevel) {
-    const ringLength = Number(resolution), level = Math.max(0, Math.min(100, Number(interferenceLevel) || 0));
-    const distances = [];
-    for (let d = 1; d <= Math.floor(ringLength / 2); d++) distances.push(d);
-    if (level >= 67) return distances;
-    if (level >= 34) return distances.slice().sort((a,b) => Math.abs(a - ringLength/4) - Math.abs(b - ringLength/4));
-    return distances.slice().sort((a,b) => b - a);
+  function oneStepMutations(statement, resolution) {
+    const c = requireCore(), ring = c.allowedCodes(resolution), index = ring.indexOf(statement.relation);
+    if (index < 0) return [];
+    return [-1,1].map(sign => ({...statement, relation: ring[(index + sign + ring.length) % ring.length]}));
   }
   function mutateDirection(rng, statement, interferenceLevel = 0, directionResolution = 16) {
     const c = requireCore(), ring = c.allowedCodes(directionResolution), index = ring.indexOf(statement.relation);
     if (index < 0) throw new Error('Cannot mutate a relation outside the selected resolution.');
-    const distances = resolutionMutationDistances(ring.length, interferenceLevel), distance = pick(rng, distances), sign = random(rng) < .5 ? -1 : 1;
+    const level = Math.max(0, Math.min(100, Number(interferenceLevel) || 0));
+    let distance;
+    if (level >= 85) distance = 1;
+    else if (level >= 55) distance = Math.min(2, Math.floor(ring.length / 2));
+    else distance = Math.max(1, Math.floor(ring.length / 2));
+    const sign = random(rng) < .5 ? -1 : 1;
     return { ...statement, relation: ring[(index + sign * distance + ring.length) % ring.length] };
   }
   function finaliseConflictTrial(target, trial, options) {
@@ -109,59 +110,22 @@
     });
     return trial;
   }
-  function relationSimilarity(target, current, resolution) {
-    const c = requireCore(), targetStatements = statements(target), currentStatements = statements(current);
-    let best = 0;
-    for (const permutation of permutations([0,1,2])) {
-      let score = 0;
+  function buildExactSingleConflictCandidates(rng, target, resolution) {
+    const candidates = [];
+    for (let transformAttempt = 0; transformAttempt < 40; transformAttempt++) {
+      const source = renameAndTransform(rng, target);
+      source.directionResolution = resolution;
+      const base = statements(source).map(item => ({...item}));
       for (let index = 0; index < 3; index++) {
-        const first = targetStatements[permutation[index]], second = currentStatements[index];
-        const distance = c.circularDistance(first.relation, second.relation, resolution);
-        score += distance === 0 ? 1 : distance === 1 ? .75 : distance === 2 ? .45 : 0;
+        for (const replacement of oneStepMutations(base[index], resolution)) {
+          const trial = clone(source), items = base.map(item => ({...item}));
+          items[index] = replacement;
+          trial.premises = items.slice(0,2); trial.conclusion = items[2];
+          candidates.push(trial);
+        }
       }
-      best = Math.max(best, score / 3);
     }
-    return best;
-  }
-  function candidateDifficulty(evaluation, target, current, resolution, interferenceLevel, previousTrial) {
-    const c = requireCore();
-    const level = Math.max(0, Math.min(100, Number(interferenceLevel) || 0));
-    const targetStatements = statements(target), currentStatements = statements(current);
-    const relationDistances = currentStatements.map((statement, index) => c.circularDistance(targetStatements[index]?.relation, statement.relation, resolution));
-    const finiteDistances = relationDistances.filter(Number.isFinite);
-    const averageDistance = finiteDistances.length ? finiteDistances.reduce((a,b) => a+b, 0) / finiteDistances.length : resolution;
-    const exactCount = evaluation.statementMatches.filter(Boolean).length;
-    const pairMatch = exactCount === 2;
-    const singleMatch = exactCount === 1;
-    const targetEntailment = Boolean(target.conclusionEntailed);
-    const entailmentFlip = evaluation.conclusionEntailed !== targetEntailment;
-    const currentSimilarity = relationSimilarity(target, current, resolution);
-    const sequentialSimilarity = previousTrial ? relationSimilarity(previousTrial, current, resolution) : 0;
-    let score = exactCount * 120 + currentSimilarity * 180 + sequentialSimilarity * 90;
-    if (level >= 90) {
-      if (pairMatch) score += 320;
-      if (singleMatch) score += 80;
-      if (exactCount === 0) score -= 240;
-      if (entailmentFlip) score += 130;
-      score -= averageDistance * 45;
-    } else if (level >= 70) {
-      if (pairMatch) score += 180;
-      if (singleMatch) score += 60;
-      if (entailmentFlip) score += 75;
-      score -= averageDistance * 28;
-    } else {
-      score -= averageDistance * 10;
-    }
-    return score;
-  }
-  function buildMutationalCandidate(rng, target, resolution, interferenceLevel, mutationIndex) {
-    const source = renameAndTransform(rng, target);
-    source.directionResolution = resolution;
-    const items = statements(source).map(item => ({...item}));
-    items[mutationIndex] = mutateDirection(rng, items[mutationIndex], interferenceLevel, resolution);
-    source.premises = items.slice(0,2);
-    source.conclusion = items[2];
-    return source;
+    return candidates;
   }
   function generateConflictTrial(rng, target, options = {}) {
     if (!target) throw new Error('A historical N-back target is required.');
@@ -178,45 +142,32 @@
       return finaliseConflictTrial(target, trial, { match: true, roleSensitive, directionResolution: resolution, interferenceLevel });
     }
     const pool = c.allowedCodes(resolution), candidates = [];
-    const previousTrial = options.previousTrial || null;
     const addCandidate = trial => {
       if (!trial || !ensureResolutionClosed(trial, resolution)) return;
       let evaluation;
       try { evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }); } catch (_) { return; }
       const relations = statements(trial).map(statement => statement.relation).concat(evaluation.expectedRelation);
       if (evaluation.wholeTrialMatch || !relations.every(code => pool.includes(code))) return;
-      candidates.push({ trial, evaluation, score: candidateDifficulty(evaluation, target, trial, resolution, interferenceLevel, previousTrial) });
+      candidates.push({trial, evaluation});
     };
-    const mutationRepetitions = interferenceLevel >= 90 ? 80 : interferenceLevel >= 70 ? 36 : 12;
-    for (let mutationIndex = 0; mutationIndex < 3; mutationIndex++) {
-      for (let attempt = 0; attempt < mutationRepetitions; attempt++) addCandidate(buildMutationalCandidate(rng, target, resolution, interferenceLevel, mutationIndex));
-    }
-    if (interferenceLevel >= 85) {
-      for (let attempt = 0; attempt < 120; attempt++) {
-        const source = renameAndTransform(rng, target);
-        source.directionResolution = resolution;
-        const items = statements(source).map(item => ({...item}));
-        const firstMutation = attempt % 3, secondMutation = (firstMutation + 1) % 3;
-        items[firstMutation] = mutateDirection(rng, items[firstMutation], interferenceLevel, resolution);
-        if (random(rng) < .35) items[secondMutation] = mutateDirection(rng, items[secondMutation], interferenceLevel, resolution);
-        source.premises = items.slice(0,2);
-        source.conclusion = items[2];
-        addCandidate(source);
-      }
-    }
-    const randomCount = interferenceLevel >= 90 ? 80 : interferenceLevel >= 70 ? 60 : 40;
-    for (let attempt = 0; attempt < randomCount; attempt++) {
-      const trial = c.generateTrial(rng, { matchProbability: random(rng) < 0.5 ? 1 : 0, interferenceLevel, directionResolution: resolution });
-      trial.mode = 0; trial.publicMode = 1; trial.directionResolution = resolution;
-      addCandidate(trial);
+    if (interferenceLevel >= 80) buildExactSingleConflictCandidates(rng, target, resolution).forEach(addCandidate);
+    const genericCount = interferenceLevel >= 80 ? 80 : interferenceLevel >= 60 ? 120 : 80;
+    for (let attempt = 0; attempt < genericCount; attempt++) {
+      const source = renameAndTransform(rng, target);
+      source.directionResolution = resolution;
+      const items = statements(source).map(item => ({...item}));
+      const mutationCount = interferenceLevel >= 80 ? 1 : interferenceLevel >= 50 ? (random(rng) < .65 ? 1 : 2) : 2;
+      const indexes = shuffle(rng,[0,1,2]).slice(0,mutationCount);
+      indexes.forEach(index => { items[index] = mutateDirection(rng, items[index], interferenceLevel, resolution); });
+      source.premises = items.slice(0,2); source.conclusion = items[2];
+      addCandidate(source);
     }
     if (!candidates.length) throw new Error(`Unable to generate a ${resolution}-direction non-match trial.`);
-    candidates.sort((a,b) => b.score - a.score);
-    const highConflict = interferenceLevel >= 90;
-    const preferred = highConflict ? candidates.filter(item => item.evaluation.matchedCount === 2) : candidates;
-    const poolToUse = preferred.length ? preferred : candidates;
-    const span = highConflict ? Math.min(3, poolToUse.length) : Math.max(1, Math.ceil(poolToUse.length * (1 - 0.97 * interferenceLevel / 100)));
-    const selected = poolToUse[Math.floor(random(rng) * span)];
+    const maxInterference = interferenceLevel >= 95;
+    const exactTwo = candidates.filter(item => item.evaluation.matchedCount === 2);
+    const exactOne = candidates.filter(item => item.evaluation.matchedCount === 1);
+    const selectedPool = maxInterference ? (exactTwo.length ? exactTwo : exactOne.length ? exactOne : candidates) : interferenceLevel >= 75 ? (exactTwo.length ? exactTwo.concat(exactOne) : candidates) : candidates;
+    const selected = pick(rng, selectedPool);
     return finaliseConflictTrial(target, selected.trial, { match: false, roleSensitive, directionResolution: resolution, interferenceLevel });
   }
   function generateWarmupTrial(rng, options = {}) {
@@ -326,8 +277,7 @@
       const interferenceLevel = Number(d.getElementById('interference-slider')?.value) || 0;
       if (!target) return generateWarmupTrial(this.rng, { interferenceLevel, directionResolution: resolution });
       const requestedMatch = this.rng.next() < settings.matchProbability;
-      const previousTrial = this.trials[this.trials.length - 1] || null;
-      return generateConflictTrial(this.rng, target, { match: requestedMatch, interferenceLevel, roleSensitive: interferenceLevel >= 70 || Boolean(this.trials.length % 2), directionResolution: resolution, previousTrial });
+      return generateConflictTrial(this.rng, target, { match: requestedMatch, interferenceLevel, roleSensitive: true, directionResolution: resolution });
     };
     const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation'), timerBar = d.getElementById('timer-bar');
     function schedule(token, seconds) { clearTimeout(app.timerId); const started = Date.now(); const update = () => { if (!timerBar || !app.running || app.paused || token !== app.sessionToken) return; const elapsed = (Date.now() - started) / 1000; timerBar.style.width = `${Math.max(0, 100 * (1 - elapsed / seconds))}%`; if (elapsed < seconds) rootObject.requestAnimationFrame?.(update); }; if (timerBar) { timerBar.style.width = '100%'; rootObject.requestAnimationFrame?.(update); } app.timerId = rootObject.setTimeout(() => { if (app.running && !app.paused && token === app.sessionToken) app.nextTrial(token); }, seconds * 1000); }
@@ -337,10 +287,7 @@
       const resolution = requireCore().normaliseResolution(this.directionResolution, null);
       let trial;
       try { trial = this.makeTrial(); }
-      catch (error) {
-        console.error('Mode 1 generation failed; regenerating within the selected resolution.', error);
-        trial = generateWarmupTrial(this.rng, { interferenceLevel: Number(d.getElementById('interference-slider')?.value) || 0, directionResolution: resolution });
-      }
+      catch (error) { console.error('Mode 1 generation failed; regenerating within the selected resolution.', error); trial = generateWarmupTrial(this.rng, { interferenceLevel: Number(d.getElementById('interference-slider')?.value) || 0, directionResolution: resolution }); }
       if (!ensureResolutionClosed(trial, resolution)) trial = generateWarmupTrial(this.rng, { interferenceLevel: Number(d.getElementById('interference-slider')?.value) || 0, directionResolution: resolution });
       this.current = trial; this.trials.push(trial); this.score.shown++; this.awaiting = true;
       const rendered = requireCore().renderTrial(trial); if (premiseDisplay) { premiseDisplay.textContent = rendered; premiseDisplay.classList.remove('correct','incorrect'); }
@@ -350,28 +297,25 @@
       schedule(token, Math.max(2, Number(originalSettings().seconds) || 8)); return trial;
     };
     app.submitConflictMatrix = function(responses, decisionTimes) { if (!this.current?.scored || !Array.isArray(this.current.conflictResponseVector) || !this.awaiting) return; const expected = this.current.conflictResponseVector, correctness = responses.map((value,index) => value === expected[index]); Object.assign(this.current, { conflictResponses: responses.slice(), conflictDecisionCorrectness: correctness.slice(), conflictCorrectCount: correctness.filter(Boolean).length, conflictAllCorrect: correctness.every(Boolean), conflictDecisionTimes: decisionTimes.slice(), directionResolution: this.directionResolution }); this.awaiting = false; clearTimeout(this.timerId); if (feedback) feedback.textContent = this.current.conflictAllCorrect ? 'ALL FIVE CORRECT' : `${this.current.conflictCorrectCount}/5 CORRECT`; if (explanation) explanation.textContent = requireCore().explainTrial(this.current); try { this.updateStats?.(); } catch (_) {} rootObject.setTimeout(() => { if (this.running && !this.paused) this.nextTrial(this.sessionToken); }, 1600); };
-    app.stop = function(...args) { const result = originalStop(...args); this.directionResolution = null; ui.select.disabled = false; ui.select.value = ''; ui.sync(); return result; };
-    Object.assign(app, { modeOneConflictAnalyseAlignment: analyseAlignment, modeOneConflictEvaluate: evaluateConflictMatrix, modeOneConflictEvaluateHistory: evaluateHistory, modeOneConflictGenerateTrial: generateConflictTrial, __mandatoryCompassResolutionInstalled: true, __modeOneConflictMatrixV20: true });
-    ui.sync();
+    app.stop = function(...args) { const result = originalStop(...args); this.directionResolution = null; ui.select.value = ''; ui.select.disabled = Number(originalSettings().mode) !== 0; ui.sync(); return result; };
+    app.__mandatoryCompassResolutionInstalled = true;
   }
-  function runAudit(iterationsPerResolution = 2000) {
-    class Rng { constructor(seed) { this.s = seed >>> 0; } next() { let v = this.s += 1831565813; v = Math.imul(v ^ v >>> 15, 1 | v); v ^= v + Math.imul(v ^ v >>> 7, 61 | v); return ((v ^ v >>> 14) >>> 0) / 4294967296; } pick(values) { return values[Math.floor(this.next() * values.length)]; } shuffle(values) { return fisherYates(this, values); } }
-    const failures = [], rows = [];
+  function runConflictAudit(iterationsPerResolution = 1000) {
+    class AuditRng { constructor(seed) { this.s=seed>>>0; } next(){let v=this.s+=1831565813;v=Math.imul(v^v>>>15,1|v);v^=v+Math.imul(v^v>>>7,61|v);return((v^v>>>14)>>>0)/4294967296;} pick(values){return values[Math.floor(this.next()*values.length)];} shuffle(values){return fisherYates(this,values);} }
+    const failures=[], rows=[];
     for (const resolution of [4,8,16]) {
-      const rng = new Rng(0x61000000 + resolution), history = [], pool = requireCore().allowedCodes(resolution), row = { resolution, failures: 0, highConflictNearMisses: 0, highConflictTrials: 0 };
-      for (let i = 0; i < iterationsPerResolution; i++) {
-        try {
-          const target = history.length ? history[Math.max(0, history.length - 1)] : null;
-          const trial = target ? generateConflictTrial(rng, target, { match: i % 2 === 0, interferenceLevel: 100, directionResolution: resolution, previousTrial: history[history.length - 1] }) : generateWarmupTrial(rng, { interferenceLevel: 100, directionResolution: resolution });
-          history.push(trial);
-          const relations = statements(trial).map(s => s.relation).concat(requireCore().evaluateTrial(trial).expectedRelation);
-          if (trial.directionResolution !== resolution || !relations.every(code => pool.includes(code)) || trial.conflictResponseVector.length !== 5) row.failures++;
-          if (target && !trial.nBackMatch) { row.highConflictTrials++; if (trial.statementMatchVector.filter(Boolean).length === 2) row.highConflictNearMisses++; }
-        } catch (error) { row.failures++; if (failures.length < 20) failures.push(`${resolution}-${i}:${error.message}`); }
+      const rng=new AuditRng(0x61000000+resolution), row={resolution,failures:0,exactTwo:0,nonMatches:0}; let target=generateWarmupTrial(rng,{interferenceLevel:100,directionResolution:resolution});
+      for(let i=0;i<iterationsPerResolution;i++){
+        try{
+          const trial=generateConflictTrial(rng,target,{match:false,interferenceLevel:100,roleSensitive:true,directionResolution:resolution});
+          const evaluation=evaluateConflictMatrix(target,trial,{roleSensitive:true}); row.nonMatches++; if(evaluation.matchedCount===2) row.exactTwo++;
+          if(evaluation.wholeTrialMatch||!ensureResolutionClosed(trial,resolution)||evaluation.matchedCount!==2) row.failures++;
+          target=trial;
+        }catch(error){row.failures++;if(failures.length<20)failures.push(`${resolution}-${i}:${error.message}`);}
       }
-      if (row.failures || (row.highConflictTrials && row.highConflictNearMisses / row.highConflictTrials < .75)) failures.push(`resolution-${resolution}-summary`); rows.push(row);
+      if(row.failures) failures.push(`resolution-${resolution}-summary`); rows.push(row);
     }
-    return { passed: failures.length === 0, failures, rows, iterationsPerResolution };
+    return {passed:failures.length===0,failures,iterationsPerResolution,rows};
   }
-  return Object.freeze({ version: 46, LEVELS, ALL_MASKS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, mutateDirection, runAudit, installBrowser });
+  return { version: 20, LEVELS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, installBrowser, runAudit: runConflictAudit, runConflictAudit, ensureResolutionClosed, mutateDirection };
 });
