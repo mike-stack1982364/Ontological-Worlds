@@ -6,7 +6,7 @@ const path = require('path');
 const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
 const conflict = require(path.join(__dirname, '..', 'mode-one-conflict-matrix-v20.js'));
 
-assert.strictEqual(conflict.version, 22);
+assert.ok(conflict.version >= 24);
 assert.deepStrictEqual([...conflict.LEVELS], [1,2,3,4,5,6,7,8]);
 assert.strictEqual(conflict.ALL_MASKS.length, 8);
 assert.strictEqual(new Set(conflict.ALL_MASKS.map(mask => mask.map(Number).join(''))).size, 8);
@@ -72,6 +72,16 @@ assert.ok(!source.includes('global.addEventListener'), 'production code must not
 assert.ok(source.includes("if(roleSensitive && currentIndex!==2 && targetIndex===2) return false"), 'role-sensitive local compatibility must preserve both premise and conclusion roles');
 assert.ok(source.includes('function mutationDistances(interferenceLevel)'), 'interference level must control lure distance classes');
 
+const staticChoices = (html.match(/class="conflict-choice"/g) || []).length;
+assert.strictEqual(staticChoices, 10, 'front page must contain all ten response buttons without dynamic injection');
+assert.ok(html.includes('grid-template-columns:repeat(5,minmax(0,1fr))'), 'five decision pairs must occupy one full-width horizontal grid');
+assert.ok(html.includes('width:100vw'), 'response matrix must escape the narrow game card and span the viewport');
+assert.ok(html.includes('position:absolute'), 'full-width response matrix must occupy the original response stage instead of expanding the page');
+assert.ok(html.includes('.response-stage{position:relative'), 'response stage must anchor the viewport-wide matrix at the original button height');
+assert.ok(!html.includes('overflow-x:auto'), 'front-page response controls must not become a horizontally scrolling strip');
+assert.ok(html.includes('for(let attempt=0;attempt<4;attempt++)'), 'browser must retry transient Mode 1 generation failures');
+assert.ok(html.includes('fallback.recoveryFallback=true'), 'browser must recover safely rather than terminate the session');
+
 const corePosition = html.indexOf('mode-one-spatial-core.js');
 const modeTwoPosition = html.indexOf('mode-two-ontology-nback-v14.js');
 const conflictPosition = html.indexOf('mode-one-conflict-matrix-v20.js');
@@ -90,7 +100,8 @@ assert.strictEqual(audit.invariants.oneToOneStatementAssignmentRequired, true);
 console.log(JSON.stringify({
   passed: true,
   explicitMaskChecks,
-  browserContractChecks: 15,
+  browserContractChecks: 23,
+  staticChoices,
   audit: {
     total: audit.total,
     totalBinaryDecisions: audit.totalBinaryDecisions,
