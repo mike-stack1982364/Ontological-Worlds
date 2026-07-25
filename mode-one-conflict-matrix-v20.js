@@ -138,11 +138,11 @@
   }
   function generateWarmupTrial(rng,options={}){
     const trial=requireCore().generateTrial(rng,{matchProbability:random(rng)<.5?1:0,interferenceLevel:options.interferenceLevel});
-    Object.assign(trial,{mode:0,publicMode:1,nBackWarmup:true,scored:false}); return trial;
+    const entailment=requireCore().evaluateTrial(trial); Object.assign(trial,{mode:0,publicMode:1,nBackWarmup:true,scored:true,nBackRequestedMatch:false,nBackMatch:false,isMatch:false,statementMatchVector:[false,false,false],conclusionEntailed:entailment.isEntailed,conflictResponseVector:[false,false,false,entailment.isEntailed,false],mappingConflict:false,localStatementCompatibility:[false,false,false],roleSensitive:false,interferenceProfile:`000:${Number(entailment.isEntailed)}:0`}); return trial;
   }
   function evaluateHistory(history,currentIndex,nBackLevel,options={}){
     const level=Math.max(1,Math.min(8,Math.round(Number(nBackLevel)||1))), targetIndex=currentIndex-level;
-    if(targetIndex<0) return Object.freeze({warmup:true,scored:false,isMatch:false,currentIndex,targetIndex,nBackLevel:level});
+    if(targetIndex<0){ const current=history[currentIndex], entailment=requireCore().evaluateTrial(current); return Object.freeze({warmup:true,scored:true,isMatch:false,currentIndex,targetIndex,nBackLevel:level,statementMatches:Object.freeze([false,false,false]),conclusionEntailed:entailment.isEntailed,wholeTrialMatch:false,responseVector:Object.freeze([false,false,false,entailment.isEntailed,false])}); }
     const evaluation=evaluateConflictMatrix(history[targetIndex],history[currentIndex],options);
     return Object.freeze({...evaluation,warmup:false,scored:true,isMatch:evaluation.wholeTrialMatch,currentIndex,targetIndex,nBackLevel:level});
   }
@@ -216,7 +216,7 @@
       const selectedMode=Number(d.getElementById('logic-mode')?.value||0);
       const isModeOne=selectedMode===0;
       setVisible(isModeOne);
-      const scored=isModeOne&&Boolean(trial?.scored);
+      const scored=isModeOne&&Boolean(trial); if(scored&&!Array.isArray(trial.conflictResponseVector)){ const entailment=requireCore().evaluateTrial(trial); Object.assign(trial,{scored:true,statementMatchVector:[false,false,false],conclusionEntailed:entailment.isEntailed,conflictResponseVector:[false,false,false,entailment.isEntailed,false],nBackMatch:false,isMatch:false}); }
       matrix.querySelectorAll('.conflict-choice').forEach(b=>{b.classList.remove('selected');b.disabled=!scored;});
       matrix.querySelector('#conflict-submit').disabled=true;
       matrix.querySelector('#conflict-progress').textContent=scored?'0 of 5 decisions entered':(isModeOne?'Memory fill — observe only; no response required':'');
@@ -336,7 +336,7 @@
       this.current=trial;
       this.trials.push(trial);
       this.score.shown++;
-      this.awaiting=Boolean(trial.scored);
+      if(!Array.isArray(trial.conflictResponseVector)){ const entailment=requireCore().evaluateTrial(trial); Object.assign(trial,{scored:true,statementMatchVector:[false,false,false],conclusionEntailed:entailment.isEntailed,conflictResponseVector:[false,false,false,entailment.isEntailed,false],nBackMatch:false,isMatch:false}); } this.awaiting=true;
       renderModeOneTrial(trial);
       matrix.resetResponses(trial);
       try{this.updateStats?.();}catch(_){ }
@@ -370,5 +370,5 @@
     Object.assign(app,{modeOneConflictAnalyseAlignment:analyseAlignment,modeOneConflictEvaluate:evaluateConflictMatrix,modeOneConflictEvaluateHistory:evaluateHistory,modeOneConflictGenerateTrial:generateConflictTrial,modeOneConflictRunAudit:runAudit,__modeOneConflictMatrixV20:true});
   }
 
-  return Object.freeze({version:37,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
+  return Object.freeze({version:38,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
 });
