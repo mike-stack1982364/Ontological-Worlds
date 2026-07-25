@@ -110,11 +110,7 @@
     }
     const pool = c.allowedCodes(resolution);
     for (let attempt = 0; attempt < 1000; attempt++) {
-      const trial = c.generateTrial(rng, {
-        matchProbability: random(rng) < 0.5 ? 1 : 0,
-        interferenceLevel,
-        directionResolution: resolution
-      });
+      const trial = c.generateTrial(rng, { matchProbability: random(rng) < 0.5 ? 1 : 0, interferenceLevel, directionResolution: resolution });
       trial.mode = 0; trial.publicMode = 1; trial.directionResolution = resolution;
       let evaluation;
       try { evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }); } catch (_) { continue; }
@@ -151,7 +147,7 @@
   function installStyles(d) {
     if (d.getElementById('compass-resolution-style')) return;
     const style = d.createElement('style'); style.id = 'compass-resolution-style';
-    style.textContent = `#direction-resolution-group[hidden]{display:none!important}#direction-resolution-help{font-size:.75rem;color:#43566d;line-height:1.42;margin:8px 0 0}#direction-resolution-error{font-size:.78rem;color:#a61f17;font-weight:800;margin:7px 0 0}#direction-resolution[aria-invalid="true"]{outline:3px solid rgba(180,35,24,.3);border-color:#b42318}#compass-resolution-status{font-size:.7rem;font-weight:850;letter-spacing:.06em;color:#31546f;text-align:center;margin:5px 0 0;text-transform:uppercase}`;
+    style.textContent = `#direction-resolution-group[hidden]{display:none!important}#direction-resolution-help{font-size:.75rem;color:#43566d;line-height:1.42;margin:8px 0 0}#direction-resolution-error{font-size:.78rem;color:#a61f17;font-weight:800;margin:7px 0 0}#direction-resolution[aria-invalid="true"]{outline:3px solid rgba(180,35,24,.3);border-color:#b42318}#direction-resolution-status{font-size:.7rem;font-weight:850;letter-spacing:.06em;color:#31546f;text-align:center;margin:5px 0 0;text-transform:uppercase}`;
     d.head.appendChild(style);
   }
   function ensureResolutionUI(d, app) {
@@ -159,11 +155,12 @@
     let group = d.getElementById('direction-resolution-group');
     if (!group) {
       group = d.createElement('div'); group.id = 'direction-resolution-group'; group.className = 'control-group';
-      group.innerHTML = `<label for="direction-resolution">Compass directions</label><select id="direction-resolution" aria-describedby="direction-resolution-help direction-resolution-error" aria-invalid="false"><option value="">Choose direction count…</option><option value="4">4 directions</option><option value="8">8 directions</option><option value="16">16 directions — full resolution</option></select><p id="direction-resolution-help">4 uses north, east, south and west. 8 adds northeast, southeast, southwest and northwest. 16 adds the intermediate directions. Cognitive interference changes lure difficulty, not compass resolution.</p><p id="direction-resolution-error" role="alert" hidden>Choose 4, 8 or 16 compass directions before starting Mode 1.</p><div id="compass-resolution-status" aria-live="polite">Compass resolution: not selected</div>`;
+      group.innerHTML = `<label for="direction-resolution">Compass directions</label><select id="direction-resolution" aria-describedby="direction-resolution-help direction-resolution-error" aria-invalid="false"><option value="">Choose direction count…</option><option value="4">4 directions</option><option value="8">8 directions</option><option value="16">16 directions — full resolution</option></select><p id="direction-resolution-help">4 uses north, east, south and west. 8 adds northeast, southeast, southwest and northwest. 16 adds the intermediate directions. Cognitive interference changes lure difficulty, not compass resolution.</p><p id="direction-resolution-error" role="alert" hidden>Choose 4, 8 or 16 compass directions before starting Mode 1.</p><div id="direction-resolution-status" aria-live="polite">Compass resolution: not selected</div>`;
       const nGroup = d.getElementById('n-slider')?.closest('.control-group');
       nGroup?.insertAdjacentElement('afterend', group);
     }
-    const select = d.getElementById('direction-resolution'), error = d.getElementById('direction-resolution-error'), status = d.getElementById('compass-resolution-status'), start = d.getElementById('start-btn'), mode = d.getElementById('logic-mode');
+    const select = d.getElementById('direction-resolution'), error = d.getElementById('direction-resolution-error'), status = d.getElementById('direction-resolution-status'), start = d.getElementById('start-btn'), mode = d.getElementById('logic-mode');
+    if (!select || !error || !status || !start) throw new Error('Compass-resolution UI is incomplete.');
     select.value = '';
     const getSelected = () => { const value = Number(select.value); return [4,8,16].includes(value) ? value : null; };
     const isModeOne = () => Number(mode?.value || 0) === 0;
@@ -177,10 +174,12 @@
       return false;
     };
     const sync = () => {
-      const modeOne = isModeOne(), resolution = getSelected(); group.hidden = !modeOne; select.disabled = Boolean(app.running);
-      if (!modeOne) { start.disabled = Boolean(app.running); clearError(); }
-      else if (!app.running) start.disabled = !resolution;
+      const modeOne = isModeOne(), resolution = getSelected();
+      group.hidden = !modeOne;
+      select.disabled = Boolean(app.running) || !modeOne;
+      if (!app.running) start.disabled = modeOne ? !resolution : false;
       status.textContent = resolution ? `Compass resolution: ${resolution} directions` : 'Compass resolution: not selected';
+      if (!modeOne) clearError();
     };
     select.addEventListener('change', () => { if (getSelected()) clearError(); sync(); });
     mode?.addEventListener('change', sync);
@@ -232,14 +231,15 @@
     app.getSelectedDirectionResolution = ui.getSelected;
     app.validateDirectionResolutionBeforeStart = ui.validate;
     app.start = async function(...args) {
+      if (this.running) return false;
       if (Number(originalSettings().mode) === 0) {
         if (!ui.validate(true)) return false;
-        this.directionResolution = ui.getSelected(); ui.select.disabled = true; ui.sync();
+        this.directionResolution = ui.getSelected();
       } else this.directionResolution = null;
-      return originalStart(...args);
+      const started = await originalStart(...args);
+      ui.sync();
+      return started;
     };
-    d.getElementById('start-btn')?.addEventListener('click', event => { if (Number(d.getElementById('logic-mode')?.value || 0) === 0 && !ui.validate(true)) { event.preventDefault(); event.stopImmediatePropagation(); } }, true);
-    d.addEventListener('keydown', event => { if (event.code === 'Space' && !app.running && !/INPUT|SELECT|TEXTAREA|BUTTON/.test(event.target?.tagName || '') && Number(d.getElementById('logic-mode')?.value || 0) === 0 && !ui.validate(true)) { event.preventDefault(); event.stopImmediatePropagation(); } }, true);
     app.makeTrial = function() {
       const settings = originalSettings(); if (Number(settings.mode) !== 0) return originalMakeTrial();
       const resolution = requireCore().normaliseResolution(this.directionResolution, null); if (!resolution) throw new Error('Mode 1 cannot generate a trial without a frozen compass resolution.');
@@ -290,5 +290,5 @@
     }
     return { passed: failures.length === 0, failures, rows, iterationsPerResolution };
   }
-  return Object.freeze({ version: 40, LEVELS, ALL_MASKS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, mutateDirection, runAudit, installBrowser });
+  return Object.freeze({ version: 41, LEVELS, ALL_MASKS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, mutateDirection, runAudit, installBrowser });
 });
