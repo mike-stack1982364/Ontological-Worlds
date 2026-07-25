@@ -56,12 +56,13 @@
     }
     candidates.sort((a,b)=>b.count-a.count || a.key.localeCompare(b.key));
     const best=candidates[0];
-    const localVector=currentStatements.map(currentStatement=>{
+    const localVector=currentStatements.map((currentStatement,currentIndex)=>{
       const currentCode=canonicalStatement(currentStatement,currentIdentity);
       return permutations(currentLetters).some(assigned=>{
         const map=Object.fromEntries(targetLetters.map((letter,index)=>[letter,assigned[index]]));
         return targetStatements.some((targetStatement,targetIndex)=>{
-          if(roleSensitive && currentStatements.indexOf(currentStatement)===2 && targetIndex!==2) return false;
+          if(roleSensitive && currentIndex===2 && targetIndex!==2) return false;
+          if(roleSensitive && currentIndex!==2 && targetIndex===2) return false;
           return canonicalStatement(targetStatement,map)===currentCode;
         });
       });
@@ -93,10 +94,14 @@
     trial.mode=0; trial.publicMode=1;
     return trial;
   }
-  function mutateDirection(rng,statement,severity=1){
-    const c=requireCore(), direction=c.direction(statement.relation), sign=random(rng)<.5?-1:1;
-    const pool=severity<34?[1]:severity<67?[1,2]:[1,2,4,8];
-    const distance=pick(rng,pool);
+  function mutationDistances(interferenceLevel){
+    const level=Math.max(0,Math.min(100,Number(interferenceLevel)||0));
+    if(level<34) return [8,4,6,2,1];
+    if(level<67) return [4,6,8,2,1,3];
+    return [1,2,3,4,6,8];
+  }
+  function mutateDirection(rng,statement,interferenceLevel=0){
+    const c=requireCore(), direction=c.direction(statement.relation), distance=pick(rng,mutationDistances(interferenceLevel)), sign=random(rng)<.5?-1:1;
     return {...statement,relation:c.DIRECTIONS[(direction.index+sign*distance+16)%16].code};
   }
   function desiredMask(rng,requestedWholeMatch,interferenceLevel){
@@ -211,5 +216,5 @@
     Object.assign(app,{modeOneConflictAnalyseAlignment:analyseAlignment,modeOneConflictEvaluate:evaluateConflictMatrix,modeOneConflictEvaluateHistory:evaluateHistory,modeOneConflictGenerateTrial:generateConflictTrial,modeOneConflictRunAudit:runAudit,__modeOneConflictMatrixV20:true});
   }
 
-  return Object.freeze({version:21,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
+  return Object.freeze({version:22,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
 });
