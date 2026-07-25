@@ -229,7 +229,45 @@
     const app=rootObject.__ontologicalWorlds; if(!app||!requireCore()||app.__modeOneConflictMatrixV20)return;
     const originalMakeTrial=app.makeTrial.bind(app), originalNextTrial=app.nextTrial.bind(app), originalAnswer=app.answer.bind(app), originalStop=app.stop.bind(app);
     const matrix=installMatrixUI(rootObject,app);
+    const premiseDisplay=rootObject.document.getElementById('premise-display');
+    const feedback=rootObject.document.getElementById('feedback');
+    const explanation=rootObject.document.getElementById('trial-explanation');
+    const timerBar=rootObject.document.getElementById('timer-bar');
     app.conflictDecisionStats=Array.from({length:5},createDecisionScore);
+
+    function renderModeOneTrial(trial){
+      const c=requireCore();
+      const rendered=c.renderTrial(trial);
+      if(premiseDisplay){
+        premiseDisplay.textContent=rendered;
+        premiseDisplay.classList.remove('correct','incorrect');
+      }
+      if(feedback) feedback.textContent='';
+      if(explanation) explanation.textContent='';
+      try{app.speak?.(rendered);}catch(_){ }
+      return rendered;
+    }
+
+    function scheduleModeOneTimeout(token,seconds){
+      clearTimeout(app.timerId);
+      const started=Date.now();
+      const updateBar=()=>{
+        if(!timerBar||!app.running||app.paused||token!==app.sessionToken)return;
+        const elapsed=(Date.now()-started)/1000;
+        timerBar.style.width=`${Math.max(0,100*(1-elapsed/seconds))}%`;
+        if(elapsed<seconds) rootObject.requestAnimationFrame?.(updateBar);
+      };
+      if(timerBar){timerBar.style.width='100%';rootObject.requestAnimationFrame?.(updateBar);}
+      app.timerId=rootObject.setTimeout(()=>{
+        if(!app.running||app.paused||token!==app.sessionToken)return;
+        if(app.current?.scored&&app.awaiting){
+          app.awaiting=false;
+          app.conflictDecisionStats.forEach(row=>{row.timeouts++;});
+        }
+        app.nextTrial(token);
+      },seconds*1000);
+    }
+
     app.makeTrial=function(){
       const settings=this.settings();
       if(Number(settings.mode)!==0)return originalMakeTrial();
@@ -246,36 +284,51 @@
       Object.assign(fallback,{nBackRequestedMatch:true,nBackMatch:true,isMatch:true,statementMatchVector:evaluation.statementMatches.slice(),conclusionEntailed:evaluation.conclusionEntailed,conflictResponseVector:evaluation.responseVector.slice(),mappingConflict:evaluation.mappingConflict,localStatementCompatibility:evaluation.localStatementCompatibility.slice(),roleSensitive:options.roleSensitive,interferenceProfile:`${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:1`,scored:true,recoveredGeneration:true});
       return fallback;
     };
-    app.nextTrial=function(...args){
-      let result;
-      try{result=originalNextTrial(...args);}catch(error){
-        console.error('Mode 1 next-trial failure recovered.',error);
-        this.awaiting=false;
-        matrix.resetResponses(null);
-        if(this.running&&!this.paused){
-          const recovery=generateWarmupTrial(this.rng,{interferenceLevel:Number(rootObject.document.getElementById('interference-slider')?.value)||0});
-          this.current=recovery;
-          this.trials.push(recovery);
-          this.score.shown++;
-          const rendered=requireCore().renderTrial(recovery);
-          const premiseDisplay=rootObject.document.getElementById('premise-display');
-          if(premiseDisplay) premiseDisplay.textContent=rendered;
-          try{this.speak?.(rendered);}catch(_){ }
-          matrix.resetResponses(recovery);
-          const seconds=Math.max(2,Number(this.settings().seconds)||8);
-          clearTimeout(this.timerId);
-          this.timerId=rootObject.setTimeout(()=>{if(this.running&&!this.paused)this.nextTrial(this.sessionToken);},seconds*1000);
-        }
-        return null;
+
+    app.nextTrial=function(token=this.sessionToken){
+      if(Number(this.settings().mode)!==0)return originalNextTrial(token);
+      if(!this.running||this.paused||token!==this.sessionToken)return null;
+      let trial;
+      try{trial=this.makeTrial();}catch(error){
+        console.error('Mode 1 native trial generation failed; using safe warm-up.',error);
+        trial=generateWarmupTrial(this.rng,{interferenceLevel:Number(rootObject.document.getElementById('interference-slider')?.value)||0});
+        trial.recoveredGeneration=true;
       }
-      rootObject.setTimeout(()=>matrix.resetResponses(this.current),0);
-      return result;
+      this.current=trial;
+      this.trials.push(trial);
+      this.score.shown++;
+      this.awaiting=Boolean(trial.scored);
+      renderModeOneTrial(trial);
+      matrix.resetResponses(trial);
+      try{this.updateStats?.();}catch(_){ }
+      const seconds=Math.max(2,Number(this.settings().seconds)||8);
+      scheduleModeOneTimeout(token,seconds);
+      return trial;
     };
-    app.submitConflictMatrix=function(responses,decisionTimes){if(!this.current?.scored||!Array.isArray(this.current.conflictResponseVector))return; const expected=this.current.conflictResponseVector,correctness=responses.map((value,index)=>value===expected[index]); Object.assign(this.current,{conflictResponses:responses.slice(),conflictDecisionCorrectness:correctness.slice(),conflictCorrectCount:correctness.filter(Boolean).length,conflictAllCorrect:correctness.every(Boolean),conflictDecisionTimes:decisionTimes?.slice?.()||[]}); correctness.forEach((correct,index)=>recordDecisionScore(this.conflictDecisionStats,index,correct,decisionTimes?.[index])); const scoreText=this.conflictDecisionStats.map((row,index)=>`D${index+1} ${row.total?Math.round(100*row.correct/row.total):0}%`).join(' · '); matrix.querySelector('#conflict-score').textContent=scoreText; if(typeof requireCore().recordNBackResponse==='function') requireCore().recordNBackResponse(this.current,{responses:responses.slice(),correctness:correctness.slice(),allCorrect:this.current.conflictAllCorrect}); const legacyResponse=this.current.conflictAllCorrect?Boolean(this.current.isMatch):!Boolean(this.current.isMatch); originalAnswer(legacyResponse);};
-    app.answer=function(response){if((Number(this.current?.mode)===0||Number(this.current?.publicMode)===1)&&this.current?.scored){if(response===null||typeof response==='undefined')return originalAnswer(response);return;}return originalAnswer(response);};
+
+    app.submitConflictMatrix=function(responses,decisionTimes){
+      if(!this.current?.scored||!Array.isArray(this.current.conflictResponseVector)||!this.awaiting)return;
+      const expected=this.current.conflictResponseVector,correctness=responses.map((value,index)=>value===expected[index]);
+      Object.assign(this.current,{conflictResponses:responses.slice(),conflictDecisionCorrectness:correctness.slice(),conflictCorrectCount:correctness.filter(Boolean).length,conflictAllCorrect:correctness.every(Boolean),conflictDecisionTimes:decisionTimes?.slice?.()||[]});
+      correctness.forEach((correct,index)=>recordDecisionScore(this.conflictDecisionStats,index,correct,decisionTimes?.[index]));
+      const scoreText=this.conflictDecisionStats.map((row,index)=>`D${index+1} ${row.total?Math.round(100*row.correct/row.total):0}%`).join(' · ');
+      matrix.querySelector('#conflict-score').textContent=scoreText;
+      if(typeof requireCore().recordNBackResponse==='function') requireCore().recordNBackResponse(this.current,{responses:responses.slice(),correctness:correctness.slice(),allCorrect:this.current.conflictAllCorrect});
+      this.awaiting=false;
+      clearTimeout(this.timerId);
+      if(feedback) feedback.textContent=this.current.conflictAllCorrect?'ALL FIVE CORRECT':`${this.current.conflictCorrectCount}/5 CORRECT`;
+      if(explanation){try{explanation.textContent=requireCore().explainTrial(this.current);}catch(_){explanation.textContent='';}}
+      try{this.updateStats?.();}catch(_){ }
+      rootObject.setTimeout(()=>{if(this.running&&!this.paused)this.nextTrial(this.sessionToken);},350);
+    };
+
+    app.answer=function(response){
+      if(Number(this.settings().mode)===0)return;
+      return originalAnswer(response);
+    };
     app.stop=function(...args){const result=originalStop(...args);matrix.resetResponses(null);return result;};
     Object.assign(app,{modeOneConflictAnalyseAlignment:analyseAlignment,modeOneConflictEvaluate:evaluateConflictMatrix,modeOneConflictEvaluateHistory:evaluateHistory,modeOneConflictGenerateTrial:generateConflictTrial,modeOneConflictRunAudit:runAudit,__modeOneConflictMatrixV20:true});
   }
 
-  return Object.freeze({version:27,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
+  return Object.freeze({version:28,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
 });
