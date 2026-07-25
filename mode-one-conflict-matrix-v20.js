@@ -237,12 +237,6 @@
       const baseLabel=button.dataset.baseAriaLabel||button.getAttribute('aria-label')||'';
       button.dataset.baseAriaLabel=baseLabel.replace(/ — (correct|incorrect)$/,'');
       button.setAttribute('aria-label',`${button.dataset.baseAriaLabel} — ${correct?'correct':'incorrect'}`);
-      rootObject.setTimeout(()=>{
-        button.querySelectorAll('.conflict-feedback-icon').forEach(item=>item.remove());
-        button.classList.remove('feedback-correct','feedback-incorrect');
-        button.removeAttribute('data-feedback');
-        if(button.dataset.baseAriaLabel)button.setAttribute('aria-label',button.dataset.baseAriaLabel);
-      },700);
     };
     const showFeedback=(correctness,selectedResponses)=>{
       correctness.forEach((correct,index)=>{
@@ -253,7 +247,7 @@
         if(button)showButtonFeedback(button,correct);
       });
     };
-    matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const expected=app.current?.conflictResponseVector?.[index]; if(typeof expected==='boolean')showButtonFeedback(button,responses[index]===expected); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='All five decisions entered'; app.submitConflictMatrix(responses.slice(),decisionTimes.slice());}});
+    matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); if(responses[index]!==null)return; responses[index]=button.dataset.value==='1'; decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>{choice.classList.toggle('selected',choice===button);choice.disabled=true;}); const expected=app.current?.conflictResponseVector?.[index]; if(typeof expected==='boolean')showButtonFeedback(button,responses[index]===expected); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='All five decisions entered'; app.submitConflictMatrix(responses.slice(),decisionTimes.slice());}});
     matrix.querySelector('#conflict-submit').addEventListener('click',()=>{if(!app.awaiting||responses.some(v=>v===null))return;app.submitConflictMatrix(responses.slice(),decisionTimes.slice());});
     const keyboard=['a','s','d','f','h','j','k','l',' ','n'];
     d.addEventListener('keydown',event=>{
@@ -376,5 +370,5 @@
     Object.assign(app,{modeOneConflictAnalyseAlignment:analyseAlignment,modeOneConflictEvaluate:evaluateConflictMatrix,modeOneConflictEvaluateHistory:evaluateHistory,modeOneConflictGenerateTrial:generateConflictTrial,modeOneConflictRunAudit:runAudit,__modeOneConflictMatrixV20:true});
   }
 
-  return Object.freeze({version:36,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
+  return Object.freeze({version:37,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
 });
