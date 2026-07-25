@@ -2,41 +2,83 @@
 
 ## Canonical training modes
 
-### Mode 1 — Triadic Entailment
+### Mode 1 — Relational Conflict Matrix
 
-Mode 1 is the repository's canonical meta-logical N-back system.
+Mode 1 is a three-statement, exact 16-direction relational N-back system.
 
-Each visible and spoken trial contains exactly three relational statements using three arbitrary letter-nodes. The first two statements define a relational model. The third statement supplies the tested conclusion. Letter identity does not determine a match, and the premise never contains a contract heading, rule label, answer explanation or “therefore”. Explanations are presented separately after the response.
+Each visible and spoken trial contains exactly two premises and one conclusion using three arbitrary letter-nodes. Statements 1 and 2 define the current spatial model. Statement 3 is separately evaluated for whether it is logically entailed by those premises.
 
-After the initial memory-fill trials, the current triad is compared with the triad exactly N positions back. A MATCH preserves every logical component required by the active comparison criterion. A NO MATCH changes at least one criterion-relevant component.
+After the initial N memory-fill trials, every scored trial requires five binary decisions:
 
-The live curriculum contains:
+1. whether current Statement 1 matches one statement in the trial exactly N positions earlier;
+2. whether current Statement 2 matches one historical statement;
+3. whether current Statement 3 matches one historical statement;
+4. whether current Statement 3 is entailed by current Statements 1 and 2;
+5. whether the complete current triad matches the historical triad.
 
-- N-back levels 1 through 8;
-- 20 distinct canonical comparisons at every level;
-- 160 canonical comparisons in total;
-- 80 MATCH and 80 NO MATCH comparisons;
-- adaptive diagnosis across validity class, counterfactual-dependency class and criterion class.
+Statement-level matching is not calculated through three independent resemblance checks. The engine requires one globally consistent bijection between the historical and current letters and a one-to-one assignment between statements. A statement counts as a match only when it participates in the best coherent alignment. Equivalent reversed wording is accepted only when subject/object reversal is accompanied by the opposite compass direction. Arbitrary letter renaming and statement reordering do not by themselves break structural equivalence.
 
-The comparison space includes binding structure, proof topology, proof identity, proof equivalence, transformation mechanism, logical contract, rule regime, modal force, precision, query orientation, reference frame, chirality, evaluation policy, criterion, revision state and counterfactual dependency.
+Mode 1 alternates between two explicit comparison regimes:
 
-The level progression is:
+- role-flexible comparison, where any current statement may align with any historical statement;
+- role-sensitive comparison, where the historical and current conclusions must remain conclusions while the two premises may exchange order.
 
-1. Direct entailment, binding integrity, reversal and local-versus-global validity.
-2. Consistent renaming, inversion, clause reordering and endpoint-role regulation.
-3. Four-, eight- and sixteen-way resolution and precision regulation.
-4. Metric assumptions, model sets, necessity, possibility and contradiction.
-5. Rotation, reflection, chirality, reference frames and transformation classes.
-6. Same answer versus identical, equivalent or merely convergent proof.
-7. Evaluation-policy induction, criterion selection and minimal rule revision.
-8. Complete-profile integration, counterfactual dependency and criterion-level regulation.
+A whole-triad MATCH requires all three statements to align under the same mapping and active role regime. One-statement and two-statement correspondences remain partial matches and are scored as interference rather than being collapsed into a single whole-trial answer.
+
+The cognitive-interference generator uses controlled profiles rather than generic random errors. Depending on the interference setting, it creates:
+
+- zero-, one- and two-of-three statement matches;
+- adjacent 16-direction substitutions;
+- near, orthogonal and opposite-direction substitutions;
+- changed surface letters with preserved structure;
+- preserved surface letters with changed relational roles;
+- valid inverse wording;
+- conflicts between historical familiarity and current entailment;
+- globally coherent alignment requirements that suppress incompatible local interpretations.
+
+At the highest interference setting, non-match trials preferentially preserve exactly two globally coherent statements while changing one precise relation. The player must therefore discriminate a near-complete historical structure while independently determining whether the current conclusion is logically valid.
+
+Mode 1 supports N-back levels 1 through 8. The browser interface displays ten response buttons: Match/No Match for each historical statement decision, Entailed/Not Entailed for current conclusion validity, and Match/No Match for complete-triad identity. All five decisions must be entered before submission.
+
+Each of the five decisions is recorded separately, including correctness and first-response time. The trial itself is counted as correct only when all five responses are correct, preserving compatibility with the existing session progression while retaining native multidimensional diagnostic statistics.
+
+Keyboard pairs are A/S, D/F, G/H, J/K and L/;.
 
 ### Mode 2 — Ontological Integration
 
-Mode 2 preserves the ontology-category integration system using the categories All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion.
+Mode 2 displays the ontology categories All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion, together with Inner and Outer presentation labels.
+
+Its N-back answer is determined by the complete three-statement compass structure of the current and historical trials. Ontology categories and Inner/Outer labels are presentation-level cognitive transformations and are excluded from MATCH/NO MATCH scoring. Consistent letter renaming, premise reordering and logically equivalent reversed wording preserve structural identity.
+
+### Exact relational core
+
+Both modes use the same exact 16-direction compass algebra. The core rejects:
+
+- adjacent but non-identical directions;
+- subject/object reversal without direction inversion;
+- correct relations assigned to the wrong letter pair;
+- incorrect shared-anchor branch comparisons;
+- locally plausible relations that fail the complete graph.
 
 ## Validation
 
-The repository audits all 160 Mode 1 comparisons, requires 20 unique cases at every N-back level, verifies the 80/80 answer balance, recomputes logical equivalence independently, prevents letter overlap between compared surfaces, enforces the three-statement premise format and preserves Mode 2 regression coverage.
+The repository includes independent tests for:
+
+- all N-back levels from 1 through 8;
+- five mandatory Mode 1 decisions per scored trial;
+- globally consistent letter mapping;
+- one-to-one statement assignment;
+- role-sensitive and role-flexible alignment;
+- inverse-wording equivalence;
+- exact 16-direction discrimination;
+- all zero-, one- and two-of-three non-match masks;
+- controlled maximum-interference two-of-three lures;
+- current-trial entailment separated from historical matching;
+- complete-triad matching;
+- native per-decision scoring metadata;
+- Mode 2 structural comparison;
+- ontology and form-label scoring neutrality.
+
+GitHub Actions runs separate Mode 1 conflict-matrix, canonical Mode 2 and deep Mode 2 validation jobs.
 
 This is a theoretically motivated cognitive-training design. It is not validated evidence that training increases general fluid intelligence or GAMSAT performance.
