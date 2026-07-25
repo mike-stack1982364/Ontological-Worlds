@@ -1,0 +1,66 @@
+name: Inline Mode 1 feedback
+
+on:
+  push:
+    paths:
+      - .github/workflows/inline-mode-one-feedback.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch feedback into static HTML and runtime
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          html = Path('index.html')
+          text = html.read_text(encoding='utf-8')
+
+          text = text.replace(
+            ".conflict-choice{width:100%;min-width:0;min-height:78px;border-radius:16px;",
+            ".conflict-choice{position:relative;overflow:hidden;width:100%;min-width:0;min-height:78px;border-radius:16px;",
+            1,
+          )
+          marker = ".conflict-choice[disabled]{opacity:.64}"
+          css = marker + ".conflict-choice.feedback-correct,.conflict-choice.feedback-incorrect{opacity:1!important}.conflict-choice.feedback-correct{background:#d8f7e4!important;border-color:#087a3f!important}.conflict-choice.feedback-incorrect{background:#ffe1df!important;border-color:#b42318!important}.conflict-feedback-icon{position:absolute!important;inset:0!important;z-index:9999!important;display:grid!important;place-items:center!important;background:rgba(255,255,255,.94)!important;pointer-events:none!important}.conflict-feedback-icon svg{display:block!important;width:54%!important;height:54%!important}.conflict-feedback-icon.correct{color:#087a3f!important}.conflict-feedback-icon.incorrect{color:#b42318!important}"
+          if marker in text and 'conflict-feedback-icon' not in text.split('</style>',1)[0]:
+              text = text.replace(marker, css, 1)
+
+          html.write_text(text, encoding='utf-8')
+
+          js = Path('mode-one-conflict-matrix-v20.js')
+          code = js.read_text(encoding='utf-8')
+          old = "matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='Checking all five decisions…'; rootObject.setTimeout(()=>{if(app.awaiting&&responses.every(v=>v!==null))app.submitConflictMatrix(responses.slice(),decisionTimes.slice());},80);}});"
+          new = "matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='Checking all five decisions…'; app.submitConflictMatrix(responses.slice(),decisionTimes.slice());}});"
+          if old not in code:
+              raise SystemExit('Expected click handler not found')
+          code = code.replace(old,new,1)
+
+          dup = "matrix.showFeedback(correctness,responses);\n      matrix.showFeedback(correctness,responses);"
+          code = code.replace(dup,"matrix.showFeedback(correctness,responses);",1)
+
+          code = code.replace("return Object.freeze({version:33,","return Object.freeze({version:34,",1)
+          js.write_text(code,encoding='utf-8')
+          PY
+      - name: Validate implementation
+        run: |
+          node --check mode-one-conflict-matrix-v20.js
+          grep -F "app.submitConflictMatrix(responses.slice(),decisionTimes.slice())" mode-one-conflict-matrix-v20.js
+          grep -F "conflict-feedback-icon" index.html
+          test "$(grep -c 'matrix.showFeedback(correctness,responses);' mode-one-conflict-matrix-v20.js)" -eq 1
+      - name: Commit implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html mode-one-conflict-matrix-v20.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Render Mode 1 correctness icons reliably"
+          git push origin HEAD:main
