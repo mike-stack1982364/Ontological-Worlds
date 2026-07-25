@@ -1,0 +1,11 @@
+{
+  "name": "ontological-worlds",
+  "private": true,
+  "scripts": {
+    "test:mode1-browser": "playwright test tests/mode1-browser-contract.spec.js",
+    "test:syntax": "node --check app.js && node --check mode-one-spatial-core.js && node --check mode-one-conflict-matrix-v20.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.1"
+  }
+}
