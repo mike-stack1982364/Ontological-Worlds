@@ -8,6 +8,7 @@ on:
       - 'mode-one-spatial-core.js'
       - 'index.html'
       - 'tests/mode-one-conflict-matrix-v20.test.js'
+      - 'tests/mode-one-browser-contract-v21.test.js'
       - 'tests/mode-two-ontology-nback-v14.test.js'
       - 'tests/mode-two-ontology-nback-deep-v15.test.js'
       - '.github/workflows/mode-two-deep-validation.yml'
@@ -41,6 +42,32 @@ jobs:
         with:
           name: mode-one-conflict-matrix-diagnostics
           path: mode-one-conflict-matrix.log
+          if-no-files-found: warn
+
+  mode-one-browser-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run Mode 1 browser, scoring and response-contract audit
+        shell: bash
+        run: |
+          set -o pipefail
+          node --trace-uncaught tests/mode-one-browser-contract-v21.test.js 2>&1 | tee mode-one-browser-contract.log
+
+      - name: Upload Mode 1 browser-contract diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mode-one-browser-contract-diagnostics
+          path: mode-one-browser-contract.log
           if-no-files-found: warn
 
   canonical-mode-two:
