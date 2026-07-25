@@ -244,7 +244,7 @@
       matrix.querySelectorAll('.conflict-choice').forEach(button=>button.disabled=true);
       matrix.querySelector('#conflict-submit').disabled=true;
     };
-    matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='Checking all five decisions…'; rootObject.queueMicrotask?.(()=>{if(app.awaiting&&responses.every(v=>v!==null))app.submitConflictMatrix(responses.slice(),decisionTimes.slice());}) || Promise.resolve().then(()=>{if(app.awaiting&&responses.every(v=>v!==null))app.submitConflictMatrix(responses.slice(),decisionTimes.slice());});}});
+    matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='Checking all five decisions…'; app.submitConflictMatrix(responses.slice(),decisionTimes.slice());}});
     matrix.querySelector('#conflict-submit').addEventListener('click',()=>{if(!app.awaiting||responses.some(v=>v===null))return;app.submitConflictMatrix(responses.slice(),decisionTimes.slice());});
     const keyboard=['a','s','d','f','h','j','k','l',' ','n'];
     d.addEventListener('keydown',event=>{
@@ -353,7 +353,6 @@
       this.awaiting=false;
       clearTimeout(this.timerId);
       matrix.showFeedback(correctness,responses);
-      rootObject.requestAnimationFrame?.(()=>matrix.showFeedback(correctness,responses));
       matrix.querySelector('#conflict-progress').textContent=this.current.conflictAllCorrect?'✓ ALL FIVE CORRECT':`${this.current.conflictCorrectCount}/5 CORRECT — review the ✓ and ✕ symbols`;
       if(feedback) feedback.textContent=this.current.conflictAllCorrect?'ALL FIVE CORRECT':`${this.current.conflictCorrectCount}/5 CORRECT`;
       if(explanation){try{explanation.textContent=requireCore().explainTrial(this.current);}catch(_){explanation.textContent='';}}
@@ -369,5 +368,5 @@
     Object.assign(app,{modeOneConflictAnalyseAlignment:analyseAlignment,modeOneConflictEvaluate:evaluateConflictMatrix,modeOneConflictEvaluateHistory:evaluateHistory,modeOneConflictGenerateTrial:generateConflictTrial,modeOneConflictRunAudit:runAudit,__modeOneConflictMatrixV20:true});
   }
 
-  return Object.freeze({version:34,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
+  return Object.freeze({version:35,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
 });

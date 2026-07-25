@@ -31,7 +31,14 @@
     .conflict-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(6px,.7vw,12px);width:100%;margin:0}
     .conflict-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;min-width:0}
     .conflict-label{grid-column:1/-1;min-height:2.2em;display:flex;align-items:flex-end;justify-content:center;text-align:center;font-size:clamp(.58rem,.72vw,.78rem);font-weight:800;line-height:1.15;color:#30465d;padding:0 2px}
-    .conflict-choice{width:100%;min-width:0;min-height:78px;border-radius:16px;font-size:clamp(1.25rem,2.15vw,2.25rem);font-weight:900;line-height:1;padding:8px 4px;white-space:normal;box-shadow:0 4px 12px rgba(15,42,70,.08);letter-spacing:.05em}
+    .conflict-choice{position:relative;width:100%;min-width:0;min-height:78px;border-radius:16px;font-size:clamp(1.25rem,2.15vw,2.25rem);font-weight:900;line-height:1;padding:8px 4px;white-space:normal;box-shadow:0 4px 12px rgba(15,42,70,.08);letter-spacing:.05em;overflow:hidden}
+    .conflict-choice.feedback-correct,.conflict-choice.feedback-incorrect{opacity:1!important}
+    .conflict-choice.feedback-correct{background:#d8f7e4!important;border-color:#087a3f!important;color:#065f32!important}
+    .conflict-choice.feedback-incorrect{background:#ffe1df!important;border-color:#b42318!important;color:#9b1c14!important}
+    .conflict-feedback-icon{position:absolute!important;inset:0!important;z-index:2147483647!important;display:grid!important;place-items:center!important;background:rgba(255,255,255,.97)!important;opacity:1!important;visibility:visible!important;pointer-events:none!important}
+    .conflict-feedback-icon svg{display:block!important;width:min(58%,72px)!important;height:min(58%,72px)!important;overflow:visible!important}
+    .conflict-feedback-icon.correct{color:#087a3f!important}
+    .conflict-feedback-icon.incorrect{color:#b42318!important}
     .conflict-row[data-decision="4"] .conflict-choice[data-value="1"]{font-size:clamp(.72rem,1.05vw,1.18rem);letter-spacing:.015em;white-space:nowrap;padding-left:2px;padding-right:2px}
     .conflict-choice[data-value="1"]{background:#e9f8ef;color:#086b3a;border:2px solid #55a879}
     .conflict-choice[data-value="0"]{background:#fff0ef;color:#a61f17;border:2px solid #d78b86}
