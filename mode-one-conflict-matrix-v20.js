@@ -127,17 +127,35 @@
       clearTimeout(this.timerId); clearTimeout(advanceTimerId); advanceTimerId = null;
       const resolution = requireCore().normaliseResolution(this.directionResolution, null);
       if (!resolution) throw new Error('Mode 1 has no frozen compass resolution.');
-      let trial = null, lastError = null;
+      let trial = null, rendered = null, lastError = null;
       for (let attempt = 0; attempt < 12 && !trial; attempt++) {
-        try { const candidate = attempt === 0 ? this.makeTrial() : generateWarmupTrial(this.rng, { interferenceLevel: Number(d.getElementById('interference-slider')?.value) || 0, directionResolution: resolution }); if (ensureResolutionClosed(candidate, resolution)) trial = candidate; }
-        catch (error) { lastError = error; }
+        try {
+          const candidate = attempt === 0 ? this.makeTrial() : generateWarmupTrial(this.rng, { interferenceLevel: Number(d.getElementById('interference-slider')?.value) || 0, directionResolution: resolution });
+          if (!ensureResolutionClosed(candidate, resolution)) continue;
+          const candidateRendered = requireCore().renderTrial(candidate);
+          if (typeof candidateRendered !== 'string' || !candidateRendered.trim()) throw new Error('Mode 1 rendered an empty premise.');
+          trial = candidate;
+          rendered = candidateRendered;
+        } catch (error) {
+          lastError = error;
+        }
       }
-      if (!trial) throw lastError || new Error('Mode 1 could not generate a valid first trial.');
-      this.current = trial; this.trials.push(trial); this.score.shown++; this.awaiting = true;
-      const rendered = requireCore().renderTrial(trial);
+      if (!trial || !rendered) {
+        const error = lastError || new Error('Mode 1 could not generate and render a valid trial.');
+        console.error('Mode 1 nextTrial failed before committing state.', error);
+        if (premiseDisplay) premiseDisplay.textContent = `TRIAL_GENERATION_FAILED: ${error.message}`;
+        this.awaiting = false;
+        return null;
+      }
+      if (!this.running || this.paused || token !== this.sessionToken) return null;
+      this.current = trial;
+      this.trials.push(trial);
+      this.score.shown++;
       if (premiseDisplay) { premiseDisplay.textContent = rendered; premiseDisplay.classList.remove('correct','incorrect'); }
-      if (feedback) feedback.textContent = ''; if (explanation) explanation.textContent = '';
+      if (feedback) feedback.textContent = '';
+      if (explanation) explanation.textContent = '';
       input.reset(trial);
+      this.awaiting = true;
       try { this.speak?.(rendered); } catch (_) {}
       try { this.updateStats?.(); } catch (_) {}
       return trial;
