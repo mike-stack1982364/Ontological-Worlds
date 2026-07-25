@@ -80,11 +80,11 @@
   <script>window.openExtraTrainingScreenFallback=function(event){if(event){event.preventDefault();event.stopPropagation();}window.location.assign('extra-training.html');};</script>
   <div id="paused-overlay" aria-live="assertive"><h2>PAUSED</h2><p>Tap anywhere or press P to continue.</p></div>
   <section id="tutorial" class="modal" role="dialog" aria-modal="true" aria-labelledby="tutorial-title"><div class="modal-inner"><button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button><h2 id="tutorial-title">How to Train</h2><h3>Mode 1 — Relational Conflict Matrix</h3><p>Choose 4, 8 or 16 compass directions before starting Mode 1. Four uses the cardinal directions, eight adds the diagonals, and sixteen adds the intermediate directions. Finer resolution increases directional precision. Cognitive interference changes lure difficulty independently of compass resolution.</p><p>After the first N memory-fill trials, answer five questions on every trial: whether each of the three statements matches a statement in the trial N positions earlier, whether Statement 3 is logically entailed by Statements 1 and 2, and whether the complete three-statement structure matches. Statement matches require one globally consistent mapping of letters and one-to-one statement assignment. Reversed wording counts only when the compass direction is inverted correctly. A single or partial match never makes the whole triad a match.</p><p>Keyboard mapping: Statement 1 A/S, Statement 2 D/F, Statement 3 H/J, within-trial entailment K/L, and complete-triad N-back Spacebar/N. In every pair, the left key is the positive response and the right key is the negative response. G is deliberately unused.</p><h3>Mode 2 — Ontological Integration</h3><p>Mode 2 does not require or use the Mode 1 compass-resolution selector.</p><button id="dismiss-tutorial" class="small-btn" type="button">Close</button></div></section>
-  <section id="history" class="modal" role="dialog" aria-modal="true" aria-labelledby="history-title"><div class="modal-inner"><button class="modal-close" data-close="history" aria-label="Close history">×</button><h2 id="history-title">Session History</h2><div id="history-list"></div><div class="modal-actions"><button id="export-btn" class="small-btn" type="button">Export CSV</button><button id="clear-btn" class="small-btn" type="button">Clear</button><button id="dismiss-history" class="small-btn" type="button">Close</button></div></div></section>
+  <section id="history" class="modal" role="dialog" aria-modal="true" aria-labelledby="history-title"><div class="modal-inner"><button class="modal-close" data-close="history" aria-label="Close history">×</button><h2 id="history-title">Session History</h2><div id="history-list"></div><div class="modal-actions"><button id="export-btn" class="small-btn" type="button">Export CSV</button><button id="clear-btn" class="small-btn" type="button">Clear</button><button id="dismiss-history" class="small-btn" type="button">Close</button></div></section>
   <script src="app.js"></script>
   <script src="mode-one-interference.js"></script>
   <script src="mode-one-match-logic.js"></script>
-  <script src="mode-one-spatial-core.js"></script>
+  <script src="mode-one-spatial-core.js?v=20260725-2"></script>
   <script src="mode-zero-exact-matching-v12.js"></script>
   <script src="mode-one-approved-trials-v7.js"></script>
   <script src="mode-one-nback-v8.js"></script>
@@ -97,6 +97,6 @@
   <script src="mode-one-completion-v11.js"></script>
   <script src="audio-accessibility.js"></script>
   <script src="extra-training.js"></script>
-  <script src="mode-one-conflict-matrix-v20.js"></script>
+  <script src="mode-one-conflict-matrix-v20.js?v=20260725-2"></script>
 </body>
 </html>
