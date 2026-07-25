@@ -84,7 +84,7 @@
   <script src="app.js"></script>
   <script src="mode-one-interference.js"></script>
   <script src="mode-one-match-logic.js"></script>
-  <script src="mode-one-spatial-core.js?v=20260725-2"></script>
+  <script src="mode-one-spatial-core.js?v=20260725-3"></script>
   <script src="mode-zero-exact-matching-v12.js"></script>
   <script src="mode-one-approved-trials-v7.js"></script>
   <script src="mode-one-nback-v8.js"></script>
@@ -97,6 +97,36 @@
   <script src="mode-one-completion-v11.js"></script>
   <script src="audio-accessibility.js"></script>
   <script src="extra-training.js"></script>
-  <script src="mode-one-conflict-matrix-v20.js?v=20260725-2"></script>
+  <script src="mode-one-conflict-matrix-v20.js?v=20260725-3"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const app = window.__ontologicalWorlds;
+      const core = window.__modeOneTriadicEntailmentCore || window.__modeOneSpatialCore;
+      const select = document.getElementById('direction-resolution');
+      const display = document.getElementById('premise-display');
+      if (!app || !core || !select || !display) return;
+      const allowed = () => core.allowedCodes(Number(app.directionResolution || select.value || 16));
+      const originalRender = core.renderTrial.bind(core);
+      core.renderTrial = trial => {
+        const pool = allowed();
+        const evaluated = core.evaluateTrial(trial);
+        const relations = [...trial.premises.map(item => item.relation), trial.conclusion.relation, evaluated.expectedRelation];
+        if (!relations.every(code => pool.includes(code))) {
+          throw new Error(`Rendering blocked: ${relations.join(', ')} is outside ${pool.join(', ')}.`);
+        }
+        return originalRender(trial);
+      };
+      const observer = new MutationObserver(() => {
+        const resolution = Number(app.directionResolution || select.value);
+        if (resolution !== 4) return;
+        const forbidden = /north(?:east|west|-northeast|-northwest)|south(?:east|west|-southeast|-southwest)|east-(?:northeast|southeast)|west-(?:northwest|southwest)/i;
+        if (forbidden.test(display.textContent || '')) {
+          console.error('Invalid 4-direction premise reached the DOM; regenerating.');
+          try { app.current = null; app.nextTrial(app.sessionToken); } catch (error) { console.error(error); }
+        }
+      });
+      observer.observe(display, { childList: true, characterData: true, subtree: true });
+    });
+  </script>
 </body>
 </html>
