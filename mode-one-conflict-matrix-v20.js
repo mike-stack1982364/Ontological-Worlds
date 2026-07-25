@@ -252,7 +252,20 @@
         console.error('Mode 1 next-trial failure recovered.',error);
         this.awaiting=false;
         matrix.resetResponses(null);
-        rootObject.setTimeout(()=>{if(this.running&&!this.paused)originalNextTrial(this.sessionToken);},0);
+        if(this.running&&!this.paused){
+          const recovery=generateWarmupTrial(this.rng,{interferenceLevel:Number(rootObject.document.getElementById('interference-slider')?.value)||0});
+          this.current=recovery;
+          this.trials.push(recovery);
+          this.score.shown++;
+          const rendered=requireCore().renderTrial(recovery);
+          const premiseDisplay=rootObject.document.getElementById('premise-display');
+          if(premiseDisplay) premiseDisplay.textContent=rendered;
+          try{this.speak?.(rendered);}catch(_){ }
+          matrix.resetResponses(recovery);
+          const seconds=Math.max(2,Number(this.settings().seconds)||8);
+          clearTimeout(this.timerId);
+          this.timerId=rootObject.setTimeout(()=>{if(this.running&&!this.paused)this.nextTrial(this.sessionToken);},seconds*1000);
+        }
         return null;
       }
       rootObject.setTimeout(()=>matrix.resetResponses(this.current),0);
@@ -264,5 +277,5 @@
     Object.assign(app,{modeOneConflictAnalyseAlignment:analyseAlignment,modeOneConflictEvaluate:evaluateConflictMatrix,modeOneConflictEvaluateHistory:evaluateHistory,modeOneConflictGenerateTrial:generateConflictTrial,modeOneConflictRunAudit:runAudit,__modeOneConflictMatrixV20:true});
   }
 
-  return Object.freeze({version:26,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
+  return Object.freeze({version:27,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
 });
