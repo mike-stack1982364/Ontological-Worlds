@@ -24,23 +24,38 @@
     #extra-training-close-top{min-width:56px;min-height:52px;border-radius:12px;font-size:1.05rem}
     body.extra-training-open{overflow:hidden}
     .game-area{overflow:visible!important}
-    .response-stage{width:100vw;position:relative;left:50%;transform:translateX(-50%);margin:0;padding:0 clamp(8px,1.5vw,24px);box-sizing:border-box}
+    .response-stage{position:relative;width:100%;height:214px;flex:0 0 214px;margin:0;overflow:visible}
     .response-buttons{display:none!important}
-    #conflict-matrix{display:block!important;width:100%;margin:0;padding:0;background:transparent;border:0;box-sizing:border-box}
-    .conflict-heading{font-weight:900;letter-spacing:.055em;text-transform:uppercase;margin:0 auto 10px;color:#173f67;text-align:center}
-    .conflict-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(8px,.8vw,14px);width:100%;margin:0 auto}
-    .conflict-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
-    .conflict-label{grid-column:1/-1;min-height:2.6em;display:flex;align-items:flex-end;justify-content:center;text-align:center;font-size:clamp(.68rem,.84vw,.86rem);font-weight:800;line-height:1.2;color:#30465d;padding:0 4px}
-    .conflict-choice{width:100%;min-width:0;min-height:96px;border-radius:20px;font-size:clamp(.85rem,1.2vw,1.25rem);font-weight:900;line-height:1.08;padding:12px 8px;white-space:normal;box-shadow:0 4px 12px rgba(15,42,70,.08)}
+    #conflict-matrix{display:block!important;position:absolute;z-index:5;top:0;left:50%;transform:translateX(-50%);width:100vw;max-width:none;margin:0;padding:8px clamp(8px,1.4vw,22px);background:rgba(255,255,255,.98);border-top:1px solid #c8d3df;border-bottom:1px solid #c8d3df;box-sizing:border-box}
+    .conflict-heading{font-weight:900;letter-spacing:.055em;text-transform:uppercase;margin:0 auto 7px;color:#173f67;text-align:center;font-size:clamp(.72rem,1vw,.95rem)}
+    .conflict-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(6px,.7vw,12px);width:100%;margin:0}
+    .conflict-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;min-width:0}
+    .conflict-label{grid-column:1/-1;min-height:2.2em;display:flex;align-items:flex-end;justify-content:center;text-align:center;font-size:clamp(.58rem,.72vw,.78rem);font-weight:800;line-height:1.15;color:#30465d;padding:0 2px}
+    .conflict-choice{width:100%;min-width:0;min-height:78px;border-radius:16px;font-size:clamp(.62rem,.9vw,1rem);font-weight:900;line-height:1.05;padding:8px 4px;white-space:normal;box-shadow:0 4px 12px rgba(15,42,70,.08)}
     .conflict-choice[data-value="1"]{background:#e9f8ef;color:#086b3a;border:2px solid #55a879}
     .conflict-choice[data-value="0"]{background:#fff0ef;color:#a61f17;border:2px solid #d78b86}
-    .conflict-row[data-decision="3"] .conflict-choice[data-value="1"],.conflict-row[data-decision="3"] .conflict-choice[data-value="0"]{background:#eef4fb;color:#123f6b;border-color:#8fa3b9}
+    .conflict-row[data-decision="3"] .conflict-choice{background:#eef4fb;color:#123f6b;border-color:#8fa3b9}
     .conflict-choice.selected{outline:4px solid #183f67;outline-offset:2px}
-    .conflict-choice[disabled]{opacity:.58}
-    #conflict-submit{display:block;width:min(100%,760px);min-height:50px;margin:14px auto 0;border-radius:11px;font-weight:900;text-transform:uppercase}
-    #conflict-progress,#conflict-score{font-size:.78rem;margin-top:8px;color:#53697e;text-align:center}
-    @media(max-width:1050px){.conflict-grid{grid-template-columns:repeat(5,minmax(150px,1fr));overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}.conflict-row{scroll-snap-align:start}.conflict-choice{min-height:82px}}
-    @media(max-width:620px){#extra-training-btn{width:50%!important;height:52px!important;min-height:52px!important;max-height:52px!important;font-size:.72rem!important}.response-stage{padding-left:6px;padding-right:6px}.conflict-heading{font-size:.78rem}.conflict-grid{grid-template-columns:repeat(5,minmax(132px,1fr));gap:7px}.conflict-label{font-size:.64rem;min-height:2.4em}.conflict-choice{min-height:72px;font-size:.78rem;border-radius:15px;padding:8px 5px}}
+    .conflict-choice[disabled]{opacity:.64}
+    #conflict-submit{display:block;width:min(100%,620px);min-height:38px;margin:8px auto 0;padding:8px 12px;border-radius:10px;font-size:.72rem;font-weight:900;text-transform:uppercase}
+    #conflict-progress,#conflict-score{font-size:.7rem;margin-top:5px;color:#53697e;text-align:center;line-height:1.2}
+    @media(max-width:760px){
+      .response-stage{height:190px;flex-basis:190px}
+      #conflict-matrix{padding-left:4px;padding-right:4px}
+      .conflict-grid{gap:3px}
+      .conflict-row{gap:3px}
+      .conflict-label{font-size:.48rem;min-height:2.6em}
+      .conflict-choice{min-height:66px;border-radius:11px;font-size:.53rem;padding:5px 2px;border-width:1px}
+      #conflict-submit{min-height:34px;margin-top:6px}
+    }
+    @media(max-width:420px){
+      #extra-training-btn{width:50%!important;height:52px!important;min-height:52px!important;max-height:52px!important;font-size:.72rem!important}
+      .response-stage{height:184px;flex-basis:184px}
+      .conflict-heading{font-size:.63rem}
+      .conflict-label{font-size:.43rem}
+      .conflict-choice{min-height:62px;font-size:.48rem}
+      #conflict-progress,#conflict-score{font-size:.58rem}
+    }
   </style>
 </head>
 <body class="mode-one-conflict-active">
@@ -87,5 +102,30 @@
   <script src="audio-accessibility.js"></script>
   <script src="extra-training.js"></script>
   <script src="mode-one-conflict-matrix-v20.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded',function(){
+      window.setTimeout(function(){
+        const app=window.__ontologicalWorlds;
+        const api=window.__modeOneConflictMatrixV20;
+        if(!app||!api||app.__conflictResilienceInstalled)return;
+        const generatedMakeTrial=app.makeTrial.bind(app);
+        app.makeTrial=function(){
+          let lastError=null;
+          for(let attempt=0;attempt<4;attempt++){
+            try{return generatedMakeTrial();}
+            catch(error){lastError=error;console.error('Mode 1 trial generation retry',attempt+1,error);}
+          }
+          if(Number(this.settings().mode)===0){
+            const fallback=api.generateWarmupTrial(this.rng,{interferenceLevel:Number(document.getElementById('interference-slider')?.value)||0});
+            fallback.recoveryFallback=true;
+            document.getElementById('feedback').textContent='Trial regenerated safely';
+            return fallback;
+          }
+          throw lastError;
+        };
+        app.__conflictResilienceInstalled=true;
+      },0);
+    });
+  </script>
 </body>
 </html>
