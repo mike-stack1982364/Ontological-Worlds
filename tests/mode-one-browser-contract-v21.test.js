@@ -1,14 +1,12 @@
 'use strict';
 
-global.addEventListener = global.addEventListener || (() => {});
-
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
 const conflict = require(path.join(__dirname, '..', 'mode-one-conflict-matrix-v20.js'));
 
-assert.strictEqual(conflict.version, 21);
+assert.strictEqual(conflict.version, 22);
 assert.deepStrictEqual([...conflict.LEVELS], [1,2,3,4,5,6,7,8]);
 assert.strictEqual(conflict.ALL_MASKS.length, 8);
 assert.strictEqual(new Set(conflict.ALL_MASKS.map(mask => mask.map(Number).join(''))).size, 8);
@@ -69,7 +67,10 @@ assert.ok(source.includes('conflictDecisionTimes'), 'first-response latency must
 assert.ok(source.includes('correctness.every(Boolean)'), 'trial success must require all five decisions');
 assert.ok(source.includes('recordNBackResponse'), 'diagnostic learning hook must receive the multidimensional response');
 assert.ok(source.includes("matrix.setAttribute('aria-label','Five-decision relational conflict matrix')"));
-assert.ok(source.includes("aria-live=\"polite\""));
+assert.ok(source.includes('aria-live="polite"'));
+assert.ok(!source.includes('global.addEventListener'), 'production code must not rely on a Node event-listener shim');
+assert.ok(source.includes("if(roleSensitive && currentIndex!==2 && targetIndex===2) return false"), 'role-sensitive local compatibility must preserve both premise and conclusion roles');
+assert.ok(source.includes('function mutationDistances(interferenceLevel)'), 'interference level must control lure distance classes');
 
 const corePosition = html.indexOf('mode-one-spatial-core.js');
 const modeTwoPosition = html.indexOf('mode-two-ontology-nback-v14.js');
@@ -89,7 +90,7 @@ assert.strictEqual(audit.invariants.oneToOneStatementAssignmentRequired, true);
 console.log(JSON.stringify({
   passed: true,
   explicitMaskChecks,
-  browserContractChecks: 12,
+  browserContractChecks: 15,
   audit: {
     total: audit.total,
     totalBinaryDecisions: audit.totalBinaryDecisions,
