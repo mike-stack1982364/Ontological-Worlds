@@ -14,6 +14,18 @@
   const LETTER_POOL = 'ABCDEFGHJKLMNPQRSTUVWXYZ'.split('');
   const core = root?.__modeOneTriadicEntailmentCore || root?.__modeOneSpatialCore || (typeof require === 'function' ? require('./mode-one-spatial-core.js') : null);
   function requireCore() { if (!core) throw new Error('Mode 1 conflict matrix requires the spatial core.'); return core; }
+  const spatial = core ? Object.freeze({
+    normaliseResolution: core.normaliseResolution.bind(core),
+    allowedCodes: core.allowedCodes.bind(core),
+    evaluateTrial: core.evaluateTrial.bind(core),
+    renderTrial: core.renderTrial.bind(core),
+    explainTrial: core.explainTrial.bind(core),
+    generateTrial: core.generateTrial.bind(core),
+    renameTrial: core.renameTrial.bind(core),
+    invert: core.invert.bind(core),
+    opposite: core.opposite.bind(core)
+  }) : null;
+  function requireSpatial() { if (!spatial) throw new Error('Mode 1 spatial primitives are unavailable.'); return spatial; }
   const clone = value => JSON.parse(JSON.stringify(value));
   const random = rng => rng?.next ? rng.next() : Math.random();
   const pick = (rng, values) => rng?.pick ? rng.pick(values) : values[Math.floor(random(rng) * values.length)];
@@ -22,8 +34,8 @@
   function statements(trial) { if (!trial || !Array.isArray(trial.premises) || trial.premises.length !== 2 || !trial.conclusion) throw new Error('A conflict trial requires two premises and one conclusion.'); return [...trial.premises, trial.conclusion]; }
   function trialLetters(trial) { return [...new Set(statements(trial).flatMap(s => [s.subject, s.object]))]; }
   function permutations(values) { if (values.length < 2) return [values.slice()]; return values.flatMap((v, i) => permutations(values.slice(0, i).concat(values.slice(i + 1))).map(rest => [v, ...rest])); }
-  function canonicalStatement(statement, mapping) { const c = requireCore(); const direct = `${mapping[statement.subject]}>${statement.relation}>${mapping[statement.object]}`; const inverse = `${mapping[statement.object]}>${c.opposite(statement.relation)}>${mapping[statement.subject]}`; return direct < inverse ? direct : inverse; }
-  function ensureResolutionClosed(trial, expectedResolution) { const c = requireCore(); const resolution = c.normaliseResolution(expectedResolution ?? trial?.directionResolution, null); if (!resolution) return false; trial.directionResolution = resolution; const pool = c.allowedCodes(resolution); let evaluation; try { evaluation = c.evaluateTrial(trial); } catch (_) { return false; } const relations = statements(trial).map(item => item.relation).concat(evaluation.expectedRelation); return relations.every(code => pool.includes(code)); }
+  function canonicalStatement(statement, mapping) { const c = requireSpatial(); const direct = `${mapping[statement.subject]}>${statement.relation}>${mapping[statement.object]}`; const inverse = `${mapping[statement.object]}>${c.opposite(statement.relation)}>${mapping[statement.subject]}`; return direct < inverse ? direct : inverse; }
+  function ensureResolutionClosed(trial, expectedResolution) { const c = requireSpatial(); const resolution = c.normaliseResolution(expectedResolution ?? trial?.directionResolution, null); if (!resolution) return false; trial.directionResolution = resolution; const pool = c.allowedCodes(resolution); let evaluation; try { evaluation = c.evaluateTrial(trial); } catch (_) { return false; } const relations = statements(trial).map(item => item.relation).concat(evaluation.expectedRelation); return relations.every(code => pool.includes(code)); }
   function analyseAlignment(target, current, options = {}) {
     const targetResolution = Number(target?.directionResolution || 16), currentResolution = Number(current?.directionResolution || 16);
     if (targetResolution !== currentResolution) throw new Error('N-back target and current trial use different compass resolutions.');
@@ -46,15 +58,15 @@
     const best = candidates[0];
     return Object.freeze({ statementMatches: Object.freeze(best.vector.slice()), matchedCount: best.count, assignment: Object.freeze(best.assignment.slice()), letterMapping: Object.freeze({...best.map}), localStatementCompatibility: Object.freeze(best.vector.slice()), localMatchCount: best.count, mappingConflict: false, wholeTrialMatch: best.count === 3, roleSensitive, directionResolution: currentResolution });
   }
-  function evaluateConflictMatrix(target, current, options = {}) { const alignment = analyseAlignment(target, current, options), entailment = requireCore().evaluateTrial(current); return Object.freeze({ ...alignment, conclusionEntailed: entailment.isEntailed, expectedRelation: entailment.expectedRelation, assertedRelation: entailment.assertedRelation, responseVector: Object.freeze([...alignment.statementMatches, entailment.isEntailed, alignment.wholeTrialMatch]) }); }
-  function renameAndTransform(rng, target) { const c = requireCore(), source = trialLetters(target), destination = shuffle(rng, LETTER_POOL).slice(0, 3); let trial = c.renameTrial(target, Object.fromEntries(source.map((letter, index) => [letter, destination[index]]))); trial = clone(trial); if (random(rng) < .5) trial.premises.reverse(); trial.premises = trial.premises.map(s => random(rng) < .5 ? c.invert(s) : s); if (random(rng) < .5) trial.conclusion = c.invert(trial.conclusion); trial.mode = 0; trial.publicMode = 1; trial.directionResolution = Number(target.directionResolution || 16); return trial; }
-  function oneStepMutations(statement, resolution) { const c = requireCore(), ring = c.allowedCodes(resolution), index = ring.indexOf(statement.relation); if (index < 0) return []; return [-1,1].map(sign => ({...statement, relation: ring[(index + sign + ring.length) % ring.length]})); }
-  function mutateDirection(rng, statement, interferenceLevel = 0, directionResolution = 16) { const c = requireCore(), ring = c.allowedCodes(directionResolution), index = ring.indexOf(statement.relation); if (index < 0) throw new Error('Cannot mutate a relation outside the selected resolution.'); const level = Math.max(0, Math.min(100, Number(interferenceLevel) || 0)); let distance; if (level >= 85) distance = 1; else if (level >= 55) distance = Math.min(2, Math.floor(ring.length / 2)); else distance = Math.max(1, Math.floor(ring.length / 2)); const sign = random(rng) < .5 ? -1 : 1; return { ...statement, relation: ring[(index + sign * distance + ring.length) % ring.length] }; }
+  function evaluateConflictMatrix(target, current, options = {}) { const alignment = analyseAlignment(target, current, options), entailment = requireSpatial().evaluateTrial(current); return Object.freeze({ ...alignment, conclusionEntailed: entailment.isEntailed, expectedRelation: entailment.expectedRelation, assertedRelation: entailment.assertedRelation, responseVector: Object.freeze([...alignment.statementMatches, entailment.isEntailed, alignment.wholeTrialMatch]) }); }
+  function renameAndTransform(rng, target) { const c = requireSpatial(), source = trialLetters(target), destination = shuffle(rng, LETTER_POOL).slice(0, 3); let trial = c.renameTrial(target, Object.fromEntries(source.map((letter, index) => [letter, destination[index]]))); trial = clone(trial); if (random(rng) < .5) trial.premises.reverse(); trial.premises = trial.premises.map(s => random(rng) < .5 ? c.invert(s) : s); if (random(rng) < .5) trial.conclusion = c.invert(trial.conclusion); trial.mode = 0; trial.publicMode = 1; trial.directionResolution = Number(target.directionResolution || 16); return trial; }
+  function oneStepMutations(statement, resolution) { const c = requireSpatial(), ring = c.allowedCodes(resolution), index = ring.indexOf(statement.relation); if (index < 0) return []; return [-1,1].map(sign => ({...statement, relation: ring[(index + sign + ring.length) % ring.length]})); }
+  function mutateDirection(rng, statement, interferenceLevel = 0, directionResolution = 16) { const c = requireSpatial(), ring = c.allowedCodes(directionResolution), index = ring.indexOf(statement.relation); if (index < 0) throw new Error('Cannot mutate a relation outside the selected resolution.'); const level = Math.max(0, Math.min(100, Number(interferenceLevel) || 0)); let distance; if (level >= 85) distance = 1; else if (level >= 55) distance = Math.min(2, Math.floor(ring.length / 2)); else distance = Math.max(1, Math.floor(ring.length / 2)); const sign = random(rng) < .5 ? -1 : 1; return { ...statement, relation: ring[(index + sign * distance + ring.length) % ring.length] }; }
   function finaliseConflictTrial(target, trial, options) { const resolution = options.directionResolution, roleSensitive = Boolean(options.roleSensitive), evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }), requestedWholeMatch = Boolean(options.match); Object.assign(trial, { nBackRequestedMatch: requestedWholeMatch, nBackMatch: evaluation.wholeTrialMatch, isMatch: evaluation.wholeTrialMatch, statementMatchVector: evaluation.statementMatches.slice(), conclusionEntailed: evaluation.conclusionEntailed, conflictResponseVector: evaluation.responseVector.slice(), mappingConflict: evaluation.mappingConflict, localStatementCompatibility: evaluation.localStatementCompatibility.slice(), roleSensitive, directionResolution: resolution, interferenceLevel: options.interferenceLevel, interferenceProfile: `R${resolution}:${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:${Number(evaluation.wholeTrialMatch)}`, scored: true }); return trial; }
   function buildExactSingleConflictCandidates(rng, target, resolution) { const candidates = []; for (let transformAttempt = 0; transformAttempt < 40; transformAttempt++) { const source = renameAndTransform(rng, target); source.directionResolution = resolution; const base = statements(source).map(item => ({...item})); for (let index = 0; index < 3; index++) { for (const replacement of oneStepMutations(base[index], resolution)) { const trial = clone(source), items = base.map(item => ({...item})); items[index] = replacement; trial.premises = items.slice(0,2); trial.conclusion = items[2]; candidates.push(trial); } } } return candidates; }
   function generateConflictTrial(rng, target, options = {}) {
     if (!target) throw new Error('A historical N-back target is required.');
-    const c = requireCore(), resolution = c.normaliseResolution(options.directionResolution ?? target.directionResolution, 16);
+    const c = requireSpatial(), resolution = c.normaliseResolution(options.directionResolution ?? target.directionResolution, 16);
     if (!ensureResolutionClosed(target, resolution)) throw new Error('Target resolution does not match session resolution.');
     const requestedWholeMatch = Boolean(options.match), interferenceLevel = Math.max(0, Math.min(100, Number(options.interferenceLevel) || 0)), roleSensitive = Boolean(options.roleSensitive);
     if (requestedWholeMatch) { const trial = renameAndTransform(rng, target); trial.directionResolution = resolution; if (!ensureResolutionClosed(trial, resolution)) throw new Error('Transformed match trial escaped the selected resolution.'); return finaliseConflictTrial(target, trial, { match: true, roleSensitive, directionResolution: resolution, interferenceLevel }); }
@@ -67,14 +79,13 @@
     const exactTwo = candidates.filter(item => item.evaluation.matchedCount === 2), exactOne = candidates.filter(item => item.evaluation.matchedCount === 1), selectedPool = interferenceLevel >= 95 ? (exactTwo.length ? exactTwo : exactOne.length ? exactOne : candidates) : interferenceLevel >= 75 ? (exactTwo.length ? exactTwo.concat(exactOne) : candidates) : candidates, selected = pick(rng, selectedPool);
     return finaliseConflictTrial(target, selected.trial, { match: false, roleSensitive, directionResolution: resolution, interferenceLevel });
   }
-  function generateWarmupTrial(rng, options = {}) { const c = requireCore(), resolution = c.normaliseResolution(options.directionResolution, 16), trial = c.generateTrial(rng, { matchProbability: random(rng) < .5 ? 1 : 0, interferenceLevel: options.interferenceLevel, directionResolution: resolution }), entailment = c.evaluateTrial(trial); Object.assign(trial, { mode: 0, publicMode: 1, nBackWarmup: true, scored: true, nBackRequestedMatch: false, nBackMatch: false, isMatch: false, statementMatchVector: [false,false,false], conclusionEntailed: entailment.isEntailed, conflictResponseVector: [false,false,false,entailment.isEntailed,false], mappingConflict: false, localStatementCompatibility: [false,false,false], roleSensitive: false, directionResolution: resolution, interferenceLevel: options.interferenceLevel, interferenceProfile: `R${resolution}:000:${Number(entailment.isEntailed)}:0` }); return trial; }
-  function evaluateHistory(history, currentIndex, nBackLevel, options = {}) { const level = Math.max(1, Math.min(8, Math.round(Number(nBackLevel) || 1))), targetIndex = currentIndex - level; if (targetIndex < 0) { const current = history[currentIndex], entailment = requireCore().evaluateTrial(current); return Object.freeze({ warmup: true, scored: true, isMatch: false, currentIndex, targetIndex, nBackLevel: level, statementMatches: Object.freeze([false,false,false]), conclusionEntailed: entailment.isEntailed, wholeTrialMatch: false, responseVector: Object.freeze([false,false,false,entailment.isEntailed,false]), directionResolution: current.directionResolution }); } const evaluation = evaluateConflictMatrix(history[targetIndex], history[currentIndex], options); return Object.freeze({ ...evaluation, warmup: false, scored: true, isMatch: evaluation.wholeTrialMatch, currentIndex, targetIndex, nBackLevel: level }); }
+  function generateWarmupTrial(rng, options = {}) { const c = requireSpatial(), resolution = c.normaliseResolution(options.directionResolution, 16), trial = c.generateTrial(rng, { matchProbability: random(rng) < .5 ? 1 : 0, interferenceLevel: options.interferenceLevel, directionResolution: resolution }), entailment = c.evaluateTrial(trial); Object.assign(trial, { mode: 0, publicMode: 1, nBackWarmup: true, scored: true, nBackRequestedMatch: false, nBackMatch: false, isMatch: false, statementMatchVector: [false,false,false], conclusionEntailed: entailment.isEntailed, conflictResponseVector: [false,false,false,entailment.isEntailed,false], mappingConflict: false, localStatementCompatibility: [false,false,false], roleSensitive: false, directionResolution: resolution, interferenceLevel: options.interferenceLevel, interferenceProfile: `R${resolution}:000:${Number(entailment.isEntailed)}:0` }); return trial; }
+  function evaluateHistory(history, currentIndex, nBackLevel, options = {}) { const level = Math.max(1, Math.min(8, Math.round(Number(nBackLevel) || 1))), targetIndex = currentIndex - level; if (targetIndex < 0) { const current = history[currentIndex], entailment = requireSpatial().evaluateTrial(current); return Object.freeze({ warmup: true, scored: true, isMatch: false, currentIndex, targetIndex, nBackLevel: level, statementMatches: Object.freeze([false,false,false]), conclusionEntailed: entailment.isEntailed, wholeTrialMatch: false, responseVector: Object.freeze([false,false,false,entailment.isEntailed,false]), directionResolution: current.directionResolution }); } const evaluation = evaluateConflictMatrix(history[targetIndex], history[currentIndex], options); return Object.freeze({ ...evaluation, warmup: false, scored: true, isMatch: evaluation.wholeTrialMatch, currentIndex, targetIndex, nBackLevel: level }); }
   function installStyles(d) { if (d.getElementById('compass-resolution-style')) return; const style = d.createElement('style'); style.id = 'compass-resolution-style'; style.textContent = `#direction-resolution-group[hidden]{display:none!important}#direction-resolution-help{font-size:.75rem;color:#43566d;line-height:1.42;margin:8px 0 0}#direction-resolution-error{font-size:.78rem;color:#a61f17;font-weight:800;margin:7px 0 0}#direction-resolution[aria-invalid="true"]{outline:3px solid rgba(180,35,24,.3);border-color:#b42318}#direction-resolution-status{font-size:.7rem;font-weight:850;letter-spacing:.06em;color:#31546f;text-align:center;margin:5px 0 0;text-transform:uppercase}`; d.head.appendChild(style); }
   function ensureResolutionUI(d, app) {
     installStyles(d);
     const group = d.getElementById('direction-resolution-group'), select = d.getElementById('direction-resolution'), error = d.getElementById('direction-resolution-error'), status = d.getElementById('direction-resolution-status'), start = d.getElementById('start-btn'), mode = d.getElementById('logic-mode');
     if (!group || !select || !error || !status || !start || !mode) throw new Error('Compass-resolution UI is incomplete.');
-    select.value = '';
     const getSelected = () => { const value = Number(select.value); return [4,8,16].includes(value) ? value : null; };
     const isModeOne = () => Number(mode.value || 0) === 0;
     const clearError = () => { select.setAttribute('aria-invalid','false'); error.hidden = true; };
@@ -98,60 +109,51 @@
   }
   function installBrowser(rootObject) {
     const app = rootObject.__ontologicalWorlds, d = rootObject.document;
-    if (!app || !requireCore() || app.__mandatoryCompassResolutionInstalled) return;
+    if (!app || !requireSpatial() || app.__mandatoryCompassResolutionInstalled) return;
     const matrix = d.getElementById('conflict-matrix');
     if (!matrix) return;
     const ui = ensureResolutionUI(d, app), input = installMatrixInput(rootObject, app, matrix);
-    const originalSettings = app.settings.bind(app), originalStart = app.start.bind(app), originalMakeTrial = app.makeTrial.bind(app), originalNextTrial = app.nextTrial.bind(app), originalStop = app.stop.bind(app), originalTogglePause = app.togglePause?.bind(app);
+    const originalSettings = app.settings.bind(app), originalStart = app.start.bind(app), originalNextTrial = app.nextTrial.bind(app), originalStop = app.stop.bind(app), originalTogglePause = app.togglePause?.bind(app);
     const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation');
     let advanceTimerId = null;
     app.settings = function() { const settings = originalSettings(); return { ...settings, directionResolution: this.running ? this.directionResolution : ui.getSelected() }; };
     app.getSelectedDirectionResolution = ui.getSelected;
     app.validateDirectionResolutionBeforeStart = ui.validate;
     app.makeTrial = function() {
-      const mode = Number(originalSettings().mode);
-      if (mode !== 0) return originalMakeTrial();
-      const resolution = requireCore().normaliseResolution(this.directionResolution, null);
+      if (Number(originalSettings().mode) !== 0) return null;
+      const resolution = requireSpatial().normaliseResolution(this.directionResolution, null);
       if (!resolution) throw new Error('Mode 1 cannot generate a trial without a frozen compass resolution.');
-      const settings = originalSettings(), level = Math.max(1, Math.min(8, Math.round(Number(this.n || settings.n) || 1)));
-      let target = this.trials[this.trials.length - level];
-      if (target && !ensureResolutionClosed(target, resolution)) { this.trials = []; target = null; }
-      const interferenceLevel = Number(d.getElementById('interference-slider')?.value) || 0;
+      const settings = originalSettings(), level = Math.max(1, Math.min(8, Math.round(Number(this.n || settings.n) || 1))), interferenceLevel = Number(d.getElementById('interference-slider')?.value) || 0;
+      const target = this.trials[this.trials.length - level];
       if (!target) return generateWarmupTrial(this.rng, { interferenceLevel, directionResolution: resolution });
-      const requestedMatch = this.rng.next() < settings.matchProbability;
-      return generateConflictTrial(this.rng, target, { match: requestedMatch, interferenceLevel, roleSensitive: true, directionResolution: resolution });
+      if (!ensureResolutionClosed(target, resolution)) throw new Error('Historical target escaped the frozen compass resolution.');
+      return generateConflictTrial(this.rng, target, { match: this.rng.next() < settings.matchProbability, interferenceLevel, roleSensitive: true, directionResolution: resolution });
     };
     app.nextTrial = function(token = this.sessionToken) {
       if (Number(originalSettings().mode) !== 0) return originalNextTrial(token);
       if (!this.running || this.paused || token !== this.sessionToken) return null;
       clearTimeout(this.timerId); clearTimeout(advanceTimerId); advanceTimerId = null;
-      const resolution = requireCore().normaliseResolution(this.directionResolution, null);
-      if (!resolution) throw new Error('Mode 1 has no frozen compass resolution.');
-      let trial = null, rendered = null, lastError = null;
-      for (let attempt = 0; attempt < 12 && !trial; attempt++) {
+      const resolution = requireSpatial().normaliseResolution(this.directionResolution, null);
+      if (!resolution) return this.failModeOneStartup?.(new Error('Mode 1 has no frozen compass resolution.')) || null;
+      let trial = null, rendered = '', lastError = null;
+      for (let attempt = 0; attempt < 32 && !trial; attempt++) {
         try {
-          const candidate = attempt === 0 ? this.makeTrial() : generateWarmupTrial(this.rng, { interferenceLevel: Number(d.getElementById('interference-slider')?.value) || 0, directionResolution: resolution });
-          if (!ensureResolutionClosed(candidate, resolution)) continue;
-          const candidateRendered = requireCore().renderTrial(candidate);
+          const candidate = this.makeTrial();
+          if (!candidate || !ensureResolutionClosed(candidate, resolution)) throw new Error('Generated trial failed resolution validation.');
+          const candidateRendered = requireSpatial().renderTrial(candidate);
           if (typeof candidateRendered !== 'string' || !candidateRendered.trim()) throw new Error('Mode 1 rendered an empty premise.');
-          trial = candidate;
-          rendered = candidateRendered;
-        } catch (error) {
-          lastError = error;
-        }
+          trial = candidate; rendered = candidateRendered.trim();
+        } catch (error) { lastError = error; }
       }
-      if (!trial || !rendered) {
-        const error = lastError || new Error('Mode 1 could not generate and render a valid trial.');
-        console.error('Mode 1 nextTrial failed before committing state.', error);
-        if (premiseDisplay) premiseDisplay.textContent = `TRIAL_GENERATION_FAILED: ${error.message}`;
-        this.awaiting = false;
-        return null;
-      }
+      if (!trial) return this.failModeOneStartup?.(lastError || new Error('Mode 1 could not generate and render a valid trial.')) || null;
       if (!this.running || this.paused || token !== this.sessionToken) return null;
+      if (!premiseDisplay) return this.failModeOneStartup?.(new Error('Premise display element is missing.')) || null;
+      premiseDisplay.textContent = rendered;
+      if (premiseDisplay.textContent.trim() !== rendered) return this.failModeOneStartup?.(new Error('Premise DOM write did not persist.')) || null;
       this.current = trial;
       this.trials.push(trial);
       this.score.shown++;
-      if (premiseDisplay) { premiseDisplay.textContent = rendered; premiseDisplay.classList.remove('correct','incorrect'); }
+      premiseDisplay.classList.remove('correct','incorrect');
       if (feedback) feedback.textContent = '';
       if (explanation) explanation.textContent = '';
       input.reset(trial);
@@ -160,6 +162,29 @@
       try { this.updateStats?.(); } catch (_) {}
       return trial;
     };
+    app.failModeOneStartup = function(error) {
+      console.error('Mode 1 startup failed.', error);
+      this.running = false;
+      this.paused = false;
+      this.awaiting = false;
+      this.current = null;
+      this.trials = [];
+      this.sessionToken++;
+      clearTimeout(this.timerId); clearTimeout(advanceTimerId); clearInterval(this.sessionTimerId);
+      advanceTimerId = null;
+      try { this.synth?.cancel(); } catch (_) {}
+      try { this.stopDelta?.(); } catch (_) {}
+      const countdown = d.getElementById('countdown-box');
+      if (countdown) countdown.textContent = '';
+      if (premiseDisplay) premiseDisplay.textContent = `START_FAILED: ${error?.message || 'Unknown Mode 1 startup error'}`;
+      const start = d.getElementById('start-btn'), pause = d.getElementById('pause-btn'), stop = d.getElementById('stop-btn');
+      if (start) start.disabled = false;
+      if (pause) pause.disabled = true;
+      if (stop) stop.disabled = true;
+      ui.select.disabled = false;
+      ui.sync();
+      return null;
+    };
     app.start = function(...args) {
       const mode = Number(originalSettings().mode);
       if (mode !== 0) return originalStart(...args);
@@ -167,7 +192,11 @@
       if (!ui.validate(true)) return false;
       this.directionResolution = ui.getSelected();
       this.trials = [];
-      return originalStart(...args);
+      this.current = null;
+      this.awaiting = false;
+      const result = originalStart(...args);
+      if (result && typeof result.catch === 'function') result.catch(error => this.failModeOneStartup(error));
+      return result;
     };
     app.submitConflictMatrix = function(responses, decisionTimes) {
       if (!this.current?.scored || !Array.isArray(this.current.conflictResponseVector) || !this.awaiting || this.current.submitted) return;
@@ -177,13 +206,13 @@
       this.awaiting = false;
       clearTimeout(this.timerId); clearTimeout(advanceTimerId);
       if (feedback) feedback.textContent = this.current.conflictAllCorrect ? 'ALL FIVE CORRECT' : `${this.current.conflictCorrectCount}/5 CORRECT`;
-      if (explanation) explanation.textContent = requireCore().explainTrial(this.current);
+      if (explanation) explanation.textContent = requireSpatial().explainTrial(this.current);
       try { this.updateStats?.(); } catch (_) {}
       const token = this.sessionToken;
       advanceTimerId = rootObject.setTimeout(() => { advanceTimerId = null; if (this.running && !this.paused && token === this.sessionToken) this.nextTrial(token); }, 1600);
     };
     if (originalTogglePause) app.togglePause = function(...args) { const wasPaused = this.paused, result = originalTogglePause(...args); if (wasPaused && !this.paused && this.current && !this.current.submitted) { this.awaiting = true; return result; } return result; };
-    app.stop = function(...args) { clearTimeout(advanceTimerId); advanceTimerId = null; const result = originalStop(...args); this.directionResolution = null; ui.select.value = ''; matrix.classList.remove('active'); ui.sync(); return result; };
+    app.stop = function(...args) { clearTimeout(advanceTimerId); advanceTimerId = null; const result = originalStop(...args); this.directionResolution = null; this.current = null; ui.select.value = ''; matrix.classList.remove('active'); ui.sync(); return result; };
     app.__mandatoryCompassResolutionInstalled = true;
     ui.sync();
   }
