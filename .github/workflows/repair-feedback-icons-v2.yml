@@ -1,0 +1,61 @@
+name: Repair Mode 1 Feedback Icons v2
+
+on:
+  push:
+    paths:
+      - .github/workflows/repair-feedback-icons-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch response feedback lifecycle
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('mode-one-conflict-matrix-v20.js')
+          text = path.read_text(encoding='utf-8')
+
+          old_click = "matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='Checking all five decisions…'; rootObject.setTimeout(()=>{if(app.awaiting&&responses.every(v=>v!==null))app.submitConflictMatrix(responses.slice(),decisionTimes.slice());},80);}});"
+          new_click = "matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='Checking all five decisions…'; rootObject.queueMicrotask?.(()=>{if(app.awaiting&&responses.every(v=>v!==null))app.submitConflictMatrix(responses.slice(),decisionTimes.slice());}) || Promise.resolve().then(()=>{if(app.awaiting&&responses.every(v=>v!==null))app.submitConflictMatrix(responses.slice(),decisionTimes.slice());});}});"
+          if old_click not in text:
+              raise SystemExit('Expected click handler not found')
+          text = text.replace(old_click, new_click, 1)
+
+          old_submit = "matrix.showFeedback(correctness,responses);\n      matrix.querySelector('#conflict-progress').textContent=this.current.conflictAllCorrect?'✓ ALL FIVE CORRECT':`${this.current.conflictCorrectCount}/5 CORRECT — review the ✓ and ✕ symbols`;"
+          new_submit = "matrix.showFeedback(correctness,responses);\n      rootObject.requestAnimationFrame?.(()=>matrix.showFeedback(correctness,responses));\n      matrix.querySelector('#conflict-progress').textContent=this.current.conflictAllCorrect?'✓ ALL FIVE CORRECT':`${this.current.conflictCorrectCount}/5 CORRECT — review the ✓ and ✕ symbols`;"
+          if old_submit not in text:
+              raise SystemExit('Expected submit feedback call not found')
+          text = text.replace(old_submit, new_submit, 1)
+
+          old_css = ".conflict-feedback-icon{position:absolute;inset:0;z-index:20;display:grid;place-items:center;background:rgba(255,255,255,.9);animation:conflict-feedback-pop .72s ease-out both;pointer-events:none}.conflict-feedback-icon svg{display:block;width:min(52%,64px);height:min(52%,64px);overflow:visible}.conflict-feedback-icon.correct{color:#087a3f}.conflict-feedback-icon.incorrect{color:#b42318}"
+          new_css = ".conflict-feedback-icon{position:absolute!important;inset:0!important;z-index:2147483647!important;display:grid!important;place-items:center!important;background:rgba(255,255,255,.97)!important;opacity:1!important;visibility:visible!important;animation:conflict-feedback-pop .72s ease-out both;pointer-events:none}.conflict-feedback-icon svg{display:block!important;width:min(58%,72px)!important;height:min(58%,72px)!important;overflow:visible!important}.conflict-feedback-icon.correct{color:#087a3f!important}.conflict-feedback-icon.incorrect{color:#b42318!important}"
+          if old_css not in text:
+              raise SystemExit('Expected icon CSS not found')
+          text = text.replace(old_css, new_css, 1)
+
+          text = text.replace("return Object.freeze({version:33,", "return Object.freeze({version:34,", 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Validate syntax and contract
+        run: |
+          node --check mode-one-conflict-matrix-v20.js
+          grep -F "z-index:2147483647" mode-one-conflict-matrix-v20.js
+          grep -F "queueMicrotask" mode-one-conflict-matrix-v20.js
+          grep -F "requestAnimationFrame?.(()=>matrix.showFeedback" mode-one-conflict-matrix-v20.js
+      - name: Commit repair
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mode-one-conflict-matrix-v20.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Make Mode 1 feedback icons unavoidable"
+          git push origin HEAD:main
