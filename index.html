@@ -66,7 +66,7 @@
       <div class="control-group"><label for="spt-slider">Response window: <span id="spt-val">8.0s</span></label><input id="spt-slider" type="range" min="2" max="300" step="0.5" value="8"></div>
       <div class="control-group"><label for="session-slider">Session: <span id="session-val">15 MIN</span></label><input id="session-slider" type="range" min="1" max="120" step="1" value="15"></div>
       <div class="control-group"><label for="prob-slider">Whole-triad match probability: <span id="prob-val">35%</span></label><input id="prob-slider" type="range" min="15" max="60" step="1" value="35"></div>
-      <div class="control-group"><label for="interference-slider">Cognitive interference: <span id="interference-val">60%</span></label><input id="interference-slider" type="range" min="0" max="100" step="5" value="60" aria-describedby="interference-help"><p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls partial statement matches, adjacent resolution-aware lures, surface-letter conflict and near-complete relational structures. At high settings, two statements commonly match while one precise relation prevents a whole-triad match.</p></div>
+      <div class="control-group"><label for="interference-slider">Cognitive interference: <span id="interference-val">60%</span></label><input id="interference-slider" type="range" min="0" max="100" step="5" value="60" aria-describedby="interference-help"><p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls partial statement matches, resolution-aware near-misses, relational reversals, surface-letter remapping and near-complete triads. At maximum, non-match trials strongly favour two-of-three statement matches with one exact relational conflict.</p></div>
       <div class="control-group" aria-labelledby="accessibility-label"><label id="accessibility-label">Premise accessibility</label><p style="font-size:.75rem;color:#43566d;line-height:1.45;margin-bottom:10px">Every generated premise is supplied through visible text and optional speech using the same canonical content.</p><div class="toggle-row"><label><input id="audio-only" type="checkbox"> Audio-only display</label><label><input id="keyboard" type="checkbox" checked> Keyboard controls</label><label><input id="haptic" type="checkbox" checked> Haptics</label><label><input id="adaptive" type="checkbox"> Adaptive N</label></div><input id="hide-text" type="checkbox" hidden aria-hidden="true" tabindex="-1"></div>
       <div class="control-group"><label for="rate-slider">Spoken-premise rate: <span id="rate-val">0.85x</span></label><input id="rate-slider" type="range" min="0.4" max="1.6" step="0.05" value="0.85"></div>
       <div class="control-group"><label for="premise-vol">Spoken-premise volume: <span id="premise-vol-val">70%</span></label><input id="premise-vol" type="range" min="0" max="100" step="1" value="70"><div class="vol-meter" aria-hidden="true"><div id="premise-vol-meter"></div></div><button id="premise-test-btn" class="small-btn" type="button" style="margin-top:10px">🔊 Test premise volume</button></div>
@@ -79,12 +79,12 @@
   <section id="extra-training-screen" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="extra-training-title"><div class="extra-shell"><div class="extra-header"><h2 id="extra-training-title">Extra Training</h2><button id="extra-training-close-top" class="small-btn" type="button" aria-label="Close Extra Training">Close</button></div><section id="extra-training-panel" class="controls" aria-label="Ordered Number N-back settings"></section></div></section>
   <script>window.openExtraTrainingScreenFallback=function(event){if(event){event.preventDefault();event.stopPropagation();}window.location.assign('extra-training.html');};</script>
   <div id="paused-overlay" aria-live="assertive"><h2>PAUSED</h2><p>Tap anywhere or press P to continue.</p></div>
-  <section id="tutorial" class="modal" role="dialog" aria-modal="true" aria-labelledby="tutorial-title"><div class="modal-inner"><button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button><h2 id="tutorial-title">How to Train</h2><h3>Mode 1 — Relational Conflict Matrix</h3><p>Choose 4, 8 or 16 compass directions before starting Mode 1. Four uses the cardinal directions, eight adds the diagonals, and sixteen adds the intermediate directions. Finer resolution increases directional precision. Cognitive interference changes lure difficulty independently of compass resolution.</p><p>After the first N memory-fill trials, answer five questions on every trial: whether each of the three statements matches a statement in the trial N positions earlier, whether Statement 3 is logically entailed by Statements 1 and 2, and whether the complete three-statement structure matches. Statement matches require one globally consistent mapping of letters and one-to-one statement assignment. Reversed wording counts only when the compass direction is inverted correctly. A single or partial match never makes the whole triad a match.</p><p>Keyboard mapping: Statement 1 A/S, Statement 2 D/F, Statement 3 H/J, within-trial entailment K/L, and complete-triad N-back Spacebar/N. In every pair, the left key is the positive response and the right key is the negative response. G is deliberately unused.</p><h3>Mode 2 — Ontological Integration</h3><p>Mode 2 does not require or use the Mode 1 compass-resolution selector.</p><button id="dismiss-tutorial" class="small-btn" type="button">Close</button></div></section>
+  <section id="tutorial" class="modal" role="dialog" aria-modal="true" aria-labelledby="tutorial-title"><div class="modal-inner"><button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button><h2 id="tutorial-title">How to Train</h2><h3>Mode 1 — Relational Conflict Matrix</h3><p>Choose 4, 8 or 16 compass directions before starting Mode 1. Four uses the cardinal directions, eight adds the diagonals, and sixteen adds the intermediate directions. Finer resolution increases directional precision. Cognitive interference changes lure difficulty independently of compass resolution.</p><p>After the first N memory-fill trials, answer five questions on every trial: whether each of the three statements matches a statement in the trial N positions earlier, whether Statement 3 is logically entailed by Statements 1 and 2, and whether the complete three-statement structure matches. Statement matches require one globally consistent mapping of letters and one-to-one statement assignment. Reversed wording counts only when the compass direction is inverted correctly. A single or partial match never makes the whole triad a match.</p><p>At high cognitive-interference settings, non-match trials are deliberately constructed as close structural lures: one or two statements may match the N-back target while a precise direction, role assignment or entailment relation prevents the complete triad from matching. At maximum, the generator strongly favours two-of-three statement near-misses across 4-, 8- and 16-direction sessions.</p><p>Keyboard mapping: Statement 1 A/S, Statement 2 D/F, Statement 3 H/J, within-trial entailment K/L, and complete-triad N-back Spacebar/N. In every pair, the left key is the positive response and the right key is the negative response. G is deliberately unused.</p><h3>Mode 2 — Ontological Integration</h3><p>Mode 2 does not require or use the Mode 1 compass-resolution selector.</p><button id="dismiss-tutorial" class="small-btn" type="button">Close</button></div></section>
   <section id="history" class="modal" role="dialog" aria-modal="true" aria-labelledby="history-title"><div class="modal-inner"><button class="modal-close" data-close="history" aria-label="Close history">×</button><h2 id="history-title">Session History</h2><div id="history-list"></div><div class="modal-actions"><button id="export-btn" class="small-btn" type="button">Export CSV</button><button id="clear-btn" class="small-btn" type="button">Clear</button><button id="dismiss-history" class="small-btn" type="button">Close</button></div></section>
   <script src="app.js"></script>
   <script src="mode-one-interference.js"></script>
   <script src="mode-one-match-logic.js"></script>
-  <script src="mode-one-spatial-core.js?v=20260725-3"></script>
+  <script src="mode-one-spatial-core.js?v=20260725-4"></script>
   <script src="mode-zero-exact-matching-v12.js"></script>
   <script src="mode-one-approved-trials-v7.js"></script>
   <script src="mode-one-nback-v8.js"></script>
@@ -97,36 +97,6 @@
   <script src="mode-one-completion-v11.js"></script>
   <script src="audio-accessibility.js"></script>
   <script src="extra-training.js"></script>
-  <script src="mode-one-conflict-matrix-v20.js?v=20260725-3"></script>
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const app = window.__ontologicalWorlds;
-      const core = window.__modeOneTriadicEntailmentCore || window.__modeOneSpatialCore;
-      const select = document.getElementById('direction-resolution');
-      const display = document.getElementById('premise-display');
-      if (!app || !core || !select || !display) return;
-      const allowed = () => core.allowedCodes(Number(app.directionResolution || select.value || 16));
-      const originalRender = core.renderTrial.bind(core);
-      core.renderTrial = trial => {
-        const pool = allowed();
-        const evaluated = core.evaluateTrial(trial);
-        const relations = [...trial.premises.map(item => item.relation), trial.conclusion.relation, evaluated.expectedRelation];
-        if (!relations.every(code => pool.includes(code))) {
-          throw new Error(`Rendering blocked: ${relations.join(', ')} is outside ${pool.join(', ')}.`);
-        }
-        return originalRender(trial);
-      };
-      const observer = new MutationObserver(() => {
-        const resolution = Number(app.directionResolution || select.value);
-        if (resolution !== 4) return;
-        const forbidden = /north(?:east|west|-northeast|-northwest)|south(?:east|west|-southeast|-southwest)|east-(?:northeast|southeast)|west-(?:northwest|southwest)/i;
-        if (forbidden.test(display.textContent || '')) {
-          console.error('Invalid 4-direction premise reached the DOM; regenerating.');
-          try { app.current = null; app.nextTrial(app.sessionToken); } catch (error) { console.error(error); }
-        }
-      });
-      observer.observe(display, { childList: true, characterData: true, subtree: true });
-    });
-  </script>
+  <script src="mode-one-conflict-matrix-v20.js?v=20260725-4"></script>
 </body>
 </html>
