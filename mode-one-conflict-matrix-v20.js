@@ -196,7 +196,7 @@
     if(!matrix){
       matrix=d.createElement('section'); matrix.id='conflict-matrix'; matrix.setAttribute('aria-label','Five-decision relational conflict matrix');
       const labels=['Statement 1 — N-back','Statement 2 — N-back','Statement 3 — N-back','Statement 3 — entailed?','Complete triad — N-back'];
-      const keyPairs=[['A','S'],['D','F'],['H','J'],['K','L'],['Spacebar','B']];
+      const keyPairs=[['A','S'],['D','F'],['H','J'],['K','L'],['Spacebar','N']];
       matrix.innerHTML=`<div class="conflict-heading">Relational conflict matrix</div><div class="conflict-grid">${labels.map((label,index)=>`<div class="conflict-row" data-decision="${index}"><div class="conflict-label">${label}</div><button class="conflict-choice" data-value="1" type="button" aria-label="${label} positive response — press ${keyPairs[index][0]}">${keyPairs[index][0]}</button><button class="conflict-choice" data-value="0" type="button" aria-label="${label} negative response — press ${keyPairs[index][1]}">${keyPairs[index][1]}</button></div>`).join('')}</div><button id="conflict-submit" type="button" disabled>Submit all five decisions</button><div id="conflict-progress" aria-live="polite">0 of 5 decisions entered</div><div id="conflict-score" aria-live="polite"></div>`;
       originalButtons?.insertAdjacentElement('afterend',matrix);
     }
@@ -219,7 +219,7 @@
     };
     matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5;});
     matrix.querySelector('#conflict-submit').addEventListener('click',()=>{if(!app.awaiting||responses.some(v=>v===null))return;app.submitConflictMatrix(responses.slice(),decisionTimes.slice());});
-    const keyboard=['a','s','d','f','h','j','k','l',' ','b'];
+    const keyboard=['a','s','d','f','h','j','k','l',' ','n'];
     d.addEventListener('keydown',event=>{
       if(!matrix.classList.contains('active')||!app.awaiting||/INPUT|SELECT|TEXTAREA/.test(event.target?.tagName||''))return;
       const normalisedKey=event.code==='Space'?' ':event.key.toLowerCase();
@@ -339,5 +339,5 @@
     Object.assign(app,{modeOneConflictAnalyseAlignment:analyseAlignment,modeOneConflictEvaluate:evaluateConflictMatrix,modeOneConflictEvaluateHistory:evaluateHistory,modeOneConflictGenerateTrial:generateConflictTrial,modeOneConflictRunAudit:runAudit,__modeOneConflictMatrixV20:true});
   }
 
-  return Object.freeze({version:29,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
+  return Object.freeze({version:30,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
 });
