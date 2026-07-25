@@ -6,7 +6,7 @@ const path = require('path');
 const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
 const conflict = require(path.join(__dirname, '..', 'mode-one-conflict-matrix-v20.js'));
 
-assert.ok(conflict.version >= 24);
+assert.ok(conflict.version >= 25);
 assert.deepStrictEqual([...conflict.LEVELS], [1,2,3,4,5,6,7,8]);
 assert.strictEqual(conflict.ALL_MASKS.length, 8);
 assert.strictEqual(new Set(conflict.ALL_MASKS.map(mask => mask.map(Number).join(''))).size, 8);
@@ -79,8 +79,12 @@ assert.ok(html.includes('width:100vw'), 'response matrix must escape the narrow 
 assert.ok(html.includes('position:absolute'), 'full-width response matrix must occupy the original response stage instead of expanding the page');
 assert.ok(html.includes('.response-stage{position:relative'), 'response stage must anchor the viewport-wide matrix at the original button height');
 assert.ok(!html.includes('overflow-x:auto'), 'front-page response controls must not become a horizontally scrolling strip');
-assert.ok(html.includes('for(let attempt=0;attempt<4;attempt++)'), 'browser must retry transient Mode 1 generation failures');
-assert.ok(html.includes('fallback.recoveryFallback=true'), 'browser must recover safely rather than terminate the session');
+assert.ok(source.includes('for(let attempt=0;attempt<4;attempt++)'), 'browser must retry transient Mode 1 generation failures');
+assert.ok(source.includes('recoveredGeneration:true'), 'browser must recover safely rather than terminate the session');
+assert.ok(source.includes("d.getElementById('logic-mode')?.addEventListener('change'"), 'matrix visibility must track mode selection');
+assert.ok(source.includes("matrix.setAttribute('aria-hidden',String(!isModeOne))"), 'matrix visibility must be reflected accessibly');
+assert.ok(source.includes("app.nextTrial=function(...args)"), 'trial lifecycle must be guarded');
+assert.ok(source.includes("Mode 1 next-trial failure recovered"), 'runtime failures must recover without stopping the session');
 
 const corePosition = html.indexOf('mode-one-spatial-core.js');
 const modeTwoPosition = html.indexOf('mode-two-ontology-nback-v14.js');
@@ -100,7 +104,7 @@ assert.strictEqual(audit.invariants.oneToOneStatementAssignmentRequired, true);
 console.log(JSON.stringify({
   passed: true,
   explicitMaskChecks,
-  browserContractChecks: 23,
+  browserContractChecks: 27,
   staticChoices,
   audit: {
     total: audit.total,
