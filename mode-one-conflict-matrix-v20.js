@@ -222,29 +222,38 @@
       matrix.querySelector('#conflict-progress').textContent=scored?'0 of 5 decisions entered':(isModeOne?'Memory fill — observe only; no response required':'');
       matrix.querySelector('#conflict-score').textContent='';
     };
+    const showButtonFeedback=(button,correct)=>{
+      button.querySelectorAll('.conflict-feedback-icon').forEach(icon=>icon.remove());
+      button.classList.remove('feedback-correct','feedback-incorrect');
+      button.classList.add(correct?'feedback-correct':'feedback-incorrect');
+      button.dataset.feedback=correct?'correct':'incorrect';
+      const icon=d.createElement('span');
+      icon.className=`conflict-feedback-icon ${correct?'correct':'incorrect'}`;
+      icon.setAttribute('aria-hidden','true');
+      icon.innerHTML=correct
+        ? '<svg viewBox="0 0 64 64" role="presentation"><path d="M13 33l12 12L52 18" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        : '<svg viewBox="0 0 64 64" role="presentation"><path d="M17 17l30 30M47 17L17 47" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/></svg>';
+      button.appendChild(icon);
+      const baseLabel=button.dataset.baseAriaLabel||button.getAttribute('aria-label')||'';
+      button.dataset.baseAriaLabel=baseLabel.replace(/ — (correct|incorrect)$/,'');
+      button.setAttribute('aria-label',`${button.dataset.baseAriaLabel} — ${correct?'correct':'incorrect'}`);
+      rootObject.setTimeout(()=>{
+        button.querySelectorAll('.conflict-feedback-icon').forEach(item=>item.remove());
+        button.classList.remove('feedback-correct','feedback-incorrect');
+        button.removeAttribute('data-feedback');
+        if(button.dataset.baseAriaLabel)button.setAttribute('aria-label',button.dataset.baseAriaLabel);
+      },700);
+    };
     const showFeedback=(correctness,selectedResponses)=>{
-      clearFeedback();
       correctness.forEach((correct,index)=>{
         const row=matrix.querySelector(`[data-decision="${index}"]`);
         if(!row)return;
         const selectedValue=selectedResponses[index]?1:0;
         const button=row.querySelector(`[data-value="${selectedValue}"]`);
-        if(!button)return;
-        button.classList.add(correct?'feedback-correct':'feedback-incorrect');
-        button.dataset.feedback=correct?'correct':'incorrect';
-        const icon=d.createElement('span');
-        icon.className=`conflict-feedback-icon ${correct?'correct':'incorrect'}`;
-        icon.setAttribute('aria-hidden','true');
-        icon.innerHTML=correct
-          ? '<svg viewBox="0 0 64 64" role="presentation"><path d="M13 33l12 12L52 18" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-          : '<svg viewBox="0 0 64 64" role="presentation"><path d="M17 17l30 30M47 17L17 47" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/></svg>';
-        button.appendChild(icon);
-        button.setAttribute('aria-label',`${button.getAttribute('aria-label')} — ${correct?'correct':'incorrect'}`);
+        if(button)showButtonFeedback(button,correct);
       });
-      matrix.querySelectorAll('.conflict-choice').forEach(button=>button.disabled=true);
-      matrix.querySelector('#conflict-submit').disabled=true;
     };
-    matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='Checking all five decisions…'; app.submitConflictMatrix(responses.slice(),decisionTimes.slice());}});
+    matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const expected=app.current?.conflictResponseVector?.[index]; if(typeof expected==='boolean')showButtonFeedback(button,responses[index]===expected); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='All five decisions entered'; app.submitConflictMatrix(responses.slice(),decisionTimes.slice());}});
     matrix.querySelector('#conflict-submit').addEventListener('click',()=>{if(!app.awaiting||responses.some(v=>v===null))return;app.submitConflictMatrix(responses.slice(),decisionTimes.slice());});
     const keyboard=['a','s','d','f','h','j','k','l',' ','n'];
     d.addEventListener('keydown',event=>{
@@ -258,7 +267,7 @@
     },true);
     d.getElementById('logic-mode')?.addEventListener('change',()=>reset(app.current));
     setVisible(Number(d.getElementById('logic-mode')?.value||0)===0);
-    return Object.assign(matrix,{resetResponses:reset,responses,decisionTimes,setVisible,showFeedback,clearFeedback});
+    return Object.assign(matrix,{resetResponses:reset,responses,decisionTimes,setVisible,showFeedback,showButtonFeedback,clearFeedback});
   }
 
   function installBrowser(rootObject){
@@ -352,8 +361,7 @@
       if(typeof requireCore().recordNBackResponse==='function') requireCore().recordNBackResponse(this.current,{responses:responses.slice(),correctness:correctness.slice(),allCorrect:this.current.conflictAllCorrect});
       this.awaiting=false;
       clearTimeout(this.timerId);
-      matrix.showFeedback(correctness,responses);
-      matrix.querySelector('#conflict-progress').textContent=this.current.conflictAllCorrect?'✓ ALL FIVE CORRECT':`${this.current.conflictCorrectCount}/5 CORRECT — review the ✓ and ✕ symbols`;
+      matrix.querySelector('#conflict-progress').textContent=this.current.conflictAllCorrect?'✓ ALL FIVE CORRECT':`${this.current.conflictCorrectCount}/5 CORRECT`;
       if(feedback) feedback.textContent=this.current.conflictAllCorrect?'ALL FIVE CORRECT':`${this.current.conflictCorrectCount}/5 CORRECT`;
       if(explanation){try{explanation.textContent=requireCore().explainTrial(this.current);}catch(_){explanation.textContent='';}}
       try{this.updateStats?.();}catch(_){ }
@@ -368,5 +376,5 @@
     Object.assign(app,{modeOneConflictAnalyseAlignment:analyseAlignment,modeOneConflictEvaluate:evaluateConflictMatrix,modeOneConflictEvaluateHistory:evaluateHistory,modeOneConflictGenerateTrial:generateConflictTrial,modeOneConflictRunAudit:runAudit,__modeOneConflictMatrixV20:true});
   }
 
-  return Object.freeze({version:35,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
+  return Object.freeze({version:36,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
 });
