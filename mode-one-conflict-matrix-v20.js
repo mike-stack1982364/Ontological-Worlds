@@ -35,8 +35,7 @@
     const pool = c.allowedCodes(resolution);
     const evaluation = c.evaluateTrial(trial);
     const relations = statements(trial).map(item => item.relation).concat(evaluation.expectedRelation);
-    if (!relations.every(code => pool.includes(code))) return false;
-    return true;
+    return relations.every(code => pool.includes(code));
   }
   function analyseAlignment(target, current, options = {}) {
     const targetResolution = Number(target?.directionResolution || 16), currentResolution = Number(current?.directionResolution || 16);
@@ -88,6 +87,41 @@
     const distances = resolutionMutationDistances(ring.length, interferenceLevel), distance = pick(rng, distances), sign = random(rng) < .5 ? -1 : 1;
     return { ...statement, relation: ring[(index + sign * distance + ring.length) % ring.length] };
   }
+  function finaliseConflictTrial(target, trial, options) {
+    const resolution = options.directionResolution;
+    const roleSensitive = Boolean(options.roleSensitive);
+    const evaluation = evaluateConflictMatrix(target, trial, { roleSensitive });
+    const requestedWholeMatch = Boolean(options.match);
+    Object.assign(trial, {
+      nBackRequestedMatch: requestedWholeMatch,
+      nBackMatch: evaluation.wholeTrialMatch,
+      isMatch: evaluation.wholeTrialMatch,
+      statementMatchVector: evaluation.statementMatches.slice(),
+      conclusionEntailed: evaluation.conclusionEntailed,
+      conflictResponseVector: evaluation.responseVector.slice(),
+      mappingConflict: evaluation.mappingConflict,
+      localStatementCompatibility: evaluation.localStatementCompatibility.slice(),
+      roleSensitive,
+      directionResolution: resolution,
+      interferenceLevel: options.interferenceLevel,
+      interferenceProfile: `R${resolution}:${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:${Number(evaluation.wholeTrialMatch)}`,
+      scored: true
+    });
+    return trial;
+  }
+  function candidateDifficulty(evaluation, target, current, resolution, interferenceLevel) {
+    const c = requireCore();
+    const level = Math.max(0, Math.min(100, Number(interferenceLevel) || 0));
+    const targetStatements = statements(target), currentStatements = statements(current);
+    const relationDistances = currentStatements.map((statement, index) => c.circularDistance(targetStatements[index]?.relation, statement.relation, resolution));
+    const finiteDistances = relationDistances.filter(Number.isFinite);
+    const averageDistance = finiteDistances.length ? finiteDistances.reduce((a,b) => a+b, 0) / finiteDistances.length : resolution;
+    const exactCount = evaluation.statementMatches.filter(Boolean).length;
+    const nearMissBonus = level >= 85 && exactCount === 2 ? 120 : level >= 65 && exactCount >= 1 ? 50 : 0;
+    const entailmentConflict = evaluation.conclusionEntailed !== target.conclusionEntailed ? 35 : 0;
+    const distancePenalty = averageDistance * (level >= 80 ? 28 : 10);
+    return exactCount * 70 + nearMissBonus + entailmentConflict - distancePenalty;
+  }
   function generateConflictTrial(rng, target, options = {}) {
     if (!target) throw new Error('A historical N-back target is required.');
     const c = requireCore();
@@ -100,35 +134,50 @@
       const trial = renameAndTransform(rng, target);
       trial.directionResolution = resolution;
       if (!ensureResolutionClosed(trial, resolution)) throw new Error('Transformed match trial escaped the selected resolution.');
-      const evaluation = evaluateConflictMatrix(target, trial, { roleSensitive });
-      Object.assign(trial, { nBackRequestedMatch: true, nBackMatch: true, isMatch: true, statementMatchVector: evaluation.statementMatches.slice(), conclusionEntailed: evaluation.conclusionEntailed, conflictResponseVector: evaluation.responseVector.slice(), mappingConflict: evaluation.mappingConflict, localStatementCompatibility: evaluation.localStatementCompatibility.slice(), roleSensitive, directionResolution: resolution, interferenceProfile: `R${resolution}:${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:1`, scored: true });
-      return trial;
+      return finaliseConflictTrial(target, trial, { match: true, roleSensitive, directionResolution: resolution, interferenceLevel });
     }
-    const pool = c.allowedCodes(resolution);
-    for (let attempt = 0; attempt < 1000; attempt++) {
+    const pool = c.allowedCodes(resolution), candidates = [];
+    const targetStatements = statements(target);
+    const addCandidate = trial => {
+      if (!trial || !ensureResolutionClosed(trial, resolution)) return;
+      let evaluation;
+      try { evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }); } catch (_) { return; }
+      const relations = statements(trial).map(statement => statement.relation).concat(evaluation.expectedRelation);
+      if (evaluation.wholeTrialMatch || !relations.every(code => pool.includes(code))) return;
+      candidates.push({ trial, evaluation, score: candidateDifficulty(evaluation, target, trial, resolution, interferenceLevel) });
+    };
+    const masks = interferenceLevel >= 85 ? [[true,true,false],[true,false,true],[false,true,true],[true,false,false],[false,true,false],[false,false,true]] : ALL_MASKS.filter(mask => mask.some(Boolean) && !mask.every(Boolean));
+    const repetitions = interferenceLevel >= 85 ? 18 : interferenceLevel >= 60 ? 10 : 5;
+    for (const mask of masks) {
+      for (let attempt = 0; attempt < repetitions; attempt++) {
+        const source = renameAndTransform(rng, target);
+        source.directionResolution = resolution;
+        const sourceStatements = statements(source);
+        const mutated = sourceStatements.map((statement, index) => mask[index] ? statement : mutateDirection(rng, statement, interferenceLevel, resolution));
+        source.premises = mutated.slice(0,2);
+        source.conclusion = mutated[2];
+        addCandidate(source);
+      }
+    }
+    const randomCount = interferenceLevel >= 85 ? 120 : interferenceLevel >= 60 ? 80 : 40;
+    for (let attempt = 0; attempt < randomCount; attempt++) {
       const trial = c.generateTrial(rng, { matchProbability: random(rng) < 0.5 ? 1 : 0, interferenceLevel, directionResolution: resolution });
       trial.mode = 0; trial.publicMode = 1; trial.directionResolution = resolution;
-      if (!ensureResolutionClosed(trial, resolution)) continue;
-      let evaluation;
-      try { evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }); } catch (_) { continue; }
-      const relations = statements(trial).map(statement => statement.relation).concat(evaluation.expectedRelation);
-      if (evaluation.wholeTrialMatch || !relations.every(code => pool.includes(code))) continue;
-      Object.assign(trial, { nBackRequestedMatch: false, nBackMatch: false, isMatch: false, statementMatchVector: evaluation.statementMatches.slice(), conclusionEntailed: evaluation.conclusionEntailed, conflictResponseVector: evaluation.responseVector.slice(), mappingConflict: evaluation.mappingConflict, localStatementCompatibility: evaluation.localStatementCompatibility.slice(), roleSensitive, directionResolution: resolution, interferenceProfile: `R${resolution}:${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:0`, scored: true });
-      return trial;
+      addCandidate(trial);
     }
-    throw new Error(`Unable to generate a ${resolution}-direction non-match trial.`);
+    if (!candidates.length) throw new Error(`Unable to generate a ${resolution}-direction non-match trial.`);
+    candidates.sort((a,b) => b.score - a.score);
+    const selectivity = Math.max(0, Math.min(1, interferenceLevel / 100));
+    const span = Math.max(1, Math.ceil(candidates.length * (1 - 0.97 * selectivity)));
+    const selected = candidates[Math.floor(random(rng) * span)];
+    return finaliseConflictTrial(target, selected.trial, { match: false, roleSensitive, directionResolution: resolution, interferenceLevel });
   }
   function generateWarmupTrial(rng, options = {}) {
     const c = requireCore(), resolution = c.normaliseResolution(options.directionResolution, 16);
-    for (let attempt = 0; attempt < 200; attempt++) {
-      const trial = c.generateTrial(rng, { matchProbability: random(rng) < .5 ? 1 : 0, interferenceLevel: options.interferenceLevel, directionResolution: resolution });
-      trial.directionResolution = resolution;
-      if (!ensureResolutionClosed(trial, resolution)) continue;
-      const entailment = c.evaluateTrial(trial);
-      Object.assign(trial, { mode: 0, publicMode: 1, nBackWarmup: true, scored: true, nBackRequestedMatch: false, nBackMatch: false, isMatch: false, statementMatchVector: [false,false,false], conclusionEntailed: entailment.isEntailed, conflictResponseVector: [false,false,false,entailment.isEntailed,false], mappingConflict: false, localStatementCompatibility: [false,false,false], roleSensitive: false, directionResolution: resolution, interferenceProfile: `R${resolution}:000:${Number(entailment.isEntailed)}:0` });
-      return trial;
-    }
-    throw new Error(`Unable to generate a ${resolution}-direction warm-up trial.`);
+    const trial = c.generateTrial(rng, { matchProbability: random(rng) < .5 ? 1 : 0, interferenceLevel: options.interferenceLevel, directionResolution: resolution });
+    const entailment = c.evaluateTrial(trial);
+    Object.assign(trial, { mode: 0, publicMode: 1, nBackWarmup: true, scored: true, nBackRequestedMatch: false, nBackMatch: false, isMatch: false, statementMatchVector: [false,false,false], conclusionEntailed: entailment.isEntailed, conflictResponseVector: [false,false,false,entailment.isEntailed,false], mappingConflict: false, localStatementCompatibility: [false,false,false], roleSensitive: false, directionResolution: resolution, interferenceLevel: options.interferenceLevel, interferenceProfile: `R${resolution}:000:${Number(entailment.isEntailed)}:0` });
+    return trial;
   }
   function evaluateHistory(history, currentIndex, nBackLevel, options = {}) {
     const level = Math.max(1, Math.min(8, Math.round(Number(nBackLevel) || 1))), targetIndex = currentIndex - level;
@@ -226,21 +275,11 @@
       const settings = originalSettings();
       const level = Math.max(1, Math.min(8, Math.round(Number(this.n || settings.n) || 1)));
       let target = this.trials[this.trials.length - level];
-      if (target && !ensureResolutionClosed(target, resolution)) {
-        this.trials = [];
-        target = null;
-      }
+      if (target && !ensureResolutionClosed(target, resolution)) { this.trials = []; target = null; }
       const interferenceLevel = Number(d.getElementById('interference-slider')?.value) || 0;
       if (!target) return generateWarmupTrial(this.rng, { interferenceLevel, directionResolution: resolution });
       const requestedMatch = this.rng.next() < settings.matchProbability;
-      const options = { match: requestedMatch, interferenceLevel, roleSensitive: Boolean(this.trials.length % 2), directionResolution: resolution };
-      for (let attempt = 0; attempt < 20; attempt++) {
-        try {
-          const trial = generateConflictTrial(this.rng, target, options);
-          if (ensureResolutionClosed(trial, resolution)) return trial;
-        } catch (_) {}
-      }
-      return generateWarmupTrial(this.rng, { interferenceLevel, directionResolution: resolution });
+      return generateConflictTrial(this.rng, target, { match: requestedMatch, interferenceLevel, roleSensitive: interferenceLevel >= 70 || Boolean(this.trials.length % 2), directionResolution: resolution });
     };
     const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation'), timerBar = d.getElementById('timer-bar');
     function schedule(token, seconds) { clearTimeout(app.timerId); const started = Date.now(); const update = () => { if (!timerBar || !app.running || app.paused || token !== app.sessionToken) return; const elapsed = (Date.now() - started) / 1000; timerBar.style.width = `${Math.max(0, 100 * (1 - elapsed / seconds))}%`; if (elapsed < seconds) rootObject.requestAnimationFrame?.(update); }; if (timerBar) { timerBar.style.width = '100%'; rootObject.requestAnimationFrame?.(update); } app.timerId = rootObject.setTimeout(() => { if (app.running && !app.paused && token === app.sessionToken) app.nextTrial(token); }, seconds * 1000); }
@@ -254,9 +293,7 @@
         console.error('Mode 1 generation failed; regenerating within the selected resolution.', error);
         trial = generateWarmupTrial(this.rng, { interferenceLevel: Number(d.getElementById('interference-slider')?.value) || 0, directionResolution: resolution });
       }
-      if (!ensureResolutionClosed(trial, resolution)) {
-        trial = generateWarmupTrial(this.rng, { interferenceLevel: Number(d.getElementById('interference-slider')?.value) || 0, directionResolution: resolution });
-      }
+      if (!ensureResolutionClosed(trial, resolution)) trial = generateWarmupTrial(this.rng, { interferenceLevel: Number(d.getElementById('interference-slider')?.value) || 0, directionResolution: resolution });
       this.current = trial; this.trials.push(trial); this.score.shown++; this.awaiting = true;
       const rendered = requireCore().renderTrial(trial); if (premiseDisplay) { premiseDisplay.textContent = rendered; premiseDisplay.classList.remove('correct','incorrect'); }
       if (feedback) feedback.textContent = ''; if (explanation) explanation.textContent = '';
@@ -273,19 +310,20 @@
     class Rng { constructor(seed) { this.s = seed >>> 0; } next() { let v = this.s += 1831565813; v = Math.imul(v ^ v >>> 15, 1 | v); v ^= v + Math.imul(v ^ v >>> 7, 61 | v); return ((v ^ v >>> 14) >>> 0) / 4294967296; } pick(values) { return values[Math.floor(this.next() * values.length)]; } shuffle(values) { return fisherYates(this, values); } }
     const failures = [], rows = [];
     for (const resolution of [4,8,16]) {
-      const rng = new Rng(0x61000000 + resolution), history = [], pool = requireCore().allowedCodes(resolution), row = { resolution, failures: 0 };
+      const rng = new Rng(0x61000000 + resolution), history = [], pool = requireCore().allowedCodes(resolution), row = { resolution, failures: 0, hardNearMisses: 0 };
       for (let i = 0; i < iterationsPerResolution; i++) {
         try {
           const target = history.length ? history[Math.max(0, history.length - 1)] : null;
-          const trial = target ? generateConflictTrial(rng, target, { match: i % 2 === 0, interferenceLevel: i % 101, directionResolution: resolution }) : generateWarmupTrial(rng, { interferenceLevel: i % 101, directionResolution: resolution });
+          const trial = target ? generateConflictTrial(rng, target, { match: i % 2 === 0, interferenceLevel: 100, directionResolution: resolution, roleSensitive: true }) : generateWarmupTrial(rng, { interferenceLevel: 100, directionResolution: resolution });
           history.push(trial);
           const relations = statements(trial).map(s => s.relation).concat(requireCore().evaluateTrial(trial).expectedRelation);
           if (trial.directionResolution !== resolution || !relations.every(code => pool.includes(code)) || trial.conflictResponseVector.length !== 5) row.failures++;
+          if (!trial.nBackMatch && trial.statementMatchVector.filter(Boolean).length === 2) row.hardNearMisses++;
         } catch (error) { row.failures++; if (failures.length < 20) failures.push(`${resolution}-${i}:${error.message}`); }
       }
-      if (row.failures) failures.push(`resolution-${resolution}-summary`); rows.push(row);
+      if (row.failures || row.hardNearMisses < Math.floor(iterationsPerResolution * 0.2)) failures.push(`resolution-${resolution}-summary`); rows.push(row);
     }
     return { passed: failures.length === 0, failures, rows, iterationsPerResolution };
   }
-  return Object.freeze({ version: 44, LEVELS, ALL_MASKS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, mutateDirection, runAudit, installBrowser });
+  return Object.freeze({ version: 45, LEVELS, ALL_MASKS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, mutateDirection, runAudit, installBrowser });
 });
