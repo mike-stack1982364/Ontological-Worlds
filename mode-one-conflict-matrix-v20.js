@@ -103,7 +103,7 @@
     if (!matrix) return;
     const ui = ensureResolutionUI(d, app), input = installMatrixInput(rootObject, app, matrix);
     const originalSettings = app.settings.bind(app), originalStart = app.start.bind(app), originalMakeTrial = app.makeTrial.bind(app), originalNextTrial = app.nextTrial.bind(app), originalStop = app.stop.bind(app), originalTogglePause = app.togglePause?.bind(app);
-    const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation'), startButton = d.getElementById('start-btn'), pauseButton = d.getElementById('pause-btn'), stopButton = d.getElementById('stop-btn'), countdown = d.getElementById('countdown-box');
+    const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation');
     let advanceTimerId = null;
     app.settings = function() { const settings = originalSettings(); return { ...settings, directionResolution: this.running ? this.directionResolution : ui.getSelected() }; };
     app.getSelectedDirectionResolution = ui.getSelected;
@@ -142,30 +142,14 @@
       try { this.updateStats?.(); } catch (_) {}
       return trial;
     };
-    app.start = async function(...args) {
+    app.start = function(...args) {
       const mode = Number(originalSettings().mode);
       if (mode !== 0) return originalStart(...args);
       if (this.running) return false;
       if (!ui.validate(true)) return false;
-      const selected = ui.getSelected();
-      this.directionResolution = selected;
+      this.directionResolution = ui.getSelected();
       this.trials = [];
-      try {
-        const result = await originalStart(...args);
-        if (!this.running || !this.current || !this.awaiting) throw new Error('Mode 1 startup completed without rendering its first trial.');
-        ui.sync();
-        return result !== false;
-      } catch (error) {
-        console.error('Mode 1 start failed.', error);
-        this.running = false; this.paused = false; this.awaiting = false; this.sessionToken++;
-        clearTimeout(this.timerId); clearTimeout(advanceTimerId); clearInterval(this.sessionTimerId);
-        ui.select.disabled = false;
-        startButton.disabled = false; pauseButton.disabled = true; stopButton.disabled = true;
-        if (countdown) countdown.textContent = '';
-        if (premiseDisplay) premiseDisplay.textContent = `START_FAILED: ${error?.message || 'Unknown error'}`;
-        ui.sync();
-        return false;
-      }
+      return originalStart(...args);
     };
     app.submitConflictMatrix = function(responses, decisionTimes) {
       if (!this.current?.scored || !Array.isArray(this.current.conflictResponseVector) || !this.awaiting || this.current.submitted) return;
