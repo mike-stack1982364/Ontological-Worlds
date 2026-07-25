@@ -1,10 +1,13 @@
-name: Mode 2 Deep Validation
+name: Relational Modes Deep Validation
 
 on:
   pull_request:
     paths:
+      - 'mode-one-conflict-matrix-v20.js'
       - 'mode-two-ontology-nback-v14.js'
       - 'mode-one-spatial-core.js'
+      - 'index.html'
+      - 'tests/mode-one-conflict-matrix-v20.test.js'
       - 'tests/mode-two-ontology-nback-v14.test.js'
       - 'tests/mode-two-ontology-nback-deep-v15.test.js'
       - '.github/workflows/mode-two-deep-validation.yml'
@@ -14,6 +17,32 @@ permissions:
   contents: read
 
 jobs:
+  mode-one-conflict-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run Mode 1 five-decision conflict-matrix audit
+        shell: bash
+        run: |
+          set -o pipefail
+          node --trace-uncaught tests/mode-one-conflict-matrix-v20.test.js 2>&1 | tee mode-one-conflict-matrix.log
+
+      - name: Upload Mode 1 diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mode-one-conflict-matrix-diagnostics
+          path: mode-one-conflict-matrix.log
+          if-no-files-found: warn
+
   canonical-mode-two:
     runs-on: ubuntu-latest
     timeout-minutes: 30
