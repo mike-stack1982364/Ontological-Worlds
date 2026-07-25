@@ -4,7 +4,7 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) {
     root.__modeTwoOntologyNBackV14 = api;
-    root.addEventListener('DOMContentLoaded', () => api.installBrowser(root));
+    if (typeof root.addEventListener === 'function') root.addEventListener('DOMContentLoaded', () => api.installBrowser(root));
   }
 })(typeof window !== 'undefined' ? window : globalThis, root => {
   const LEVELS = Object.freeze([1,2,3,4,5,6,7,8]);
