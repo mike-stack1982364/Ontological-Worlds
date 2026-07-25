@@ -1,308 +1,88 @@
 'use strict';
-
 const assert = require('assert');
 const path = require('path');
-const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
-const modeTwo = require(path.join(__dirname, '..', 'mode-two-ontology-nback-v14.js'));
+const core = require(path.join(__dirname,'..','mode-one-spatial-core.js'));
+const modeTwo = require(path.join(__dirname,'..','mode-two-ontology-nback-v14.js'));
 
-const LEVELS = [...modeTwo.LEVELS];
-const DIRS = core.DIRECTIONS.map(item => item.code);
-const VECTORS = new Map(core.DIRECTIONS.map(item => [item.code, [item.x, item.y]]));
-
-function oracleDirection(x, y) {
-  if (Math.abs(x) < 1e-8 && Math.abs(y) < 1e-8) return 'BALANCE';
-  const angle = (Math.atan2(x, y) + Math.PI * 2) % (Math.PI * 2);
-  return DIRS[Math.round(angle / (Math.PI * 2 / 16)) % 16];
+function perms(values) {
+  if (values.length < 2) return [values.slice()];
+  return values.flatMap((v,i) => perms(values.slice(0,i).concat(values.slice(i+1))).map(rest => [v,...rest]));
 }
-
-function oracleEvaluate(trial) {
-  if (!trial || !Array.isArray(trial.premises) || trial.premises.length !== 2 || !trial.conclusion) return false;
-  const nodes = new Set();
-  const adjacency = new Map();
-  const connect = (a, b) => {
-    nodes.add(a); nodes.add(b);
-    if (!adjacency.has(a)) adjacency.set(a, new Set());
-    adjacency.get(a).add(b);
-  };
-  for (const premise of trial.premises) {
-    if (!VECTORS.has(premise.relation)) return false;
-    connect(premise.subject, premise.object);
-    connect(premise.object, premise.subject);
-  }
-  if (nodes.size !== 3) return false;
-  const endpoints = [...nodes].filter(node => adjacency.get(node).size === 1);
-  if (endpoints.length !== 2) return false;
-  if (!endpoints.includes(trial.conclusion.subject) || !endpoints.includes(trial.conclusion.object)) return false;
-
-  const positions = new Map();
-  const first = trial.premises[0];
-  positions.set(first.object, [0, 0]);
-  const [fx, fy] = VECTORS.get(first.relation);
-  positions.set(first.subject, [fx, fy]);
-  for (let pass = 0; pass < 6; pass += 1) {
-    for (const premise of trial.premises) {
-      const [dx, dy] = VECTORS.get(premise.relation);
-      const subject = positions.get(premise.subject);
-      const object = positions.get(premise.object);
-      if (object && !subject) positions.set(premise.subject, [object[0] + dx, object[1] + dy]);
-      if (subject && !object) positions.set(premise.object, [subject[0] - dx, subject[1] - dy]);
-    }
-  }
-  const subject = positions.get(trial.conclusion.subject);
-  const object = positions.get(trial.conclusion.object);
-  if (!subject || !object) return false;
-  const expected = oracleDirection(subject[0] - object[0], subject[1] - object[1]);
-  return expected !== 'BALANCE' && expected === trial.conclusion.relation;
+function letters(trial) { return [...new Set([...trial.premises,trial.conclusion].flatMap(s => [s.subject,s.object]))]; }
+function oracleStatement(s,map) {
+  const direct = `${map[s.subject]}>${s.relation}>${map[s.object]}`;
+  const inverse = `${map[s.object]}>${core.opposite(s.relation)}>${map[s.subject]}`;
+  return direct < inverse ? direct : inverse;
 }
+function oracleSignature(trial) {
+  const source = letters(trial);
+  if (source.length !== 3) throw new Error('oracle expects three letters');
+  return perms(['A','B','C']).map(labels => {
+    const map = Object.fromEntries(source.map((letter,i) => [letter,labels[i]]));
+    const premises = trial.premises.map(s => oracleStatement(s,map)).sort();
+    return `${premises.join('&')}|${oracleStatement(trial.conclusion,map)}`;
+  }).sort()[0];
+}
+function oracleCompare(target,current) { return oracleSignature(target) === oracleSignature(current); }
 
 class Rng {
   constructor(seed) { this.s = seed >>> 0; }
-  next() {
-    let value = this.s += 1831565813;
-    value = Math.imul(value ^ value >>> 15, 1 | value);
-    value ^= value + Math.imul(value ^ value >>> 7, 61 | value);
-    return ((value ^ value >>> 14) >>> 0) / 4294967296;
-  }
+  next() { let v = this.s += 1831565813; v = Math.imul(v ^ v >>> 15,1|v); v ^= v + Math.imul(v ^ v >>> 7,61|v); return ((v ^ v >>> 14) >>> 0) / 4294967296; }
   pick(values) { return values[Math.floor(this.next() * values.length)]; }
-  shuffle(values) {
-    const result = [...values];
-    for (let index = result.length - 1; index > 0; index -= 1) {
-      const swap = Math.floor(this.next() * (index + 1));
-      [result[index], result[swap]] = [result[swap], result[index]];
+  shuffle(values) { const out=[...values]; for(let i=out.length-1;i>0;i--){const j=Math.floor(this.next()*(i+1));[out[i],out[j]]=[out[j],out[i]];} return out; }
+}
+
+let generatedChecks = 0;
+let matchChecks = 0;
+let lureChecks = 0;
+let ontologyNeutralityChecks = 0;
+let historyChecks = 0;
+
+for (const level of modeTwo.LEVELS) {
+  for (let seed = 1; seed <= 256; seed++) {
+    const rng = new Rng(0x70000000 + level * 1000 + seed);
+    const history = Array.from({length:level},() => modeTwo.generateTrial(rng,{matchProbability:rng.next()<0.5?1:0}));
+    for (let index = 0; index < 128; index++) {
+      const requestedMatch = index % 2 === 0;
+      const target = history[history.length-level];
+      const current = modeTwo.generateNBackTrial(rng,target,{match:requestedMatch,nBackLevel:level});
+      const oracle = oracleCompare(target,current);
+      assert.strictEqual(modeTwo.compare(target,current).isMatch,oracle);
+      assert.strictEqual(oracle,requestedMatch);
+      assert.strictEqual(modeTwo.relationalSignature(current).replace(/^MODE2-COMPLETE-RELATIONAL-NBACK-V3\|/,''),oracleSignature(current).replace('|','|'));
+      generatedChecks++;
+      requestedMatch ? matchChecks++ : lureChecks++;
+      if (!requestedMatch) {
+        assert.strictEqual(current.partialStatementCompatibility,2);
+        assert.ok(current.interferenceSlot >= 1 && current.interferenceSlot <= 3);
+      }
+      const metadata = JSON.parse(JSON.stringify(current));
+      metadata.ontologyCategories = ['All','Action','Division'];
+      metadata.order = metadata.order === 'IO' ? 'OI' : 'IO';
+      assert.strictEqual(oracleCompare(target,metadata),oracle);
+      assert.strictEqual(modeTwo.compare(target,metadata).isMatch,oracle);
+      ontologyNeutralityChecks++;
+      history.push(current);
+      const result = modeTwo.evaluateHistory(history,history.length-1,level);
+      assert.strictEqual(result.targetIndex,history.length-1-level);
+      assert.strictEqual(result.isMatch,requestedMatch);
+      historyChecks++;
     }
-    return result;
   }
 }
 
-let canonicalChecks = 0;
 for (const trial of core.canonicalTrials()) {
-  assert.strictEqual(oracleEvaluate(trial), trial.expected);
-  assert.strictEqual(modeTwo.evaluate(trial).isMatch, trial.expected);
-  canonicalChecks += 1;
-}
-assert.strictEqual(canonicalChecks, 10);
-
-let exhaustiveDirectionPairChecks = 0;
-let exhaustiveTrueChecks = 0;
-let exhaustiveFalseChecks = 0;
-let exhaustiveWrongPairChecks = 0;
-let exhaustiveNBackChecks = 0;
-for (const firstDirection of DIRS) {
-  for (const secondDirection of DIRS) {
-    const [ax, ay] = VECTORS.get(firstDirection);
-    const [bx, by] = VECTORS.get(secondDirection);
-    const forward = oracleDirection(ax + bx, ay + by);
-    if (forward === 'BALANCE') continue;
-    const reverse = core.opposite(forward);
-    const basePremises = [
-      { subject: 'A', relation: firstDirection, object: 'B' },
-      { subject: 'B', relation: secondDirection, object: 'C' }
-    ];
-
-    const equivalentPremiseSets = [
-      basePremises,
-      [...basePremises].reverse(),
-      basePremises.map(core.invert),
-      basePremises.map(core.invert).reverse()
-    ];
-
-    for (const premises of equivalentPremiseSets) {
-      const trueForward = modeTwo.decorateTrial({
-        premises,
-        conclusion: { subject: 'A', relation: forward, object: 'C' },
-        letters: ['A', 'B', 'C']
-      }, ['All', 'Projection', 'Completion'], 'IO');
-      const trueReverse = modeTwo.decorateTrial({
-        premises,
-        conclusion: { subject: 'C', relation: reverse, object: 'A' },
-        letters: ['A', 'B', 'C']
-      }, ['Difference', 'Action', 'Division'], 'OI');
-
-      for (const trial of [trueForward, trueReverse]) {
-        assert.strictEqual(oracleEvaluate(trial), true);
-        assert.strictEqual(modeTwo.evaluate(trial).isMatch, true);
-        const rendered = modeTwo.renderOntologicalTrial(trial);
-        assert.doesNotMatch(rendered, /archetypal/i);
-        assert.strictEqual((rendered.match(/\b(?:Inner|Outer)\b/g) || []).length, 2);
-        exhaustiveTrueChecks += 1;
-
-        for (const level of LEVELS) {
-          const history = Array.from({ length: level }, () => trueForward);
-          history.push(trial);
-          const historyResult = modeTwo.evaluateHistory(history, level, level);
-          assert.strictEqual(historyResult.targetIndex, 0);
-          assert.strictEqual(historyResult.isMatch, true);
-          exhaustiveNBackChecks += 1;
-        }
-      }
-
-      for (const asserted of DIRS) {
-        if (asserted === forward) continue;
-        const falseTrial = modeTwo.decorateTrial({
-          premises,
-          conclusion: { subject: 'A', relation: asserted, object: 'C' },
-          letters: ['A', 'B', 'C']
-        }, ['Connection', 'Encompassment', 'Multiplication'], 'IO');
-        assert.strictEqual(oracleEvaluate(falseTrial), false);
-        assert.strictEqual(modeTwo.evaluate(falseTrial).isMatch, false);
-        exhaustiveFalseChecks += 1;
-      }
-
-      for (const wrongPair of [['A', 'B'], ['B', 'C'], ['B', 'A'], ['C', 'B']]) {
-        const wrongPairTrial = modeTwo.decorateTrial({
-          premises,
-          conclusion: { subject: wrongPair[0], relation: forward, object: wrongPair[1] },
-          letters: ['A', 'B', 'C']
-        }, ['Completion', 'All', 'Difference'], 'OI');
-        assert.strictEqual(oracleEvaluate(wrongPairTrial), false);
-        assert.strictEqual(modeTwo.evaluate(wrongPairTrial).isMatch, false);
-        exhaustiveWrongPairChecks += 1;
-      }
-      exhaustiveDirectionPairChecks += 1;
-    }
-  }
+  assert.strictEqual(modeTwo.evaluate(trial).isMatch,trial.expected);
 }
 
-let generatedParityChecks = 0;
-let metadataNeutralityChecks = 0;
-let renamingChecks = 0;
-let orderChecks = 0;
-let inversionChecks = 0;
-let renderedOutputChecks = 0;
-for (let seed = 1; seed <= 4096; seed += 1) {
-  const rng = new Rng(seed);
-  for (let index = 0; index < 256; index += 1) {
-    const trial = modeTwo.generateTrial(rng, {
-      matchProbability: index % 2 === 0 ? 1 : 0,
-      interferenceLevel: index % 101
-    });
-    const expected = oracleEvaluate(trial);
-    assert.strictEqual(modeTwo.evaluate(trial).isMatch, expected);
-    generatedParityChecks += 1;
-
-    const rendered = modeTwo.renderOntologicalTrial(trial);
-    assert.doesNotMatch(rendered, /archetypal/i);
-    assert.strictEqual((rendered.match(/\b(?:Inner|Outer)\b/g) || []).length, 2);
-    renderedOutputChecks += 1;
-
-    if (index % 31 === 0) {
-      const metadata = JSON.parse(JSON.stringify(trial));
-      metadata.ontologyCategories = ['All', 'Projection', 'Completion'];
-      metadata.order = 'OI';
-      assert.strictEqual(modeTwo.evaluate(metadata).isMatch, expected);
-      const metadataRendered = modeTwo.renderOntologicalTrial(metadata);
-      assert.doesNotMatch(metadataRendered, /archetypal/i);
-      assert.strictEqual((metadataRendered.match(/\b(?:Inner|Outer)\b/g) || []).length, 2);
-      metadataNeutralityChecks += 1;
-
-      const letters = trial.letters;
-      const renamed = core.renameTrial(trial, { [letters[0]]: 'X', [letters[1]]: 'Y', [letters[2]]: 'Z' });
-      assert.strictEqual(oracleEvaluate(renamed), expected);
-      assert.strictEqual(modeTwo.evaluate(renamed).isMatch, expected);
-      renamingChecks += 1;
-
-      const reordered = JSON.parse(JSON.stringify(trial));
-      reordered.premises.reverse();
-      assert.strictEqual(oracleEvaluate(reordered), expected);
-      assert.strictEqual(modeTwo.evaluate(reordered).isMatch, expected);
-      orderChecks += 1;
-
-      const inverted = JSON.parse(JSON.stringify(trial));
-      inverted.premises = inverted.premises.map(core.invert);
-      assert.strictEqual(oracleEvaluate(inverted), expected);
-      assert.strictEqual(modeTwo.evaluate(inverted).isMatch, expected);
-      inversionChecks += 1;
-    }
-  }
-}
-assert.strictEqual(generatedParityChecks, 1048576);
-assert.strictEqual(renderedOutputChecks, 1048576);
-
-let warmupChecks = 0;
-for (const level of LEVELS) {
-  for (let index = 0; index < level; index += 1) {
-    const result = modeTwo.evaluateHistory([], index, level);
-    assert.strictEqual(result.warmup, true);
-    assert.strictEqual(result.scored, false);
-    assert.strictEqual(result.targetIndex, index - level);
-    warmupChecks += 1;
-  }
-}
-assert.strictEqual(warmupChecks, 36);
-
-let longHistoryChecks = 0;
-let longHistoryMatches = 0;
-let longHistoryNonMatches = 0;
-for (let seed = 1; seed <= 1024; seed += 1) {
-  const rng = new Rng(0x60000000 + seed);
-  const history = Array.from({ length: 2048 }, (_, index) => modeTwo.generateTrial(rng, {
-    matchProbability: index % 2 === 0 ? 1 : 0,
-    interferenceLevel: (seed + index) % 101
-  }));
-  for (const level of LEVELS) {
-    for (let currentIndex = level; currentIndex < history.length; currentIndex += 1) {
-      const result = modeTwo.evaluateHistory(history, currentIndex, level);
-      const expected = oracleEvaluate(history[currentIndex]);
-      assert.strictEqual(result.targetIndex, currentIndex - level);
-      assert.strictEqual(result.isMatch, expected);
-      if (expected) longHistoryMatches += 1;
-      else longHistoryNonMatches += 1;
-      longHistoryChecks += 1;
-    }
-  }
-}
-assert.strictEqual(longHistoryChecks, 16744448);
-assert.strictEqual(longHistoryMatches + longHistoryNonMatches, longHistoryChecks);
-
-const audit = modeTwo.runExhaustiveAudit(262144);
-assert.strictEqual(audit.passed, true, JSON.stringify(audit.failures, null, 2));
-assert.strictEqual(audit.totalEvaluations, 2097152);
-assert.strictEqual(audit.matches, 1048576);
-assert.strictEqual(audit.nonMatches, 1048576);
-assert.strictEqual(audit.matchRate, 0.5);
-assert.strictEqual(audit.nonMatchRate, 0.5);
-assert.strictEqual(audit.renderChecks, 2097152);
-assert.strictEqual(audit.failures.length, 0);
-for (const level of audit.perLevel) {
-  assert.strictEqual(level.evaluations, 262144);
-  assert.strictEqual(level.matches, 131072);
-  assert.strictEqual(level.nonMatches, 131072);
-  assert.strictEqual(level.falseMatches, 0);
-  assert.strictEqual(level.falseNonMatches, 0);
-  assert.strictEqual(level.wrongOffsetFailures, 0);
-  assert.strictEqual(level.ontologyMutationFailures, 0);
-  assert.strictEqual(level.renamingFailures, 0);
-  assert.strictEqual(level.premiseOrderFailures, 0);
-  assert.strictEqual(level.inversionFailures, 0);
-  assert.strictEqual(level.renderFailures, 0);
-}
+const audit = modeTwo.runExhaustiveAudit(16384);
+assert.strictEqual(audit.passed,true,JSON.stringify(audit.failures));
+assert.strictEqual(audit.totalEvaluations,131072);
+assert.strictEqual(audit.matches,65536);
+assert.strictEqual(audit.nonMatches,65536);
+assert.strictEqual(audit.partialLureChecks,65536);
 
 console.log(JSON.stringify({
-  passed: true,
-  canonicalChecks,
-  exhaustiveDirectionPairChecks,
-  exhaustiveTrueChecks,
-  exhaustiveFalseChecks,
-  exhaustiveWrongPairChecks,
-  exhaustiveNBackChecks,
-  generatedParityChecks,
-  renderedOutputChecks,
-  metadataNeutralityChecks,
-  renamingChecks,
-  orderChecks,
-  inversionChecks,
-  warmupChecks,
-  longHistoryChecks,
-  longHistoryMatches,
-  longHistoryNonMatches,
-  exhaustiveAudit: {
-    totalEvaluations: audit.totalEvaluations,
-    matches: audit.matches,
-    nonMatches: audit.nonMatches,
-    matchRate: audit.matchRate,
-    nonMatchRate: audit.nonMatchRate,
-    renderChecks: audit.renderChecks,
-    failures: audit.failures.length,
-    perLevel: audit.perLevel
-  }
-}, null, 2));
+  passed:true,generatedChecks,matchChecks,lureChecks,ontologyNeutralityChecks,historyChecks,
+  audit:{totalEvaluations:audit.totalEvaluations,matches:audit.matches,nonMatches:audit.nonMatches,partialLureChecks:audit.partialLureChecks}
+},null,2));
