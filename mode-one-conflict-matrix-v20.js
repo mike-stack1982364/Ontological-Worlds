@@ -27,6 +27,19 @@
     const inverse = `${mapping[statement.object]}>${c.opposite(statement.relation)}>${mapping[statement.subject]}`;
     return direct < inverse ? direct : inverse;
   }
+  function assertResolutionClosedTrial(trial, expectedResolution) {
+    const c = requireCore();
+    const resolution = c.normaliseResolution(expectedResolution ?? trial?.directionResolution, null);
+    if (!resolution) throw new Error('A valid session compass resolution is required.');
+    if (Number(trial?.directionResolution) !== resolution) throw new Error(`Trial resolution ${trial?.directionResolution} does not match session resolution ${resolution}.`);
+    const pool = c.allowedCodes(resolution);
+    const evaluation = c.evaluateTrial(trial);
+    const relations = statements(trial).map(item => item.relation).concat(evaluation.expectedRelation);
+    if (!relations.every(code => pool.includes(code))) {
+      throw new Error(`Trial contains a direction outside the selected ${resolution}-direction pool: ${relations.join(', ')}.`);
+    }
+    return trial;
+  }
   function analyseAlignment(target, current, options = {}) {
     const targetResolution = Number(target?.directionResolution || 16), currentResolution = Number(current?.directionResolution || 16);
     if (targetResolution !== currentResolution) throw new Error('N-back target and current trial use different compass resolutions.');
@@ -61,7 +74,7 @@
     trial.premises = trial.premises.map(s => random(rng) < .5 ? c.invert(s) : s);
     if (random(rng) < .5) trial.conclusion = c.invert(trial.conclusion);
     trial.mode = 0; trial.publicMode = 1; trial.directionResolution = Number(target.directionResolution || 16);
-    return trial;
+    return assertResolutionClosedTrial(trial, trial.directionResolution);
   }
   function resolutionMutationDistances(resolution, interferenceLevel) {
     const ringLength = Number(resolution), level = Math.max(0, Math.min(100, Number(interferenceLevel) || 0));
@@ -81,7 +94,7 @@
     if (!target) throw new Error('A historical N-back target is required.');
     const c = requireCore();
     const resolution = c.normaliseResolution(options.directionResolution ?? target.directionResolution, 16);
-    if (Number(target.directionResolution || resolution) !== resolution) throw new Error('Target resolution does not match session resolution.');
+    assertResolutionClosedTrial(target, resolution);
     const requestedWholeMatch = Boolean(options.match);
     const interferenceLevel = Math.max(0, Math.min(100, Number(options.interferenceLevel) || 0));
     const roleSensitive = Boolean(options.roleSensitive);
@@ -89,7 +102,7 @@
       const trial = renameAndTransform(rng, target);
       const evaluation = evaluateConflictMatrix(target, trial, { roleSensitive });
       Object.assign(trial, { nBackRequestedMatch: true, nBackMatch: true, isMatch: true, statementMatchVector: evaluation.statementMatches.slice(), conclusionEntailed: evaluation.conclusionEntailed, conflictResponseVector: evaluation.responseVector.slice(), mappingConflict: evaluation.mappingConflict, localStatementCompatibility: evaluation.localStatementCompatibility.slice(), roleSensitive, directionResolution: resolution, interferenceProfile: `R${resolution}:${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:1`, scored: true });
-      return trial;
+      return assertResolutionClosedTrial(trial, resolution);
     }
     const pool = c.allowedCodes(resolution);
     for (let attempt = 0; attempt < 1000; attempt++) {
@@ -100,7 +113,7 @@
       const relations = statements(trial).map(statement => statement.relation).concat(evaluation.expectedRelation);
       if (evaluation.wholeTrialMatch || !relations.every(code => pool.includes(code))) continue;
       Object.assign(trial, { nBackRequestedMatch: false, nBackMatch: false, isMatch: false, statementMatchVector: evaluation.statementMatches.slice(), conclusionEntailed: evaluation.conclusionEntailed, conflictResponseVector: evaluation.responseVector.slice(), mappingConflict: evaluation.mappingConflict, localStatementCompatibility: evaluation.localStatementCompatibility.slice(), roleSensitive, directionResolution: resolution, interferenceProfile: `R${resolution}:${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:0`, scored: true });
-      return trial;
+      return assertResolutionClosedTrial(trial, resolution);
     }
     throw new Error(`Unable to generate a ${resolution}-direction non-match trial.`);
   }
@@ -109,7 +122,7 @@
     const trial = c.generateTrial(rng, { matchProbability: random(rng) < .5 ? 1 : 0, interferenceLevel: options.interferenceLevel, directionResolution: resolution });
     const entailment = c.evaluateTrial(trial);
     Object.assign(trial, { mode: 0, publicMode: 1, nBackWarmup: true, scored: true, nBackRequestedMatch: false, nBackMatch: false, isMatch: false, statementMatchVector: [false,false,false], conclusionEntailed: entailment.isEntailed, conflictResponseVector: [false,false,false,entailment.isEntailed,false], mappingConflict: false, localStatementCompatibility: [false,false,false], roleSensitive: false, directionResolution: resolution, interferenceProfile: `R${resolution}:000:${Number(entailment.isEntailed)}:0` });
-    return trial;
+    return assertResolutionClosedTrial(trial, resolution);
   }
   function evaluateHistory(history, currentIndex, nBackLevel, options = {}) {
     const level = Math.max(1, Math.min(8, Math.round(Number(nBackLevel) || 1))), targetIndex = currentIndex - level;
@@ -144,8 +157,7 @@
       select.disabled = Boolean(app.running) || !modeOne;
       if (!app.running) start.disabled = modeOne ? resolution === null : false;
       status.textContent = resolution ? `Compass resolution: ${resolution} directions` : 'Compass resolution: not selected';
-      if (resolution) clearError();
-      if (!modeOne) clearError();
+      if (resolution || !modeOne) clearError();
       return resolution;
     };
     const validate = (focus = true) => {
@@ -203,14 +215,38 @@
       const settings = originalSettings(); if (Number(settings.mode) !== 0) return originalMakeTrial();
       const resolution = requireCore().normaliseResolution(this.directionResolution, null); if (!resolution) throw new Error('Mode 1 cannot generate a trial without a frozen compass resolution.');
       const level = Math.max(1, Math.min(8, Math.round(Number(this.n || settings.n) || 1))), target = this.trials[this.trials.length - level], interferenceLevel = Number(d.getElementById('interference-slider')?.value) || 0;
-      if (!target) return generateWarmupTrial(this.rng, { interferenceLevel, directionResolution: resolution });
-      const requestedMatch = this.rng.next() < settings.matchProbability, options = { match: requestedMatch, interferenceLevel, roleSensitive: Boolean(this.trials.length % 2), directionResolution: resolution };
-      for (let attempt = 0; attempt < 5; attempt++) { try { return generateConflictTrial(this.rng, target, options); } catch (error) { if (attempt === 4) console.warn('Resolution-aware conflict generation recovered.', error); } }
-      return generateWarmupTrial(this.rng, { interferenceLevel, directionResolution: resolution });
+      let trial;
+      if (!target) trial = generateWarmupTrial(this.rng, { interferenceLevel, directionResolution: resolution });
+      else {
+        assertResolutionClosedTrial(target, resolution);
+        const requestedMatch = this.rng.next() < settings.matchProbability, options = { match: requestedMatch, interferenceLevel, roleSensitive: Boolean(this.trials.length % 2), directionResolution: resolution };
+        for (let attempt = 0; attempt < 5 && !trial; attempt++) {
+          try { trial = generateConflictTrial(this.rng, target, options); }
+          catch (error) { if (attempt === 4) console.warn('Resolution-aware conflict generation recovered.', error); }
+        }
+        if (!trial) trial = generateWarmupTrial(this.rng, { interferenceLevel, directionResolution: resolution });
+      }
+      return assertResolutionClosedTrial(trial, resolution);
     };
     const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation'), timerBar = d.getElementById('timer-bar');
     function schedule(token, seconds) { clearTimeout(app.timerId); const started = Date.now(); const update = () => { if (!timerBar || !app.running || app.paused || token !== app.sessionToken) return; const elapsed = (Date.now() - started) / 1000; timerBar.style.width = `${Math.max(0, 100 * (1 - elapsed / seconds))}%`; if (elapsed < seconds) rootObject.requestAnimationFrame?.(update); }; if (timerBar) { timerBar.style.width = '100%'; rootObject.requestAnimationFrame?.(update); } app.timerId = rootObject.setTimeout(() => { if (app.running && !app.paused && token === app.sessionToken) app.nextTrial(token); }, seconds * 1000); }
-    app.nextTrial = function(token = this.sessionToken) { if (Number(originalSettings().mode) !== 0) return originalNextTrial(token); if (!this.running || this.paused || token !== this.sessionToken) return null; const trial = this.makeTrial(); this.current = trial; this.trials.push(trial); this.score.shown++; this.awaiting = true; const rendered = requireCore().renderTrial(trial); if (premiseDisplay) { premiseDisplay.textContent = rendered; premiseDisplay.classList.remove('correct','incorrect'); } if (feedback) feedback.textContent = ''; if (explanation) explanation.textContent = ''; try { this.speak?.(rendered); } catch (_) {} input.reset(trial); try { this.updateStats?.(); } catch (_) {} schedule(token, Math.max(2, Number(originalSettings().seconds) || 8)); return trial; };
+    app.nextTrial = function(token = this.sessionToken) {
+      if (Number(originalSettings().mode) !== 0) return originalNextTrial(token);
+      if (!this.running || this.paused || token !== this.sessionToken) return null;
+      let trial;
+      try { trial = assertResolutionClosedTrial(this.makeTrial(), this.directionResolution); }
+      catch (error) {
+        console.error('Rejected Mode 1 trial that violated the selected compass resolution.', error);
+        trial = generateWarmupTrial(this.rng, { interferenceLevel: Number(d.getElementById('interference-slider')?.value) || 0, directionResolution: this.directionResolution });
+        assertResolutionClosedTrial(trial, this.directionResolution);
+      }
+      this.current = trial; this.trials.push(trial); this.score.shown++; this.awaiting = true;
+      const rendered = requireCore().renderTrial(trial); if (premiseDisplay) { premiseDisplay.textContent = rendered; premiseDisplay.classList.remove('correct','incorrect'); }
+      if (feedback) feedback.textContent = ''; if (explanation) explanation.textContent = '';
+      try { this.speak?.(rendered); } catch (_) {}
+      input.reset(trial); try { this.updateStats?.(); } catch (_) {}
+      schedule(token, Math.max(2, Number(originalSettings().seconds) || 8)); return trial;
+    };
     app.submitConflictMatrix = function(responses, decisionTimes) { if (!this.current?.scored || !Array.isArray(this.current.conflictResponseVector) || !this.awaiting) return; const expected = this.current.conflictResponseVector, correctness = responses.map((value,index) => value === expected[index]); Object.assign(this.current, { conflictResponses: responses.slice(), conflictDecisionCorrectness: correctness.slice(), conflictCorrectCount: correctness.filter(Boolean).length, conflictAllCorrect: correctness.every(Boolean), conflictDecisionTimes: decisionTimes.slice(), directionResolution: this.directionResolution }); this.awaiting = false; clearTimeout(this.timerId); if (feedback) feedback.textContent = this.current.conflictAllCorrect ? 'ALL FIVE CORRECT' : `${this.current.conflictCorrectCount}/5 CORRECT`; if (explanation) explanation.textContent = requireCore().explainTrial(this.current); try { this.updateStats?.(); } catch (_) {} rootObject.setTimeout(() => { if (this.running && !this.paused) this.nextTrial(this.sessionToken); }, 1600); };
     app.stop = function(...args) { const result = originalStop(...args); this.directionResolution = null; ui.select.disabled = false; ui.select.value = ''; ui.sync(); return result; };
     Object.assign(app, { modeOneConflictAnalyseAlignment: analyseAlignment, modeOneConflictEvaluate: evaluateConflictMatrix, modeOneConflictEvaluateHistory: evaluateHistory, modeOneConflictGenerateTrial: generateConflictTrial, __mandatoryCompassResolutionInstalled: true, __modeOneConflictMatrixV20: true });
@@ -221,10 +257,18 @@
     const failures = [], rows = [];
     for (const resolution of [4,8,16]) {
       const rng = new Rng(0x61000000 + resolution), history = [], pool = requireCore().allowedCodes(resolution), row = { resolution, failures: 0 };
-      for (let i = 0; i < iterationsPerResolution; i++) { try { const target = history.length ? history[Math.max(0, history.length - 1)] : null; const trial = target ? generateConflictTrial(rng, target, { match: i % 2 === 0, interferenceLevel: i % 101, directionResolution: resolution }) : generateWarmupTrial(rng, { interferenceLevel: i % 101, directionResolution: resolution }); history.push(trial); const relations = statements(trial).map(s => s.relation).concat(requireCore().evaluateTrial(trial).expectedRelation); if (trial.directionResolution !== resolution || !relations.every(code => pool.includes(code)) || trial.conflictResponseVector.length !== 5) row.failures++; } catch (error) { row.failures++; if (failures.length < 20) failures.push(`${resolution}-${i}:${error.message}`); } }
+      for (let i = 0; i < iterationsPerResolution; i++) {
+        try {
+          const target = history.length ? history[Math.max(0, history.length - 1)] : null;
+          const trial = target ? generateConflictTrial(rng, target, { match: i % 2 === 0, interferenceLevel: i % 101, directionResolution: resolution }) : generateWarmupTrial(rng, { interferenceLevel: i % 101, directionResolution: resolution });
+          assertResolutionClosedTrial(trial, resolution);
+          history.push(trial); const relations = statements(trial).map(s => s.relation).concat(requireCore().evaluateTrial(trial).expectedRelation);
+          if (trial.directionResolution !== resolution || !relations.every(code => pool.includes(code)) || trial.conflictResponseVector.length !== 5) row.failures++;
+        } catch (error) { row.failures++; if (failures.length < 20) failures.push(`${resolution}-${i}:${error.message}`); }
+      }
       if (row.failures) failures.push(`resolution-${resolution}-summary`); rows.push(row);
     }
     return { passed: failures.length === 0, failures, rows, iterationsPerResolution };
   }
-  return Object.freeze({ version: 42, LEVELS, ALL_MASKS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, mutateDirection, runAudit, installBrowser });
+  return Object.freeze({ version: 43, LEVELS, ALL_MASKS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, mutateDirection, assertResolutionClosedTrial, runAudit, installBrowser });
 });
