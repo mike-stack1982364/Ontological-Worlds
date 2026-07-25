@@ -279,11 +279,11 @@
       const requestedMatch = this.rng.next() < settings.matchProbability;
       return generateConflictTrial(this.rng, target, { match: requestedMatch, interferenceLevel, roleSensitive: true, directionResolution: resolution });
     };
-    const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation'), timerBar = d.getElementById('timer-bar');
-    function schedule(token, seconds) { clearTimeout(app.timerId); const started = Date.now(); const update = () => { if (!timerBar || !app.running || app.paused || token !== app.sessionToken) return; const elapsed = (Date.now() - started) / 1000; timerBar.style.width = `${Math.max(0, 100 * (1 - elapsed / seconds))}%`; if (elapsed < seconds) rootObject.requestAnimationFrame?.(update); }; if (timerBar) { timerBar.style.width = '100%'; rootObject.requestAnimationFrame?.(update); } app.timerId = rootObject.setTimeout(() => { if (app.running && !app.paused && token === app.sessionToken) app.nextTrial(token); }, seconds * 1000); }
+    const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation');
     app.nextTrial = function(token = this.sessionToken) {
       if (Number(originalSettings().mode) !== 0) return originalNextTrial(token);
       if (!this.running || this.paused || token !== this.sessionToken) return null;
+      clearTimeout(this.timerId);
       const resolution = requireCore().normaliseResolution(this.directionResolution, null);
       let trial;
       try { trial = this.makeTrial(); }
@@ -294,7 +294,7 @@
       if (feedback) feedback.textContent = ''; if (explanation) explanation.textContent = '';
       try { this.speak?.(rendered); } catch (_) {}
       input.reset(trial); try { this.updateStats?.(); } catch (_) {}
-      schedule(token, Math.max(2, Number(originalSettings().seconds) || 8)); return trial;
+      return trial;
     };
     app.submitConflictMatrix = function(responses, decisionTimes) { if (!this.current?.scored || !Array.isArray(this.current.conflictResponseVector) || !this.awaiting) return; const expected = this.current.conflictResponseVector, correctness = responses.map((value,index) => value === expected[index]); Object.assign(this.current, { conflictResponses: responses.slice(), conflictDecisionCorrectness: correctness.slice(), conflictCorrectCount: correctness.filter(Boolean).length, conflictAllCorrect: correctness.every(Boolean), conflictDecisionTimes: decisionTimes.slice(), directionResolution: this.directionResolution }); this.awaiting = false; clearTimeout(this.timerId); if (feedback) feedback.textContent = this.current.conflictAllCorrect ? 'ALL FIVE CORRECT' : `${this.current.conflictCorrectCount}/5 CORRECT`; if (explanation) explanation.textContent = requireCore().explainTrial(this.current); try { this.updateStats?.(); } catch (_) {} rootObject.setTimeout(() => { if (this.running && !this.paused) this.nextTrial(this.sessionToken); }, 1600); };
     app.stop = function(...args) { const result = originalStop(...args); this.directionResolution = null; ui.select.value = ''; ui.select.disabled = Number(originalSettings().mode) !== 0; ui.sync(); return result; };
