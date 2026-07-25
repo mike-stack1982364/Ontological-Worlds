@@ -1,0 +1,75 @@
+name: Implement direction resolution selector
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/implement-direction-resolution-selector.yml
+
+permissions:
+  contents: write
+
+jobs:
+  implement:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Apply direction selector and resolution support
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          index = Path('index.html')
+          html = index.read_text()
+          marker = '<div class="control-group"><label for="n-slider">N-back level:'
+          selector = '''<div class="control-group" id="direction-resolution-group"><label for="direction-resolution">Compass directions</label><select id="direction-resolution" required aria-required="true"><option value="" selected disabled>Choose direction set</option><option value="4">4 directions — north, east, south, west</option><option value="8">8 directions — cardinals and diagonals</option><option value="16">16 directions — full resolution</option></select><p id="direction-resolution-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Choose the direction resolution before starting. Sixteen directions is the recommended default.</p></div>'''
+          if 'id="direction-resolution"' not in html:
+              html = html.replace(marker, selector + marker, 1)
+          index.write_text(html)
+
+          app = Path('app.js')
+          js = app.read_text()
+          js = js.replace('speechBoost:Number($("speech-boost").value)/100}', 'speechBoost:Number($("speech-boost").value)/100,directionResolution:Number($("direction-resolution")?.value||0)}')
+          js = js.replace('e("logic-mode",t.mode),', 'e("logic-mode",t.mode),e("direction-resolution",t.directionResolution||""),')
+          js = js.replace('async start(){if(this.running)return;', 'async start(){if(this.running)return;const directionResolution=Number($("direction-resolution")?.value||0);if(![4,8,16].includes(directionResolution)){const selector=$("direction-resolution");selector?.focus();selector?.setAttribute("aria-invalid","true");this.setStatus("CHOOSE_DIRECTION_SET");return}$("direction-resolution")?.removeAttribute("aria-invalid");')
+          app.write_text(js)
+
+          core = Path('mode-one-spatial-core.js')
+          core_js = core.read_text()
+          core_js = core_js.replace('function choosePremiseDirections(rng, interferenceLevel) {\n    const level = Math.max(0, Math.min(100, Number(interferenceLevel) || 0));\n    const pool = level < 25 ? allowedCodes(4) : level < 70 ? allowedCodes(8) : allowedCodes(16);', 'function choosePremiseDirections(rng, interferenceLevel, directionResolution = 16) {\n    const level = Math.max(0, Math.min(100, Number(interferenceLevel) || 0));\n    const requestedResolution = [4, 8, 16].includes(Number(directionResolution)) ? Number(directionResolution) : 16;\n    const pool = allowedCodes(requestedResolution);')
+          core_js = core_js.replace('choosePremiseDirections(rng, interferenceLevel)', 'choosePremiseDirections(rng, interferenceLevel, options.directionResolution)')
+          core_js = core_js.replace('makeNonMatchConclusion(rng, premises, interferenceLevel)', 'makeNonMatchConclusion(rng, premises, interferenceLevel, options.directionResolution)')
+          core_js = core_js.replace('function makeNonMatchConclusion(rng, premises, interferenceLevel) {', 'function makeNonMatchConclusion(rng, premises, interferenceLevel, directionResolution = 16) {')
+          core_js = core_js.replace("const candidates = [];", "const candidates = [];\n    const allowed = new Set(allowedCodes(directionResolution));", 1)
+          core_js = core_js.replace("if (!result.isEntailed) candidates.push({ errorClass, conclusion, difficulty, result });", "if (!result.isEntailed && allowed.has(conclusion.relation)) candidates.push({ errorClass, conclusion, difficulty, result });", 1)
+          core.write_text(core_js)
+
+          matrix = Path('mode-one-conflict-matrix-v20.js')
+          m = matrix.read_text()
+          m = m.replace('interferenceLevel:Number(rootObject.document.getElementById(\'interference-slider\')?.value)||0}', 'interferenceLevel:Number(rootObject.document.getElementById(\'interference-slider\')?.value)||0,directionResolution:Number(rootObject.document.getElementById(\'direction-resolution\')?.value)||16}')
+          m = m.replace('interferenceLevel:Number(rootObject.document.getElementById(\'interference-slider\')?.value)||0,roleSensitive', 'interferenceLevel:Number(rootObject.document.getElementById(\'interference-slider\')?.value)||0,directionResolution:Number(rootObject.document.getElementById(\'direction-resolution\')?.value)||16,roleSensitive')
+          m = m.replace('const c=requireCore(), direction=c.direction(statement.relation), distance=pick(rng,mutationDistances(interferenceLevel)), sign=random(rng)<.5?-1:1;\n    return {...statement,relation:c.DIRECTIONS[(direction.index+sign*distance+16)%16].code};', 'const c=requireCore(), direction=c.direction(statement.relation), distance=pick(rng,mutationDistances(interferenceLevel)), sign=random(rng)<.5?-1:1;\n    const resolution=[4,8,16].includes(Number(arguments[3]))?Number(arguments[3]):16;\n    const allowed=c.allowedCodes(resolution);\n    const raw=c.DIRECTIONS[(direction.index+sign*distance+16)%16].code;\n    const relation=allowed.includes(raw)?raw:allowed.reduce((best,code)=>c.circularDistance(code,raw)<c.circularDistance(best,raw)?code:best,allowed[0]);\n    return {...statement,relation};')
+          m = m.replace('mutateDirection(rng,all[i],interferenceLevel)', 'mutateDirection(rng,all[i],interferenceLevel,options.directionResolution)')
+          matrix.write_text(m)
+          PY
+      - name: Validate contracts
+        run: |
+          node --check app.js
+          node --check mode-one-spatial-core.js
+          node --check mode-one-conflict-matrix-v20.js
+          grep -q 'id="direction-resolution"' index.html
+          grep -q 'CHOOSE_DIRECTION_SET' app.js
+          grep -q 'directionResolution' mode-one-spatial-core.js
+      - name: Commit implementation
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html app.js mode-one-spatial-core.js mode-one-conflict-matrix-v20.js
+          git diff --cached --quiet || git commit -m "Add mandatory 4/8/16 direction selector"
+          git push
