@@ -90,4 +90,97 @@ window.addEventListener('DOMContentLoaded', () => {
     ruleRevisionImplemented: true,
     modeTwoPreserved: true
   };
+
+  // Run after every DOMContentLoaded installer has finished. The conflict-matrix
+  // runtime is loaded later in index.html and must own nextTrial, while this
+  // final patch supplies one deterministic, resolution-closed makeTrial.
+  window.setTimeout(() => {
+    const runtime = window.__modeOneConflictMatrixV20;
+    const liveApp = window.__ontologicalWorlds;
+    const spatial = window.__modeOneSpatialCore || window.__modeOneTriadicEntailmentCore;
+    if (!runtime || !liveApp || !spatial || liveApp.__resolutionClosedGeneratorV1) return;
+
+    const random = rng => rng?.next ? rng.next() : Math.random();
+    const shuffle = (rng, values) => rng?.shuffle ? rng.shuffle(values) : [...values].sort(() => random(rng) - 0.5);
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'.split('');
+
+    function safeWarmup(rng, directionResolution, interferenceLevel) {
+      const resolution = spatial.normaliseResolution(directionResolution, null);
+      if (!resolution) throw new Error('Safe warm-up requires a valid frozen compass resolution.');
+      const pool = spatial.allowedCodes(resolution);
+      if (!pool.length) throw new Error('Selected compass resolution has no directions.');
+
+      const selectedLetters = shuffle(rng, letters).slice(0, 3);
+      const [first, bridge, last] = selectedLetters;
+      const relation = pool[Math.floor(random(rng) * pool.length)];
+      let premises = [
+        { subject: first, relation, object: bridge },
+        { subject: bridge, relation, object: last }
+      ];
+      // Inversion preserves each relation semantically and therefore preserves
+      // the endpoint result, while retaining surface-form variation.
+      premises = premises.map(statement => random(rng) < 0.5 ? spatial.invert(statement) : statement);
+      if (random(rng) < 0.5) premises.reverse();
+
+      const requestedMatch = random(rng) < 0.5;
+      const conclusionRelation = requestedMatch
+        ? relation
+        : pool[(pool.indexOf(relation) + 1 + Math.floor(random(rng) * Math.max(1, pool.length - 1))) % pool.length];
+      const conclusion = { subject: first, relation: conclusionRelation, object: last };
+      const trial = {
+        mode: 0,
+        publicMode: 1,
+        letters: selectedLetters,
+        symbols: selectedLetters.slice(),
+        premises,
+        conclusion,
+        requestedMatch,
+        directionResolution: resolution,
+        interferenceLevel,
+        nBackWarmup: true,
+        scored: true
+      };
+      const evaluation = spatial.evaluateTrial(trial);
+      if (!evaluation.resolutionClosed || evaluation.expectedRelation !== relation) {
+        throw new Error(`Safe warm-up invariant failed at ${resolution}-direction resolution.`);
+      }
+      Object.assign(trial, {
+        expectedRelation: evaluation.expectedRelation,
+        isEntailed: evaluation.isEntailed,
+        conclusionEntailed: evaluation.isEntailed,
+        isMatch: false,
+        nBackRequestedMatch: false,
+        nBackMatch: false,
+        statementMatchVector: [false, false, false],
+        conflictResponseVector: [false, false, false, evaluation.isEntailed, false],
+        mappingConflict: false,
+        localStatementCompatibility: [false, false, false],
+        roleSensitive: false,
+        interferenceProfile: `R${resolution}:000:${Number(evaluation.isEntailed)}:0`
+      });
+      return trial;
+    }
+
+    liveApp.makeTrial = function resolutionClosedModeOneTrial() {
+      const settings = this.settings();
+      if (Number(settings.mode) !== 0) return null;
+      const resolution = spatial.normaliseResolution(this.directionResolution, null);
+      if (!resolution) throw new Error('Mode 1 cannot generate without a frozen compass resolution.');
+      const level = Math.max(1, Math.min(8, Math.round(Number(this.n || settings.n) || 1)));
+      const interferenceLevel = Number(document.getElementById('interference-slider')?.value) || 0;
+      const target = this.trials[this.trials.length - level];
+      if (!target) return safeWarmup(this.rng, resolution, interferenceLevel);
+      if (!runtime.ensureResolutionClosed(target, resolution)) {
+        throw new Error('Historical N-back target escaped the selected compass resolution.');
+      }
+      return runtime.generateConflictTrial(this.rng, target, {
+        match: random(this.rng) < Number(settings.matchProbability ?? 0.35),
+        interferenceLevel,
+        roleSensitive: true,
+        directionResolution: resolution
+      });
+    };
+
+    liveApp.__resolutionClosedGeneratorV1 = true;
+  }, 0);
 });
