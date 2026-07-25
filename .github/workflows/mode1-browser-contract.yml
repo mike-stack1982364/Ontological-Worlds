@@ -1,0 +1,39 @@
+name: Mode 1 browser contract
+
+on:
+  pull_request:
+    paths:
+      - 'app.js'
+      - 'index.html'
+      - 'mode-one-spatial-core.js'
+      - 'mode-one-conflict-matrix-v20.js'
+      - 'tests/mode1-browser-contract.spec.js'
+      - 'playwright.config.js'
+      - 'package.json'
+      - '.github/workflows/mode1-browser-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app.js'
+      - 'index.html'
+      - 'mode-one-spatial-core.js'
+      - 'mode-one-conflict-matrix-v20.js'
+      - 'tests/mode1-browser-contract.spec.js'
+      - 'playwright.config.js'
+      - 'package.json'
+      - '.github/workflows/mode1-browser-contract.yml'
+
+jobs:
+  browser-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:syntax
+      - run: npm run test:mode1-browser
