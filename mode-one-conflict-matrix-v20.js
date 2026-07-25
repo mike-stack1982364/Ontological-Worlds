@@ -105,12 +105,12 @@
     const originalSettings = app.settings.bind(app), originalStart = app.start.bind(app), originalMakeTrial = app.makeTrial.bind(app), originalNextTrial = app.nextTrial.bind(app), originalStop = app.stop.bind(app), originalTogglePause = app.togglePause?.bind(app);
     const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation');
     let advanceTimerId = null;
+    const modeOneActive = () => Number(d.getElementById('logic-mode')?.value) === 0;
     app.settings = function() { const settings = originalSettings(); return { ...settings, directionResolution: this.running ? this.directionResolution : ui.getSelected() }; };
     app.getSelectedDirectionResolution = ui.getSelected;
     app.validateDirectionResolutionBeforeStart = ui.validate;
     app.makeTrial = function() {
-      const mode = Number(originalSettings().mode);
-      if (mode !== 0) return originalMakeTrial();
+      if (!modeOneActive()) return originalMakeTrial();
       const resolution = requireCore().normaliseResolution(this.directionResolution, null);
       if (!resolution) throw new Error('Mode 1 cannot generate a trial without a frozen compass resolution.');
       const settings = originalSettings(), level = Math.max(1, Math.min(8, Math.round(Number(this.n || settings.n) || 1)));
@@ -122,7 +122,7 @@
       return generateConflictTrial(this.rng, target, { match: requestedMatch, interferenceLevel, roleSensitive: true, directionResolution: resolution });
     };
     app.nextTrial = function(token = this.sessionToken) {
-      if (Number(originalSettings().mode) !== 0) return originalNextTrial(token);
+      if (!modeOneActive()) return originalNextTrial(token);
       if (!this.running || this.paused || token !== this.sessionToken) return null;
       clearTimeout(this.timerId); clearTimeout(advanceTimerId); advanceTimerId = null;
       const resolution = requireCore().normaliseResolution(this.directionResolution, null);
@@ -143,8 +143,7 @@
       return trial;
     };
     app.start = function(...args) {
-      const mode = Number(originalSettings().mode);
-      if (mode !== 0) return originalStart(...args);
+      if (!modeOneActive()) return originalStart(...args);
       if (this.running) return false;
       if (!ui.validate(true)) return false;
       this.directionResolution = ui.getSelected();
