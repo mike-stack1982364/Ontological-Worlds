@@ -2,8 +2,15 @@
 
 (function exposeTriadicEntailmentCore(root, factory) {
   const api = factory();
+  const pristine = Object.freeze({ ...api });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) {
+    Object.defineProperty(root, '__modeOnePristineSpatialCore', {
+      value: pristine,
+      writable: false,
+      configurable: false,
+      enumerable: false
+    });
     root.__modeOneTriadicEntailmentCore = api;
     root.__modeOneSpatialCore = api;
   }
@@ -169,21 +176,28 @@
     if (!pool.includes(forward)) throw new Error('Derived relation is outside the selected compass resolution.');
     const candidates = [];
     const add = (errorClass, conclusion, difficulty) => {
-      if (!pool.includes(conclusion.relation)) return;
-      const result = evaluateTrial({ premises, conclusion, directionResolution: resolution });
-      if (!result.isEntailed && pool.includes(result.expectedRelation)) candidates.push({ errorClass, conclusion, difficulty, result });
+      try {
+        if (!conclusion || !pool.includes(conclusion.relation)) return;
+        const result = evaluateTrial({ premises, conclusion, directionResolution: resolution });
+        if (!result.isEntailed && pool.includes(result.expectedRelation)) candidates.push({ errorClass, conclusion, difficulty, result });
+      } catch (_) {
+        // A malformed lure is rejected locally. It must never abort the whole trial.
+      }
     };
-    add('adjacent-resolution-substitution', { subject: first, relation: adjacentRelation(forward, rng, resolution), object: last }, 6);
+    const adjacent = adjacentRelations(forward, resolution);
+    adjacent.forEach(relation => add('adjacent-resolution-substitution', { subject: first, relation, object: last }, 6));
     add('subject-object-reversal', { subject: last, relation: forward, object: first }, 5);
-    const wrongPairRelation = entailedDirection(premises, first, graph.bridge);
-    if (wrongPairRelation !== forward && pool.includes(wrongPairRelation)) add('wrong-letter-pair', { subject: first, relation: forward, object: graph.bridge }, 5);
+    try {
+      const wrongPairRelation = entailedDirection(premises, first, graph.bridge);
+      if (wrongPairRelation !== forward && pool.includes(wrongPairRelation)) add('wrong-letter-pair', { subject: first, relation: forward, object: graph.bridge }, 5);
+    } catch (_) {}
     premises.forEach(premise => add('local-consistency-global-error', { subject: first, relation: premise.relation, object: last }, 3));
     add('contradiction', { subject: first, relation: opposite(forward), object: last }, 1);
     if (!candidates.length) {
-      const fallback = adjacentRelations(forward, resolution).find(relation => relation !== forward);
-      add('adjacent-resolution-substitution', { subject: first, relation: fallback, object: last }, 4);
+      const guaranteed = { subject: first, relation: opposite(forward), object: last };
+      const result = evaluateTrial({ premises, conclusion: guaranteed, directionResolution: resolution });
+      return { errorClass: 'contradiction', conclusion: guaranteed, difficulty: 1, result };
     }
-    if (!candidates.length) throw new Error('Unable to construct a resolution-valid NO MATCH conclusion.');
     const target = Math.max(1, Math.min(6, 1 + Math.round((Number(interferenceLevel) || 0) / 20)));
     candidates.sort((a, b) => Math.abs(a.difficulty - target) - Math.abs(b.difficulty - target));
     return pick(rng, candidates.slice(0, Math.max(1, Math.ceil(candidates.length * 0.4))));
@@ -248,5 +262,5 @@
     }
     return { passed: failures.length === 0, failures, iterationsPerResolution, perResolution };
   }
-  return { version: 4, LETTERS, DIRECTIONS, direction, opposite, allowedCodes, adjacentRelations, circularDistance, directionFromVector, derivePositions, analyseGraph, entailedDirection, evaluateTrial, invert, renderStatement, renderTrial, explainTrial, hydrateTrial, generateTrial, renameTrial, runAudit: runResolutionAudit, runResolutionAudit, normaliseResolution };
+  return { version: 5, LETTERS, DIRECTIONS, direction, opposite, allowedCodes, adjacentRelations, circularDistance, directionFromVector, derivePositions, analyseGraph, entailedDirection, evaluateTrial, invert, renderStatement, renderTrial, explainTrial, hydrateTrial, generateTrial, renameTrial, runAudit: runResolutionAudit, runResolutionAudit, normaliseResolution };
 });
