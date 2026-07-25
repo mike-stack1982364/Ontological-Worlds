@@ -186,7 +186,7 @@
   function installStyles(documentObject){
     if(documentObject.getElementById('mode-one-conflict-matrix-style')) return;
     const style=documentObject.createElement('style'); style.id='mode-one-conflict-matrix-style';
-    style.textContent=`#conflict-matrix{display:none;width:100vw;max-width:none;margin:12px 0 16px;position:relative;left:50%;transform:translateX(-50%);padding:14px clamp(10px,2vw,28px);box-sizing:border-box;border-top:1px solid #b8c9da;border-bottom:1px solid #b8c9da;background:rgba(255,255,255,.96)}#conflict-matrix.active{display:block}.conflict-heading{font-weight:900;letter-spacing:.055em;text-transform:uppercase;margin:0 auto 12px;color:#173f67;text-align:center}.conflict-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(8px,1vw,16px);width:100%;margin:0 auto}.conflict-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}.conflict-label{grid-column:1/-1;min-height:2.9em;display:flex;align-items:flex-end;justify-content:center;text-align:center;font-size:clamp(.68rem,.84vw,.86rem);font-weight:800;line-height:1.2;color:#30465d;padding:0 4px}.conflict-choice{width:100%;min-width:0;min-height:64px;border-radius:12px;font-size:clamp(.7rem,.95vw,.94rem);font-weight:900;line-height:1.08;padding:8px 5px;white-space:normal}.conflict-choice.selected{outline:3px solid #183f67;outline-offset:2px}.conflict-choice[disabled]{opacity:.58}#conflict-submit{display:block;width:min(100%,760px);min-height:50px;margin:14px auto 0;border-radius:11px;font-weight:900;text-transform:uppercase}#conflict-progress,#conflict-score{font-size:.78rem;margin-top:8px;color:#53697e;text-align:center}body.mode-one-conflict-active .response-buttons{display:none!important}@media(max-width:1050px){.conflict-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.conflict-row:last-child{grid-column:1/-1;max-width:520px;width:100%;justify-self:center}}@media(max-width:620px){#conflict-matrix{padding-left:8px;padding-right:8px}.conflict-grid{grid-template-columns:1fr;gap:10px}.conflict-row:last-child{grid-column:auto;max-width:none}.conflict-label{min-height:auto;align-items:center}.conflict-choice{min-height:52px}}`;
+    style.textContent=`body.mode-one-conflict-active{overflow-x:hidden}.game-area{overflow:visible!important}.response-stage{position:relative;width:100%;min-height:188px;flex:0 0 188px;margin:0;overflow:visible}.response-buttons{display:none!important}#conflict-matrix{display:none!important;position:absolute;z-index:5;top:0;left:50%;transform:translateX(-50%);width:100vw;max-width:none;margin:0;padding:8px clamp(6px,1.2vw,18px);background:rgba(255,255,255,.98);border-top:1px solid #c8d3df;border-bottom:1px solid #c8d3df;box-sizing:border-box}#conflict-matrix.active{display:block!important}.conflict-heading{font-weight:900;letter-spacing:.055em;text-transform:uppercase;margin:0 auto 7px;color:#173f67;text-align:center;font-size:clamp(.7rem,.95vw,.92rem)}.conflict-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(4px,.65vw,10px);width:100%;margin:0}.conflict-row{display:grid;grid-template-columns:1fr 1fr;gap:4px;min-width:0}.conflict-label{grid-column:1/-1;min-height:2.2em;display:flex;align-items:flex-end;justify-content:center;text-align:center;font-size:clamp(.5rem,.68vw,.76rem);font-weight:800;line-height:1.12;color:#30465d;padding:0 1px}.conflict-choice{width:100%;min-width:0;min-height:68px;border-radius:14px;font-size:clamp(.5rem,.82vw,.92rem);font-weight:900;line-height:1.04;padding:6px 2px;white-space:normal;box-shadow:0 4px 12px rgba(15,42,70,.08)}.conflict-choice[data-value="1"]{background:#e9f8ef;color:#086b3a;border:2px solid #55a879}.conflict-choice[data-value="0"]{background:#fff0ef;color:#a61f17;border:2px solid #d78b86}.conflict-row[data-decision="3"] .conflict-choice{background:#eef4fb;color:#123f6b;border-color:#8fa3b9}.conflict-choice.selected{outline:3px solid #183f67;outline-offset:1px}.conflict-choice[disabled]{opacity:.52}#conflict-submit{display:block;width:min(100%,560px);min-height:32px;margin:6px auto 0;padding:6px 10px;border-radius:9px;font-size:.68rem;font-weight:900;text-transform:uppercase}#conflict-progress,#conflict-score{font-size:.64rem;margin-top:4px;color:#53697e;text-align:center;line-height:1.15}@media(max-width:760px){.response-stage{min-height:166px;flex-basis:166px}#conflict-matrix{padding-left:3px;padding-right:3px}.conflict-grid{gap:2px}.conflict-row{gap:2px}.conflict-label{font-size:.42rem;min-height:2.5em}.conflict-choice{min-height:58px;border-radius:9px;font-size:.42rem;padding:4px 1px;border-width:1px}#conflict-submit{min-height:29px;margin-top:4px;font-size:.58rem}#conflict-progress,#conflict-score{font-size:.52rem}}`;
     documentObject.head.appendChild(style);
   }
   function installMatrixUI(rootObject,app){
@@ -200,20 +200,28 @@
       originalButtons?.insertAdjacentElement('afterend',matrix);
     }
     const responses=new Array(5).fill(null), decisionTimes=new Array(5).fill(null);
-    const reset=trial=>{
-      responses.fill(null); decisionTimes.fill(null); matrix.dataset.startedAt=String(Date.now());
-      const isModeOne=Number(trial?.mode)===0||Number(trial?.publicMode)===1;
+    const setVisible=isModeOne=>{
       matrix.classList.toggle('active',isModeOne);
       d.body.classList.toggle('mode-one-conflict-active',isModeOne);
-      matrix.querySelectorAll('.conflict-choice').forEach(b=>{b.classList.remove('selected');b.disabled=!trial?.scored;});
+      matrix.setAttribute('aria-hidden',String(!isModeOne));
+    };
+    const reset=trial=>{
+      responses.fill(null); decisionTimes.fill(null); matrix.dataset.startedAt=String(Date.now());
+      const selectedMode=Number(d.getElementById('logic-mode')?.value||0);
+      const isModeOne=selectedMode===0;
+      setVisible(isModeOne);
+      const scored=isModeOne&&Boolean(trial?.scored);
+      matrix.querySelectorAll('.conflict-choice').forEach(b=>{b.classList.remove('selected');b.disabled=!scored;});
       matrix.querySelector('#conflict-submit').disabled=true;
-      matrix.querySelector('#conflict-progress').textContent=trial?.scored?'0 of 5 decisions entered':'Memory fill — observe only; no response required';
+      matrix.querySelector('#conflict-progress').textContent=scored?'0 of 5 decisions entered':(isModeOne?'Memory fill — observe only; no response required':'');
       matrix.querySelector('#conflict-score').textContent='';
     };
     matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5;});
     matrix.querySelector('#conflict-submit').addEventListener('click',()=>{if(!app.awaiting||responses.some(v=>v===null))return;app.submitConflictMatrix(responses.slice(),decisionTimes.slice());});
     const keyboard=['a','s','d','f','g','h','j','k','l',';']; d.addEventListener('keydown',event=>{if(!matrix.classList.contains('active')||!app.awaiting||/INPUT|SELECT|TEXTAREA/.test(event.target?.tagName||''))return; const keyIndex=keyboard.indexOf(event.key.toLowerCase()); if(keyIndex<0)return; event.preventDefault();event.stopImmediatePropagation(); const decision=Math.floor(keyIndex/2),value=keyIndex%2===0; matrix.querySelector(`[data-decision="${decision}"]`)?.querySelector(`[data-value="${value?1:0}"]`)?.click();},true);
-    return Object.assign(matrix,{resetResponses:reset,responses,decisionTimes});
+    d.getElementById('logic-mode')?.addEventListener('change',()=>reset(app.current));
+    setVisible(Number(d.getElementById('logic-mode')?.value||0)===0);
+    return Object.assign(matrix,{resetResponses:reset,responses,decisionTimes,setVisible});
   }
 
   function installBrowser(rootObject){
@@ -221,13 +229,39 @@
     const originalMakeTrial=app.makeTrial.bind(app), originalNextTrial=app.nextTrial.bind(app), originalAnswer=app.answer.bind(app), originalStop=app.stop.bind(app);
     const matrix=installMatrixUI(rootObject,app);
     app.conflictDecisionStats=Array.from({length:5},createDecisionScore);
-    app.makeTrial=function(){const settings=this.settings(); if(Number(settings.mode)!==0)return originalMakeTrial(); const level=Math.max(1,Math.min(8,Math.round(Number(this.n||settings.n)||1))),target=this.trials[this.trials.length-level]; if(!target)return generateWarmupTrial(this.rng,{interferenceLevel:Number(rootObject.document.getElementById('interference-slider')?.value)||0}); return generateConflictTrial(this.rng,target,{match:this.rng.next()<settings.matchProbability,nBackLevel:level,interferenceLevel:Number(rootObject.document.getElementById('interference-slider')?.value)||0,roleSensitive:Boolean(this.trials.length%2)});};
-    app.nextTrial=function(...args){const result=originalNextTrial(...args);rootObject.setTimeout(()=>matrix.resetResponses(this.current),0);return result;};
+    app.makeTrial=function(){
+      const settings=this.settings();
+      if(Number(settings.mode)!==0)return originalMakeTrial();
+      const level=Math.max(1,Math.min(8,Math.round(Number(this.n||settings.n)||1)));
+      const target=this.trials[this.trials.length-level];
+      if(!target)return generateWarmupTrial(this.rng,{interferenceLevel:Number(rootObject.document.getElementById('interference-slider')?.value)||0});
+      const requestedMatch=this.rng.next()<settings.matchProbability;
+      const options={match:requestedMatch,nBackLevel:level,interferenceLevel:Number(rootObject.document.getElementById('interference-slider')?.value)||0,roleSensitive:Boolean(this.trials.length%2)};
+      for(let attempt=0;attempt<4;attempt++){
+        try{return generateConflictTrial(this.rng,target,options);}catch(error){if(attempt===3)console.warn('Mode 1 trial generation recovered after repeated failure.',error);}
+      }
+      const fallback=renameAndTransform(this.rng,target);
+      const evaluation=evaluateConflictMatrix(target,fallback,{roleSensitive:options.roleSensitive});
+      Object.assign(fallback,{nBackRequestedMatch:true,nBackMatch:true,isMatch:true,statementMatchVector:evaluation.statementMatches.slice(),conclusionEntailed:evaluation.conclusionEntailed,conflictResponseVector:evaluation.responseVector.slice(),mappingConflict:evaluation.mappingConflict,localStatementCompatibility:evaluation.localStatementCompatibility.slice(),roleSensitive:options.roleSensitive,interferenceProfile:`${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:1`,scored:true,recoveredGeneration:true});
+      return fallback;
+    };
+    app.nextTrial=function(...args){
+      let result;
+      try{result=originalNextTrial(...args);}catch(error){
+        console.error('Mode 1 next-trial failure recovered.',error);
+        this.awaiting=false;
+        matrix.resetResponses(null);
+        rootObject.setTimeout(()=>{if(this.running&&!this.paused)originalNextTrial(this.sessionToken);},0);
+        return null;
+      }
+      rootObject.setTimeout(()=>matrix.resetResponses(this.current),0);
+      return result;
+    };
     app.submitConflictMatrix=function(responses,decisionTimes){if(!this.current?.scored||!Array.isArray(this.current.conflictResponseVector))return; const expected=this.current.conflictResponseVector,correctness=responses.map((value,index)=>value===expected[index]); Object.assign(this.current,{conflictResponses:responses.slice(),conflictDecisionCorrectness:correctness.slice(),conflictCorrectCount:correctness.filter(Boolean).length,conflictAllCorrect:correctness.every(Boolean),conflictDecisionTimes:decisionTimes?.slice?.()||[]}); correctness.forEach((correct,index)=>recordDecisionScore(this.conflictDecisionStats,index,correct,decisionTimes?.[index])); const scoreText=this.conflictDecisionStats.map((row,index)=>`D${index+1} ${row.total?Math.round(100*row.correct/row.total):0}%`).join(' · '); matrix.querySelector('#conflict-score').textContent=scoreText; if(typeof requireCore().recordNBackResponse==='function') requireCore().recordNBackResponse(this.current,{responses:responses.slice(),correctness:correctness.slice(),allCorrect:this.current.conflictAllCorrect}); const legacyResponse=this.current.conflictAllCorrect?Boolean(this.current.isMatch):!Boolean(this.current.isMatch); originalAnswer(legacyResponse);};
-    app.answer=function(response){if((Number(this.current?.mode)===0||Number(this.current?.publicMode)===1)&&this.current?.scored){if(response===null||typeof response==='undefined')return originalAnswer(response);return;}return originalAnswer(response);};
-    app.stop=function(...args){matrix.classList.remove('active');rootObject.document.body.classList.remove('mode-one-conflict-active');return originalStop(...args);};
+    app.answer=function(response){if(Number(this.settings().mode)===0&&this.current?.scored){if(response===null||typeof response==='undefined')return originalAnswer(response);return;}return originalAnswer(response);};
+    app.stop=function(...args){const result=originalStop(...args);matrix.resetResponses(null);return result;};
     Object.assign(app,{modeOneConflictAnalyseAlignment:analyseAlignment,modeOneConflictEvaluate:evaluateConflictMatrix,modeOneConflictEvaluateHistory:evaluateHistory,modeOneConflictGenerateTrial:generateConflictTrial,modeOneConflictRunAudit:runAudit,__modeOneConflictMatrixV20:true});
   }
 
-  return Object.freeze({version:24,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
+  return Object.freeze({version:25,LEVELS,ALL_MASKS,analyseAlignment,evaluateConflictMatrix,generateConflictTrial,generateWarmupTrial,evaluateHistory,runAudit,installBrowser});
 });
