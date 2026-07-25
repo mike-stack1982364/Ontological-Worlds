@@ -1,0 +1,81 @@
+name: Fix Mode 1 feedback
+
+on:
+  push:
+    paths:
+      - .github/workflows/fix-mode-one-feedback.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-feedback:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply precise feedback patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('mode-one-conflict-matrix-v20.js')
+          text = path.read_text(encoding='utf-8')
+
+          old_css = ".conflict-choice.feedback-correct::after,.conflict-choice.feedback-incorrect::after{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(2rem,3vw,3.4rem);font-weight:1000;line-height:1;background:rgba(255,255,255,.28);animation:conflict-feedback-pop .7s ease-out both;pointer-events:none}.conflict-choice.feedback-correct::after{content:'✓';color:#087a3f}.conflict-choice.feedback-incorrect::after{content:'✕';color:#b42318}@keyframes conflict-feedback-pop{0%{opacity:0;transform:scale(.45)}25%{opacity:1;transform:scale(1.14)}100%{opacity:1;transform:scale(1)}}"
+          new_css = ".conflict-feedback-icon{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;font-size:clamp(2.3rem,3.5vw,3.8rem);font-weight:1000;line-height:1;background:rgba(255,255,255,.72);animation:conflict-feedback-pop .82s ease-out both;pointer-events:none}.conflict-feedback-icon.correct{color:#087a3f}.conflict-feedback-icon.incorrect{color:#b42318}@keyframes conflict-feedback-pop{0%{opacity:0;transform:scale(.35)}22%{opacity:1;transform:scale(1.22)}55%{transform:scale(.94)}100%{opacity:1;transform:scale(1)}}"
+          if old_css not in text:
+              raise SystemExit('Expected pseudo-element feedback CSS not found')
+          text = text.replace(old_css, new_css, 1)
+
+          old_mobile = ".conflict-choice.feedback-correct::after,.conflict-choice.feedback-incorrect::after{font-size:2rem}"
+          new_mobile = ".conflict-feedback-icon{font-size:2.25rem}"
+          if old_mobile not in text:
+              raise SystemExit('Expected mobile feedback CSS not found')
+          text = text.replace(old_mobile, new_mobile, 1)
+
+          old_clear = "const clearFeedback=()=>matrix.querySelectorAll('.conflict-choice').forEach(button=>{\n      button.classList.remove('feedback-correct','feedback-incorrect');\n      button.removeAttribute('data-feedback');\n    });"
+          new_clear = "const clearFeedback=()=>matrix.querySelectorAll('.conflict-choice').forEach(button=>{\n      button.classList.remove('feedback-correct','feedback-incorrect');\n      button.removeAttribute('data-feedback');\n      button.querySelectorAll('.conflict-feedback-icon').forEach(icon=>icon.remove());\n    });"
+          if old_clear not in text:
+              raise SystemExit('Expected clearFeedback block not found')
+          text = text.replace(old_clear, new_clear, 1)
+
+          old_feedback = "button.classList.add(correct?'feedback-correct':'feedback-incorrect');\n        button.dataset.feedback=correct?'correct':'incorrect';\n        button.setAttribute('aria-label',`${button.getAttribute('aria-label')} — ${correct?'correct':'incorrect'}`);"
+          new_feedback = "button.classList.add(correct?'feedback-correct':'feedback-incorrect');\n        button.dataset.feedback=correct?'correct':'incorrect';\n        const icon=d.createElement('span');\n        icon.className=`conflict-feedback-icon ${correct?'correct':'incorrect'}`;\n        icon.textContent=correct?'✓':'✕';\n        icon.setAttribute('aria-hidden','true');\n        button.appendChild(icon);\n        button.setAttribute('aria-label',`${button.getAttribute('aria-label')} — ${correct?'correct':'incorrect'}`);"
+          if old_feedback not in text:
+              raise SystemExit('Expected showFeedback body not found')
+          text = text.replace(old_feedback, new_feedback, 1)
+
+          old_click = "matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5;});"
+          new_click = "matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='Checking all five decisions…'; rootObject.setTimeout(()=>{if(app.awaiting&&responses.every(v=>v!==null))app.submitConflictMatrix(responses.slice(),decisionTimes.slice());},80);}});"
+          if old_click not in text:
+              raise SystemExit('Expected matrix click handler not found')
+          text = text.replace(old_click, new_click, 1)
+
+          old_submit_tail = "if(feedback) feedback.textContent=this.current.conflictAllCorrect?'ALL FIVE CORRECT':`${this.current.conflictCorrectCount}/5 CORRECT`;"
+          new_submit_tail = "matrix.showFeedback(correctness,responses);\n      matrix.querySelector('#conflict-progress').textContent=this.current.conflictAllCorrect?'✓ ALL FIVE CORRECT':`${this.current.conflictCorrectCount}/5 CORRECT — review the ✓ and ✕ symbols`;\n      if(feedback) feedback.textContent=this.current.conflictAllCorrect?'ALL FIVE CORRECT':`${this.current.conflictCorrectCount}/5 CORRECT`;"
+          if old_submit_tail not in text:
+              raise SystemExit('Expected submit feedback line not found')
+          text = text.replace(old_submit_tail, new_submit_tail, 1)
+
+          text = text.replace("rootObject.setTimeout(()=>{if(this.running&&!this.paused)this.nextTrial(this.sessionToken);},1150);", "rootObject.setTimeout(()=>{if(this.running&&!this.paused)this.nextTrial(this.sessionToken);},1600);", 1)
+          text = text.replace("return Object.freeze({version:31,", "return Object.freeze({version:32,", 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Validate syntax and feedback contract
+        run: |
+          node --check mode-one-conflict-matrix-v20.js
+          grep -F "conflict-feedback-icon" mode-one-conflict-matrix-v20.js
+          grep -F "Checking all five decisions" mode-one-conflict-matrix-v20.js
+          grep -F "matrix.showFeedback(correctness,responses)" mode-one-conflict-matrix-v20.js
+      - name: Commit patched implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mode-one-conflict-matrix-v20.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Make Mode 1 correctness icons explicit and automatic"
+          git push origin HEAD:main
