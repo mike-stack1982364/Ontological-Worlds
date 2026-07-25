@@ -1,13 +1,11 @@
 'use strict';
 
-global.addEventListener = global.addEventListener || (() => {});
-
 const assert = require('assert');
 const path = require('path');
 const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
 const conflict = require(path.join(__dirname, '..', 'mode-one-conflict-matrix-v20.js'));
 
-assert.strictEqual(conflict.version, 21);
+assert.strictEqual(conflict.version, 22);
 assert.deepStrictEqual([...conflict.LEVELS], [1,2,3,4,5,6,7,8]);
 assert.strictEqual(conflict.ALL_MASKS.length, 8);
 
@@ -68,6 +66,8 @@ const roleSwapped = {
 };
 assert.strictEqual(conflict.evaluateConflictMatrix(target, roleSwapped).wholeTrialMatch, true);
 assert.strictEqual(conflict.evaluateConflictMatrix(target, roleSwapped, { roleSensitive: true }).wholeTrialMatch, false);
+const roleSensitiveAnalysis = conflict.analyseAlignment(target, roleSwapped, { roleSensitive: true });
+assert.strictEqual(roleSensitiveAnalysis.localStatementCompatibility[2], false, 'a current conclusion must not be locally matched to a historical premise');
 
 class Rng {
   constructor(seed) { this.s = seed >>> 0; }
