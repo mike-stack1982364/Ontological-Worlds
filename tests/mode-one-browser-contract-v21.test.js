@@ -6,7 +6,7 @@ const path = require('path');
 const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
 const conflict = require(path.join(__dirname, '..', 'mode-one-conflict-matrix-v20.js'));
 
-assert.ok(conflict.version >= 25);
+assert.ok(conflict.version >= 26);
 assert.deepStrictEqual([...conflict.LEVELS], [1,2,3,4,5,6,7,8]);
 assert.strictEqual(conflict.ALL_MASKS.length, 8);
 assert.strictEqual(new Set(conflict.ALL_MASKS.map(mask => mask.map(Number).join(''))).size, 8);
@@ -60,7 +60,9 @@ const source = fs.readFileSync(path.join(__dirname, '..', 'mode-one-conflict-mat
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 assert.ok(source.includes("const labels=['Statement 1 — N-back','Statement 2 — N-back','Statement 3 — N-back','Statement 3 — entailed?','Complete triad — N-back']"));
-assert.ok(source.includes("const keyboard=['a','s','d','f','g','h','j','k','l',';']"));
+assert.ok(source.includes("const keyPairs=[['A','S'],['D','F'],['H','J'],['K','L'],['Z','X']]"));
+assert.ok(source.includes("const keyboard=['a','s','d','f','h','j','k','l','z','x']"));
+assert.ok(!source.includes("'g'"), 'G must remain deliberately unassigned');
 assert.ok(source.includes('responses.some(v=>v===null)'), 'submission must reject incomplete five-decision vectors');
 assert.ok(source.includes('conflictDecisionStats=Array.from({length:5},createDecisionScore)'), 'five independent score channels must exist');
 assert.ok(source.includes('conflictDecisionTimes'), 'first-response latency must be retained');
@@ -74,6 +76,12 @@ assert.ok(source.includes('function mutationDistances(interferenceLevel)'), 'int
 
 const staticChoices = (html.match(/class="conflict-choice"/g) || []).length;
 assert.strictEqual(staticChoices, 10, 'front page must contain all ten response buttons without dynamic injection');
+for (const letter of ['A','S','D','F','H','J','K','L','Z','X']) {
+  assert.ok(html.includes(`>${letter}</button>`), `front-page button must visibly display ${letter}`);
+}
+assert.ok(!html.includes('>Match</button>'), 'Mode 1 response buttons must not display Match');
+assert.ok(!html.includes('>No match</button>'), 'Mode 1 response buttons must not display No match');
+assert.ok(html.includes('G unused'), 'keyboard hint must explicitly teach that G is unused');
 assert.ok(html.includes('grid-template-columns:repeat(5,minmax(0,1fr))'), 'five decision pairs must occupy one full-width horizontal grid');
 assert.ok(html.includes('width:100vw'), 'response matrix must escape the narrow game card and span the viewport');
 assert.ok(html.includes('position:absolute'), 'full-width response matrix must occupy the original response stage instead of expanding the page');
@@ -104,8 +112,9 @@ assert.strictEqual(audit.invariants.oneToOneStatementAssignmentRequired, true);
 console.log(JSON.stringify({
   passed: true,
   explicitMaskChecks,
-  browserContractChecks: 27,
+  browserContractChecks: 37,
   staticChoices,
+  keyboardPairs: ['A/S','D/F','H/J','K/L','Z/X'],
   audit: {
     total: audit.total,
     totalBinaryDecisions: audit.totalBinaryDecisions,
