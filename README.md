@@ -18,7 +18,12 @@ After the initial N memory-fill trials, every scored trial requires five binary 
 
 Statement-level matching is not calculated through three independent resemblance checks. The engine requires one globally consistent bijection between the historical and current letters and a one-to-one assignment between statements. A statement counts as a match only when it participates in the best coherent alignment. Equivalent reversed wording is accepted only when subject/object reversal is accompanied by the opposite compass direction. Arbitrary letter renaming and statement reordering do not by themselves break structural equivalence.
 
-A whole-triad MATCH requires all three statements to align under the same mapping. One-statement and two-statement correspondences remain partial matches and are scored as interference rather than being collapsed into a single whole-trial answer.
+Mode 1 alternates between two explicit comparison regimes:
+
+- role-flexible comparison, where any current statement may align with any historical statement;
+- role-sensitive comparison, where the historical and current conclusions must remain conclusions while the two premises may exchange order.
+
+A whole-triad MATCH requires all three statements to align under the same mapping and active role regime. One-statement and two-statement correspondences remain partial matches and are scored as interference rather than being collapsed into a single whole-trial answer.
 
 The cognitive-interference generator uses controlled profiles rather than generic random errors. Depending on the interference setting, it creates:
 
@@ -34,6 +39,10 @@ The cognitive-interference generator uses controlled profiles rather than generi
 At the highest interference setting, non-match trials preferentially preserve exactly two globally coherent statements while changing one precise relation. The player must therefore discriminate a near-complete historical structure while independently determining whether the current conclusion is logically valid.
 
 Mode 1 supports N-back levels 1 through 8. The browser interface displays ten response buttons: Match/No Match for each historical statement decision, Entailed/Not Entailed for current conclusion validity, and Match/No Match for complete-triad identity. All five decisions must be entered before submission.
+
+Each of the five decisions is recorded separately, including correctness and first-response time. The trial itself is counted as correct only when all five responses are correct, preserving compatibility with the existing session progression while retaining native multidimensional diagnostic statistics.
+
+Keyboard pairs are A/S, D/F, G/H, J/K and L/;.
 
 ### Mode 2 — Ontological Integration
 
@@ -59,11 +68,14 @@ The repository includes independent tests for:
 - five mandatory Mode 1 decisions per scored trial;
 - globally consistent letter mapping;
 - one-to-one statement assignment;
+- role-sensitive and role-flexible alignment;
 - inverse-wording equivalence;
 - exact 16-direction discrimination;
-- controlled two-of-three interference lures;
+- all zero-, one- and two-of-three non-match masks;
+- controlled maximum-interference two-of-three lures;
 - current-trial entailment separated from historical matching;
 - complete-triad matching;
+- native per-decision scoring metadata;
 - Mode 2 structural comparison;
 - ontology and form-label scoring neutrality.
 
