@@ -8,7 +8,7 @@ const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
 const modeTwo = require(path.join(__dirname, '..', 'mode-two-ontology-nback-v14.js'));
 
 assert.deepStrictEqual([...modeTwo.LEVELS], [1,2,3,4,5,6,7,8]);
-assert.strictEqual(modeTwo.version, 19);
+assert.strictEqual(modeTwo.version, 20);
 
 const target = modeTwo.decorateTrial({
   premises: [
@@ -82,7 +82,10 @@ for (const level of modeTwo.LEVELS) {
     const result = modeTwo.evaluateHistory(history, history.length - 1, level);
     assert.strictEqual(result.targetIndex, history.length - 1 - level);
     assert.strictEqual(result.isMatch, requestedMatch);
-    if (!requestedMatch) assert.strictEqual(current.partialStatementCompatibility, 2);
+    if (!requestedMatch) {
+      assert.strictEqual(current.partialStatementCompatibility, 2);
+      assert.ok(current.lureGenerationAttempts >= 1 && current.lureGenerationAttempts <= 1024);
+    }
   }
 }
 
@@ -95,5 +98,6 @@ assert.strictEqual(audit.partialLureChecks, 32768);
 assert.strictEqual(audit.invariants.completeThreeStatementCrossTrialComparison, true);
 assert.strictEqual(audit.invariants.twoStatementCompatibilityInsufficient, true);
 assert.strictEqual(audit.invariants.ontologyCategoriesScoringNeutral, true);
+assert.strictEqual(audit.invariants.collapsedGraphsRejectedAndRegenerated, true);
 
 console.log(JSON.stringify({ passed: true, audit }, null, 2));
