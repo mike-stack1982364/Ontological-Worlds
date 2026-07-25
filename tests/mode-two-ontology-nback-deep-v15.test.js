@@ -1,4 +1,5 @@
 'use strict';
+global.addEventListener = global.addEventListener || (() => {});
 const assert = require('assert');
 const path = require('path');
 const core = require(path.join(__dirname,'..','mode-one-spatial-core.js'));
