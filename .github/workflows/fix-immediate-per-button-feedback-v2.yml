@@ -1,0 +1,99 @@
+name: Fix immediate per-button feedback v2
+
+on:
+  push:
+    paths:
+      - .github/workflows/fix-immediate-per-button-feedback-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch Mode 1 per-button feedback deterministically
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('mode-one-conflict-matrix-v20.js')
+          text = path.read_text(encoding='utf-8')
+
+          start = text.index("    const showButtonFeedback=(button,correct)=>{")
+          end = text.index("    matrix.querySelector('#conflict-submit')", start)
+          replacement = '''    const showButtonFeedback=(button,correct)=>{
+      button.querySelectorAll('.conflict-feedback-icon').forEach(icon=>icon.remove());
+      button.classList.remove('feedback-correct','feedback-incorrect');
+      button.classList.add(correct?'feedback-correct':'feedback-incorrect');
+      button.dataset.feedback=correct?'correct':'incorrect';
+      const icon=d.createElement('span');
+      icon.className=`conflict-feedback-icon ${correct?'correct':'incorrect'}`;
+      icon.setAttribute('aria-hidden','true');
+      icon.innerHTML=correct
+        ? '<svg viewBox="0 0 64 64" role="presentation"><path d="M13 33l12 12L52 18" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        : '<svg viewBox="0 0 64 64" role="presentation"><path d="M17 17l30 30M47 17L17 47" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/></svg>';
+      button.appendChild(icon);
+      const baseLabel=button.dataset.baseAriaLabel||button.getAttribute('aria-label')||'';
+      button.dataset.baseAriaLabel=baseLabel.replace(/ — (correct|incorrect)$/,'');
+      button.setAttribute('aria-label',`${button.dataset.baseAriaLabel} — ${correct?'correct':'incorrect'}`);
+    };
+    const handleDecision=(button)=>{
+      if(!button||button.disabled||!app.awaiting)return;
+      const row=button.closest('.conflict-row');
+      if(!row)return;
+      const index=Number(row.dataset.decision);
+      if(!Number.isInteger(index)||index<0||index>4||responses[index]!==null)return;
+      const response=button.dataset.value==='1';
+      const expected=app.current?.conflictResponseVector?.[index];
+      if(typeof expected!=='boolean')return;
+      responses[index]=response;
+      decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now());
+      row.querySelectorAll('.conflict-choice').forEach(choice=>{
+        choice.classList.toggle('selected',choice===button);
+        choice.disabled=true;
+      });
+      showButtonFeedback(button,response===expected);
+      const completed=responses.filter(value=>value!==null).length;
+      matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`;
+      matrix.querySelector('#conflict-submit').disabled=completed!==5;
+      if(completed===5){
+        matrix.querySelector('#conflict-progress').textContent='All five decisions entered';
+        app.submitConflictMatrix(responses.slice(),decisionTimes.slice());
+      }
+    };
+    matrix.addEventListener('pointerdown',event=>{
+      const button=event.target.closest('.conflict-choice');
+      if(!button)return;
+      event.preventDefault();
+      handleDecision(button);
+    },true);
+    matrix.addEventListener('click',event=>{
+      const button=event.target.closest('.conflict-choice');
+      if(!button)return;
+      event.preventDefault();
+      handleDecision(button);
+    },true);
+'''
+          text = text[:start] + replacement + text[end:]
+          text = text.replace("return Object.freeze({version:37,", "return Object.freeze({version:38,", 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Validate implementation
+        run: |
+          node --check mode-one-conflict-matrix-v20.js
+          grep -F "const handleDecision=(button)=>" mode-one-conflict-matrix-v20.js
+          grep -F "showButtonFeedback(button,response===expected);" mode-one-conflict-matrix-v20.js
+          grep -F "matrix.addEventListener('pointerdown'" mode-one-conflict-matrix-v20.js
+          grep -F "matrix.addEventListener('click'" mode-one-conflict-matrix-v20.js
+      - name: Commit implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mode-one-conflict-matrix-v20.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Make Mode 1 feedback immediate for every individual response"
+          git push origin HEAD:main
