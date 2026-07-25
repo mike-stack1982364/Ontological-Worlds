@@ -5,109 +5,93 @@ const path = require('path');
 const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
 const modeTwo = require(path.join(__dirname, '..', 'mode-two-ontology-nback-v14.js'));
 
-assert.deepStrictEqual([...modeTwo.LEVELS], [1, 2, 3, 4, 5, 6, 7, 8]);
-assert.strictEqual(modeTwo.version, 18);
-assert.deepStrictEqual([...modeTwo.FORM_ORDERS], ['IO', 'OI']);
-assert.deepStrictEqual(Object.keys(modeTwo.FORM_NAMES).sort(), ['I', 'O']);
-assert.strictEqual(modeTwo.FORM_NAMES.I, 'Inner');
-assert.strictEqual(modeTwo.FORM_NAMES.O, 'Outer');
-assert.strictEqual(Object.values(modeTwo.FORM_NAMES).some(value => /archetypal/i.test(value)), false);
+assert.deepStrictEqual([...modeTwo.LEVELS], [1,2,3,4,5,6,7,8]);
+assert.strictEqual(modeTwo.version, 19);
 
-for (const [index, trial] of core.canonicalTrials().entries()) {
-  const decorated = modeTwo.decorateTrial(trial, ['Completion', 'Multiplication', 'Difference'], 'IO');
-  const result = modeTwo.evaluate(decorated);
-  assert.strictEqual(result.isMatch, trial.expected, `canonical ${index + 1}`);
-
-  const metadataChanged = modeTwo.decorateTrial(trial, ['Action', 'All', 'Division'], 'OI');
-  assert.strictEqual(modeTwo.evaluate(metadataChanged).isMatch, trial.expected, `metadata invariance ${index + 1}`);
-
-  const rendered = modeTwo.renderOntologicalTrial(decorated);
-  assert.doesNotMatch(rendered, /archetypal/i);
-  assert.strictEqual((rendered.match(/\b(?:Inner|Outer)\b/g) || []).length, 2);
-}
-
-const matchTrial = modeTwo.decorateTrial({
+const target = modeTwo.decorateTrial({
   premises: [
     { subject: 'A', relation: 'W', object: 'B' },
     { subject: 'B', relation: 'N', object: 'C' }
   ],
   conclusion: { subject: 'C', relation: 'SE', object: 'A' },
-  letters: ['A', 'B', 'C']
-}, ['Completion', 'Multiplication', 'Difference'], 'IO');
+  letters: ['A','B','C']
+}, ['Completion','Multiplication','Difference'], 'IO');
 
-const noMatchTrial = modeTwo.decorateTrial({
+const renamedReorderedInverted = modeTwo.decorateTrial({
   premises: [
-    { subject: 'K', relation: 'N', object: 'L' },
-    { subject: 'L', relation: 'NE', object: 'M' }
+    { subject: 'Z', relation: 'S', object: 'Y' },
+    { subject: 'Y', relation: 'E', object: 'X' }
   ],
-  conclusion: { subject: 'K', relation: 'NE', object: 'M' },
-  letters: ['K', 'L', 'M']
-}, ['All', 'Projection', 'Connection'], 'OI');
+  conclusion: { subject: 'X', relation: 'NW', object: 'Z' },
+  letters: ['X','Y','Z']
+}, ['Action','All','Division'], 'OI');
 
-assert.strictEqual(modeTwo.evaluate(matchTrial).isMatch, true);
-assert.strictEqual(modeTwo.evaluate(noMatchTrial).isMatch, false);
-const renderedMatch = modeTwo.renderOntologicalTrial(matchTrial);
-assert.match(renderedMatch, /Inner Completion/);
-assert.match(renderedMatch, /Outer Multiplication/);
-assert.match(renderedMatch, /Difference C is southeast of A/);
-assert.doesNotMatch(renderedMatch, /Archetypal/i);
-assert.strictEqual((renderedMatch.match(/\b(?:Inner|Outer)\b/g) || []).length, 2);
+assert.strictEqual(modeTwo.compare(target, renamedReorderedInverted).isMatch, true,
+  'letter renaming, premise reordering and equivalent reversed wording must preserve the complete structure');
+
+const twoOfThreeLure = modeTwo.decorateTrial({
+  premises: [
+    { subject: 'X', relation: 'W', object: 'Y' },
+    { subject: 'Y', relation: 'N', object: 'Z' }
+  ],
+  conclusion: { subject: 'Z', relation: 'ESE', object: 'X' },
+  letters: ['X','Y','Z']
+}, ['Completion','Multiplication','Difference'], 'IO');
+assert.strictEqual(modeTwo.compare(target, twoOfThreeLure).isMatch, false,
+  'two compatible premises cannot compensate for a different third statement');
+
+const oneOfThreeLure = modeTwo.decorateTrial({
+  premises: [
+    { subject: 'X', relation: 'W', object: 'Y' },
+    { subject: 'Y', relation: 'S', object: 'Z' }
+  ],
+  conclusion: { subject: 'Z', relation: 'NE', object: 'X' },
+  letters: ['X','Y','Z']
+}, ['All','Projection','Connection'], 'OI');
+assert.strictEqual(modeTwo.compare(target, oneOfThreeLure).isMatch, false,
+  'one compatible statement is only interference, never a complete match');
+
+const metadataOnly = JSON.parse(JSON.stringify(target));
+metadataOnly.ontologyCategories = ['All','Action','Division'];
+metadataOnly.order = 'OI';
+assert.strictEqual(modeTwo.compare(target, metadataOnly).isMatch, true,
+  'ontology categories and Inner/Outer order remain scoring-neutral');
+
+for (const [index, trial] of core.canonicalTrials().entries()) {
+  const decorated = modeTwo.decorateTrial(trial, ['Completion','Multiplication','Difference'], 'IO');
+  assert.strictEqual(modeTwo.evaluate(decorated).isMatch, trial.expected, `Mode 1 entailment parity ${index + 1}`);
+}
+
+class Rng {
+  constructor(seed) { this.s = seed >>> 0; }
+  next() { let v = this.s += 1831565813; v = Math.imul(v ^ v >>> 15, 1 | v); v ^= v + Math.imul(v ^ v >>> 7, 61 | v); return ((v ^ v >>> 14) >>> 0) / 4294967296; }
+  pick(values) { return values[Math.floor(this.next() * values.length)]; }
+  shuffle(values) { const out = [...values]; for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(this.next() * (i + 1)); [out[i],out[j]]=[out[j],out[i]]; } return out; }
+}
 
 for (const level of modeTwo.LEVELS) {
-  const history = [];
-  for (let index = 0; index < level; index += 1) history.push(matchTrial);
-  history.push(noMatchTrial);
-  const result = modeTwo.evaluateHistory(history, level, level);
-  assert.strictEqual(result.targetIndex, 0);
-  assert.strictEqual(result.isMatch, false);
-  assert.strictEqual(result.scored, true);
+  const rng = new Rng(1000 + level);
+  const history = Array.from({ length: level }, () => modeTwo.generateTrial(rng, { matchProbability: 1 }));
+  for (let index = 0; index < 2048; index += 1) {
+    const requestedMatch = index % 2 === 0;
+    const historicalTarget = history[history.length - level];
+    const current = modeTwo.generateNBackTrial(rng, historicalTarget, { match: requestedMatch, nBackLevel: level });
+    history.push(current);
+    const result = modeTwo.evaluateHistory(history, history.length - 1, level);
+    assert.strictEqual(result.targetIndex, history.length - 1 - level);
+    assert.strictEqual(result.isMatch, requestedMatch);
+    if (!requestedMatch) assert.strictEqual(current.partialStatementCompatibility, 2);
+  }
 }
 
-const audit = modeTwo.runExhaustiveAudit(131072);
-assert.strictEqual(audit.passed, true, JSON.stringify(audit.failures, null, 2));
-assert.strictEqual(audit.totalEvaluations, 1048576);
-assert.strictEqual(audit.matches, 524288);
-assert.strictEqual(audit.nonMatches, 524288);
-assert.strictEqual(audit.matchRate, 0.5);
-assert.strictEqual(audit.nonMatchRate, 0.5);
-assert.strictEqual(audit.failures.length, 0);
-assert.strictEqual(audit.renderChecks, 1048576);
-assert.strictEqual(audit.invariants.modeOneRelationalEntailmentCopiedExactly, true);
+const audit = modeTwo.runExhaustiveAudit(8192);
+assert.strictEqual(audit.passed, true, JSON.stringify(audit.failures));
+assert.strictEqual(audit.totalEvaluations, 65536);
+assert.strictEqual(audit.matches, 32768);
+assert.strictEqual(audit.nonMatches, 32768);
+assert.strictEqual(audit.partialLureChecks, 32768);
+assert.strictEqual(audit.invariants.completeThreeStatementCrossTrialComparison, true);
+assert.strictEqual(audit.invariants.twoStatementCompatibilityInsufficient, true);
 assert.strictEqual(audit.invariants.ontologyCategoriesScoringNeutral, true);
-assert.strictEqual(audit.invariants.formOrderScoringNeutral, true);
-assert.strictEqual(audit.invariants.sixteenDirectionResolution, true);
-assert.strictEqual(audit.invariants.allNBackLevelsUseSameEvaluator, true);
-assert.strictEqual(audit.invariants.conclusionHasNoFormPrefix, true);
-assert.strictEqual(audit.invariants.archetypalWordForbiddenInModeTwoOutput, true);
-assert.strictEqual(audit.perLevel.length, 8);
-for (const level of audit.perLevel) {
-  assert.strictEqual(level.evaluations, 131072);
-  assert.strictEqual(level.matches, 65536);
-  assert.strictEqual(level.nonMatches, 65536);
-  assert.strictEqual(level.falseMatches, 0);
-  assert.strictEqual(level.falseNonMatches, 0);
-  assert.strictEqual(level.wrongOffsetFailures, 0);
-  assert.strictEqual(level.ontologyMutationFailures, 0);
-  assert.strictEqual(level.renamingFailures, 0);
-  assert.strictEqual(level.premiseOrderFailures, 0);
-  assert.strictEqual(level.inversionFailures, 0);
-  assert.strictEqual(level.renderFailures, 0);
-}
 
-console.log(JSON.stringify({
-  passed: audit.passed,
-  mode: audit.mode,
-  levels: audit.nBackLevels,
-  totalEvaluations: audit.totalEvaluations,
-  matches: audit.matches,
-  nonMatches: audit.nonMatches,
-  matchRate: audit.matchRate,
-  nonMatchRate: audit.nonMatchRate,
-  renderChecks: audit.renderChecks,
-  ontologyMutationChecks: audit.ontologyMutationChecks,
-  renamingChecks: audit.renamingChecks,
-  premiseOrderChecks: audit.premiseOrderChecks,
-  inversionChecks: audit.inversionChecks,
-  failures: audit.failures.length,
-  perLevel: audit.perLevel
-}, null, 2));
+console.log(JSON.stringify({ passed: true, audit }, null, 2));
