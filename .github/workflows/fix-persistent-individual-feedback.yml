@@ -1,0 +1,55 @@
+name: Fix persistent individual feedback
+
+on:
+  push:
+    paths:
+      - .github/workflows/fix-persistent-individual-feedback.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch individual response feedback
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('mode-one-conflict-matrix-v20.js')
+          text = path.read_text(encoding='utf-8')
+
+          old_timeout = """      rootObject.setTimeout(()=>{\n        button.querySelectorAll('.conflict-feedback-icon').forEach(item=>item.remove());\n        button.classList.remove('feedback-correct','feedback-incorrect');\n        button.removeAttribute('data-feedback');\n        if(button.dataset.baseAriaLabel)button.setAttribute('aria-label',button.dataset.baseAriaLabel);\n      },700);"""
+          if old_timeout not in text:
+              raise SystemExit('Expected 700ms feedback removal block not found')
+          text = text.replace(old_timeout, "", 1)
+
+          old_click = "matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null) decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>choice.classList.toggle('selected',choice===button)); const expected=app.current?.conflictResponseVector?.[index]; if(typeof expected==='boolean')showButtonFeedback(button,responses[index]===expected); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='All five decisions entered'; app.submitConflictMatrix(responses.slice(),decisionTimes.slice());}});"
+          new_click = "matrix.addEventListener('click',event=>{const button=event.target.closest('.conflict-choice'); if(!button||button.disabled||!app.awaiting)return; const row=button.closest('.conflict-row'),index=Number(row.dataset.decision); if(responses[index]!==null)return; responses[index]=button.dataset.value==='1'; if(decisionTimes[index]===null)decisionTimes[index]=Date.now()-Number(matrix.dataset.startedAt||Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice=>{choice.classList.toggle('selected',choice===button);choice.disabled=true;}); const expected=app.current?.conflictResponseVector?.[index]; if(typeof expected==='boolean')showButtonFeedback(button,responses[index]===expected); const completed=responses.filter(v=>v!==null).length; matrix.querySelector('#conflict-progress').textContent=`${completed} of 5 decisions entered`; matrix.querySelector('#conflict-submit').disabled=completed!==5; if(completed===5){matrix.querySelector('#conflict-progress').textContent='All five decisions entered'; app.submitConflictMatrix(responses.slice(),decisionTimes.slice());}});"
+          if old_click not in text:
+              raise SystemExit('Expected per-button click handler not found')
+          text = text.replace(old_click, new_click, 1)
+
+          text = text.replace('return Object.freeze({version:36,', 'return Object.freeze({version:37,', 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Validate
+        run: |
+          node --check mode-one-conflict-matrix-v20.js
+          ! grep -F "},700);" mode-one-conflict-matrix-v20.js
+          grep -F "if(responses[index]!==null)return" mode-one-conflict-matrix-v20.js
+          grep -F "choice.disabled=true" mode-one-conflict-matrix-v20.js
+          grep -F "version:37" mode-one-conflict-matrix-v20.js
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mode-one-conflict-matrix-v20.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Persist correctness feedback for each individual Mode 1 response"
+          git push origin HEAD:main
