@@ -121,6 +121,18 @@
     const originalSettings = app.settings.bind(app), originalStart = app.start.bind(app), originalNextTrial = app.nextTrial.bind(app), originalStop = app.stop.bind(app), originalTogglePause = app.togglePause?.bind(app);
     const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation');
     let advanceTimerId = null;
+    const showPremise = text => {
+      if (!premiseDisplay) throw new Error('Premise display element is missing.');
+      premiseDisplay.classList.remove('hidden-mode','muted','correct','incorrect');
+      premiseDisplay.removeAttribute('aria-hidden');
+      premiseDisplay.style.opacity = '1';
+      premiseDisplay.style.visibility = 'visible';
+      premiseDisplay.style.display = 'flex';
+      premiseDisplay.textContent = text;
+      const rendered = premiseDisplay.textContent.trim();
+      if (!rendered) throw new Error('Premise DOM is empty after render.');
+      return rendered;
+    };
     app.settings = function() { const settings = originalSettings(); return { ...settings, directionResolution: this.running ? this.directionResolution : ui.getSelected() }; };
     app.getSelectedDirectionResolution = ui.getSelected;
     app.validateDirectionResolutionBeforeStart = ui.validate;
@@ -139,7 +151,7 @@
       if (!this.running || this.paused || token !== this.sessionToken) return null;
       clearTimeout(this.timerId); clearTimeout(advanceTimerId); advanceTimerId = null;
       const resolution = requireSpatial().normaliseResolution(this.directionResolution, null);
-      if (!resolution) return this.failModeOneStartup?.(new Error('Mode 1 has no frozen compass resolution.')) || null;
+      if (!resolution) return this.failModeOneStartup(new Error('Mode 1 has no frozen compass resolution.'));
       let trial = null, rendered = '', lastError = null;
       for (let attempt = 0; attempt < 32 && !trial; attempt++) {
         try {
@@ -151,15 +163,12 @@
           trial = candidate; rendered = candidateRendered.trim();
         } catch (error) { lastError = error; }
       }
-      if (!trial) return this.failModeOneStartup?.(lastError || new Error('Mode 1 could not generate and render a valid trial.')) || null;
+      if (!trial) return this.failModeOneStartup(lastError || new Error('Mode 1 could not generate and render a valid trial.'));
       if (!this.running || this.paused || token !== this.sessionToken) return null;
-      if (!premiseDisplay) return this.failModeOneStartup?.(new Error('Premise display element is missing.')) || null;
-      premiseDisplay.textContent = rendered;
-      if (premiseDisplay.textContent.trim() !== rendered) return this.failModeOneStartup?.(new Error('Premise DOM write did not persist.')) || null;
+      try { showPremise(rendered); } catch (error) { return this.failModeOneStartup(error); }
       this.current = trial;
       this.trials.push(trial);
       this.score.shown++;
-      premiseDisplay.classList.remove('correct','incorrect');
       if (feedback) feedback.textContent = '';
       if (explanation) explanation.textContent = '';
       input.reset(trial);
@@ -182,7 +191,7 @@
       try { this.stopDelta?.(); } catch (_) {}
       const countdown = d.getElementById('countdown-box');
       if (countdown) countdown.textContent = '';
-      if (premiseDisplay) premiseDisplay.textContent = `START_FAILED: ${error?.message || 'Unknown Mode 1 startup error'}`;
+      try { showPremise(`START_FAILED: ${error?.message || 'Unknown Mode 1 startup error'}`); } catch (_) {}
       const start = d.getElementById('start-btn'), pause = d.getElementById('pause-btn'), stop = d.getElementById('stop-btn');
       if (start) start.disabled = false;
       if (pause) pause.disabled = true;
@@ -191,7 +200,7 @@
       ui.sync();
       return null;
     };
-    app.start = function(...args) {
+    app.start = async function(...args) {
       const mode = Number(originalSettings().mode);
       if (mode !== 0) return originalStart(...args);
       if (this.running) return false;
@@ -200,9 +209,19 @@
       this.trials = [];
       this.current = null;
       this.awaiting = false;
-      const result = originalStart(...args);
-      if (result && typeof result.catch === 'function') result.catch(error => this.failModeOneStartup(error));
-      return result;
+      try {
+        await originalStart(...args);
+      } catch (error) {
+        return this.failModeOneStartup(error);
+      }
+      if (!this.running || this.paused) return false;
+      if (!this.current || !this.trials.length || !premiseDisplay?.textContent?.trim()) {
+        const trial = this.nextTrial(this.sessionToken);
+        if (!trial || !this.current || !premiseDisplay?.textContent?.trim()) {
+          return this.failModeOneStartup(new Error('Countdown completed without a visible first trial.'));
+        }
+      }
+      return this.current;
     };
     app.submitConflictMatrix = function(responses, decisionTimes) {
       if (!this.current?.scored || !Array.isArray(this.current.conflictResponseVector) || !this.awaiting || this.current.submitted) return;
