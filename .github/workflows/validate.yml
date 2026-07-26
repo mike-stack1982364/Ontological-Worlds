@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  startup-regression:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -17,9 +17,33 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check JavaScript syntax
+      - name: Check production startup JavaScript syntax
         run: |
           node --check app.js
+          node --check mode-one-match-logic.js
+          node --check mode-one-spatial-core.js
+          node --check mode-router-v2.js
+          node --check mode-two-ontology-nback-v14.js
+          node --check audio-accessibility.js
+          node --check mode-one-conflict-matrix-v20.js
+          node --check mode-one-startup-coordinator.js
+          node --check tests/mode-one-startup-e2e.mjs
+      - name: Install DOM test runtime
+        run: npm install --no-save jsdom@26
+      - name: Prove Start countdown renders Trial 1
+        run: node tests/mode-one-startup-e2e.mjs
+
+  legacy-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check legacy JavaScript syntax
+        run: |
           node --check mode-release-gate.js
           node --check audio-only-display.js
           node --check response-window.js
@@ -27,8 +51,6 @@ jobs:
           node --check mode-one-triadic.js
           node --check cognitive-interference-v3.js
           node --check mode-one-interference.js
-          node --check mode-one-match-logic.js
-          node --check mode-one-spatial-core.js
           node --check mode-one-approved-trials-v4.js
           node --check mode-one-approved-trials-v6.js
           node --check mode-one-approved-trials-v7.js
@@ -36,10 +58,8 @@ jobs:
           node --check mode-one-nback-v9.js
           node --check mode-one-nback-v10.js
           node --check mode-one-nback-v11.js
-          node --check mode-router-v2.js
           node --check mode-one-completion-v10.js
           node --check mode-one-completion-v11.js
-          node --check audio-accessibility.js
       - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
       - name: Run legacy relational logic smoke tests
