@@ -103,14 +103,14 @@
     if (!matrix) return;
     const ui = ensureResolutionUI(d, app), input = installMatrixInput(rootObject, app, matrix);
     const originalSettings = app.settings.bind(app), originalStart = app.start.bind(app), originalMakeTrial = app.makeTrial.bind(app), originalNextTrial = app.nextTrial.bind(app), originalStop = app.stop.bind(app), originalTogglePause = app.togglePause?.bind(app);
-    const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation'), startButton = d.getElementById('start-btn'), pauseButton = d.getElementById('pause-btn'), stopButton = d.getElementById('stop-btn'), countdown = d.getElementById('countdown-box');
+    const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation');
     let advanceTimerId = null;
+    const modeOneActive = () => Number(d.getElementById('logic-mode')?.value) === 0;
     app.settings = function() { const settings = originalSettings(); return { ...settings, directionResolution: this.running ? this.directionResolution : ui.getSelected() }; };
     app.getSelectedDirectionResolution = ui.getSelected;
     app.validateDirectionResolutionBeforeStart = ui.validate;
     app.makeTrial = function() {
-      const mode = Number(originalSettings().mode);
-      if (mode !== 0) return originalMakeTrial();
+      if (!modeOneActive()) return originalMakeTrial();
       const resolution = requireCore().normaliseResolution(this.directionResolution, null);
       if (!resolution) throw new Error('Mode 1 cannot generate a trial without a frozen compass resolution.');
       const settings = originalSettings(), level = Math.max(1, Math.min(8, Math.round(Number(this.n || settings.n) || 1)));
@@ -122,7 +122,7 @@
       return generateConflictTrial(this.rng, target, { match: requestedMatch, interferenceLevel, roleSensitive: true, directionResolution: resolution });
     };
     app.nextTrial = function(token = this.sessionToken) {
-      if (Number(originalSettings().mode) !== 0) return originalNextTrial(token);
+      if (!modeOneActive()) return originalNextTrial(token);
       if (!this.running || this.paused || token !== this.sessionToken) return null;
       clearTimeout(this.timerId); clearTimeout(advanceTimerId); advanceTimerId = null;
       const resolution = requireCore().normaliseResolution(this.directionResolution, null);
@@ -142,30 +142,13 @@
       try { this.updateStats?.(); } catch (_) {}
       return trial;
     };
-    app.start = async function(...args) {
-      const mode = Number(originalSettings().mode);
-      if (mode !== 0) return originalStart(...args);
+    app.start = function(...args) {
+      if (!modeOneActive()) return originalStart(...args);
       if (this.running) return false;
       if (!ui.validate(true)) return false;
-      const selected = ui.getSelected();
-      this.directionResolution = selected;
+      this.directionResolution = ui.getSelected();
       this.trials = [];
-      try {
-        const result = await originalStart(...args);
-        if (!this.running || !this.current || !this.awaiting) throw new Error('Mode 1 startup completed without rendering its first trial.');
-        ui.sync();
-        return result !== false;
-      } catch (error) {
-        console.error('Mode 1 start failed.', error);
-        this.running = false; this.paused = false; this.awaiting = false; this.sessionToken++;
-        clearTimeout(this.timerId); clearTimeout(advanceTimerId); clearInterval(this.sessionTimerId);
-        ui.select.disabled = false;
-        startButton.disabled = false; pauseButton.disabled = true; stopButton.disabled = true;
-        if (countdown) countdown.textContent = '';
-        if (premiseDisplay) premiseDisplay.textContent = `START_FAILED: ${error?.message || 'Unknown error'}`;
-        ui.sync();
-        return false;
-      }
+      return originalStart(...args);
     };
     app.submitConflictMatrix = function(responses, decisionTimes) {
       if (!this.current?.scored || !Array.isArray(this.current.conflictResponseVector) || !this.awaiting || this.current.submitted) return;
