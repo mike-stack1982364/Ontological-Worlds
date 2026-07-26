@@ -20,8 +20,6 @@
     renderTrial: core.renderTrial.bind(core),
     explainTrial: core.explainTrial.bind(core),
     generateTrial: core.generateTrial.bind(core),
-    renameTrial: core.renameTrial.bind(core),
-    invert: core.invert.bind(core),
     opposite: core.opposite.bind(core)
   }) : null;
   function requireSpatial() { if (!spatial) throw new Error('Mode 1 spatial primitives are unavailable.'); return spatial; }
@@ -60,8 +58,8 @@
   }
   function evaluateConflictMatrix(target, current, options = {}) { const alignment = analyseAlignment(target, current, options), entailment = requireSpatial().evaluateTrial(current); return Object.freeze({ ...alignment, conclusionEntailed: entailment.isEntailed, expectedRelation: entailment.expectedRelation, assertedRelation: entailment.assertedRelation, responseVector: Object.freeze([...alignment.statementMatches, entailment.isEntailed, alignment.wholeTrialMatch]) }); }
   function statementSurfaceKey(statement) { return `${statement.subject}>${statement.relation}>${statement.object}`; }
-  function declaredEditProfile(previous, current) {
-    const before = statements(previous), after = statements(current);
+  function declaredEditProfile(reference, current) {
+    const before = statements(reference), after = statements(current);
     const changedStatements = before.map((statement,index) => statementSurfaceKey(statement) !== statementSurfaceKey(after[index]));
     const changedDirections = before.map((statement,index) => statement.relation !== after[index].relation);
     const unchangedStatementCount = changedStatements.filter(value => !value).length;
@@ -69,13 +67,13 @@
     const directionEditCount = changedDirections.filter(Boolean).length;
     return Object.freeze({ changedStatements:Object.freeze(changedStatements), changedDirections:Object.freeze(changedDirections), unchangedStatementCount, visibleEditCount, directionEditCount });
   }
-  function continuityProfile(previous, current) {
-    const profile = declaredEditProfile(previous, current);
-    const previousLetters = new Set(trialLetters(previous)), currentLetters = new Set(trialLetters(current));
-    const retainedLetters = [...previousLetters].filter(letter => currentLetters.has(letter));
-    const replacedLetters = [...previousLetters].filter(letter => !currentLetters.has(letter));
-    const introducedLetters = [...currentLetters].filter(letter => !previousLetters.has(letter));
-    const valid = retainedLetters.length >= 1 && retainedLetters.length <= 2 && replacedLetters.length === introducedLetters.length && replacedLetters.length >= 1 && replacedLetters.length <= 2 && profile.directionEditCount >= 1 && profile.directionEditCount <= 2 && profile.visibleEditCount >= 1 && profile.visibleEditCount <= 2 && profile.unchangedStatementCount >= 1;
+  function continuityProfile(reference, current) {
+    const profile = declaredEditProfile(reference, current);
+    const referenceLetters = new Set(trialLetters(reference)), currentLetters = new Set(trialLetters(current));
+    const retainedLetters = [...referenceLetters].filter(letter => currentLetters.has(letter));
+    const replacedLetters = [...referenceLetters].filter(letter => !currentLetters.has(letter));
+    const introducedLetters = [...currentLetters].filter(letter => !referenceLetters.has(letter));
+    const valid = retainedLetters.length === 2 && replacedLetters.length === 1 && introducedLetters.length === 1 && profile.directionEditCount === 1 && profile.visibleEditCount >= 1 && profile.visibleEditCount <= 2 && profile.unchangedStatementCount >= 1;
     return Object.freeze({ ...profile, retainedLetters:Object.freeze(retainedLetters), replacedLetters:Object.freeze(replacedLetters), introducedLetters:Object.freeze(introducedLetters), valid });
   }
   function mutateDirectionAt(statement, rng, interferenceLevel, directionResolution) {
@@ -86,9 +84,9 @@
     const sign = random(rng) < .5 ? -1 : 1;
     return { ...statement, relation: ring[(index + sign * distance + ring.length) % ring.length] };
   }
-  function buildEditedCandidate(rng, previous, options) {
-    const edited = clearPresentationState(clone(previous));
-    const sourceLetters = trialLetters(previous);
+  function buildEditedCandidate(rng, reference, options) {
+    const edited = clearPresentationState(clone(reference));
+    const sourceLetters = trialLetters(reference);
     const oldLetter = pick(rng, sourceLetters);
     const available = LETTER_POOL.filter(letter => !sourceLetters.includes(letter));
     const newLetter = pick(rng, available);
@@ -103,24 +101,24 @@
     edited.mode = 0;
     edited.publicMode = 1;
     edited.directionResolution = options.directionResolution;
-    edited.editScript = { replacedLetter: oldLetter, introducedLetter: newLetter, directionIndex, visibleEditBudget: 2 };
+    edited.editScript = { referenceOffset: options.referenceOffset, replacedLetter: oldLetter, introducedLetter: newLetter, directionIndex, visibleEditBudget: 2 };
     return edited;
   }
-  function finaliseConflictTrial(target, previous, trial, options) {
+  function finaliseConflictTrial(target, continuityReference, trial, options) {
     clearPresentationState(trial);
-    const resolution = options.directionResolution, roleSensitive = Boolean(options.roleSensitive), evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }), continuity = continuityProfile(previous, trial), requestedWholeMatch = Boolean(options.match);
-    Object.assign(trial, { submitted: false, nBackRequestedMatch: requestedWholeMatch, nBackMatch: evaluation.wholeTrialMatch, isMatch: evaluation.wholeTrialMatch, statementMatchVector: evaluation.statementMatches.slice(), conclusionEntailed: evaluation.conclusionEntailed, conflictResponseVector: evaluation.responseVector.slice(), mappingConflict: evaluation.mappingConflict, localStatementCompatibility: evaluation.localStatementCompatibility.slice(), roleSensitive, directionResolution: resolution, interferenceLevel: options.interferenceLevel, continuityProfile: continuity, interferenceProfile: `R${resolution}:${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:${Number(evaluation.wholeTrialMatch)}:V${continuity.visibleEditCount}:D${continuity.directionEditCount}:L${continuity.retainedLetters.length}`, scored: true });
+    const resolution = options.directionResolution, roleSensitive = Boolean(options.roleSensitive), evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }), continuity = continuityProfile(continuityReference, trial), requestedWholeMatch = Boolean(options.match);
+    Object.assign(trial, { submitted: false, nBackRequestedMatch: requestedWholeMatch, nBackMatch: evaluation.wholeTrialMatch, isMatch: evaluation.wholeTrialMatch, statementMatchVector: evaluation.statementMatches.slice(), conclusionEntailed: evaluation.conclusionEntailed, conflictResponseVector: evaluation.responseVector.slice(), mappingConflict: evaluation.mappingConflict, localStatementCompatibility: evaluation.localStatementCompatibility.slice(), roleSensitive, directionResolution: resolution, interferenceLevel: options.interferenceLevel, continuityReferenceOffset: options.referenceOffset, continuityProfile: continuity, interferenceProfile: `R${resolution}:${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:${Number(evaluation.wholeTrialMatch)}:V${continuity.visibleEditCount}:D${continuity.directionEditCount}:L${continuity.retainedLetters.length}`, scored: true });
     return trial;
   }
   function generateConflictTrial(rng, target, options = {}) {
     if (!target) throw new Error('A historical N-back target is required.');
-    const previous = options.previous || target, c = requireSpatial(), resolution = c.normaliseResolution(options.directionResolution ?? target.directionResolution, 16);
-    if (!ensureResolutionClosed(target, resolution) || !ensureResolutionClosed(previous, resolution)) throw new Error('Historical trial resolution does not match session resolution.');
+    const continuityReference = options.continuityReference || target, c = requireSpatial(), resolution = c.normaliseResolution(options.directionResolution ?? target.directionResolution, 16);
+    if (!ensureResolutionClosed(target, resolution) || !ensureResolutionClosed(continuityReference, resolution)) throw new Error('Historical trial resolution does not match session resolution.');
     const requestedWholeMatch = Boolean(options.match), interferenceLevel = Math.max(0, Math.min(100, Number(options.interferenceLevel) || 0)), roleSensitive = Boolean(options.roleSensitive), pool = c.allowedCodes(resolution), candidates = [];
-    for (let attempt = 0; attempt < 4000; attempt++) {
-      const trial = buildEditedCandidate(rng, previous, { interferenceLevel, directionResolution: resolution });
+    for (let attempt = 0; attempt < 5000; attempt++) {
+      const trial = buildEditedCandidate(rng, continuityReference, { interferenceLevel, directionResolution: resolution, referenceOffset: options.referenceOffset });
       if (!ensureResolutionClosed(trial, resolution)) continue;
-      const continuity = continuityProfile(previous, trial);
+      const continuity = continuityProfile(continuityReference, trial);
       if (!continuity.valid) continue;
       let evaluation;
       try { evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }); } catch (_) { continue; }
@@ -130,10 +128,10 @@
       candidates.push({trial: clearPresentationState(trial), evaluation, continuity});
       if (candidates.length >= 80) break;
     }
-    if (!candidates.length) throw new Error(`Unable to generate a continuity-safe ${resolution}-direction ${requestedWholeMatch ? 'match' : 'non-match'} trial.`);
+    if (!candidates.length) throw new Error(`Unable to generate an N-relative continuity-safe ${resolution}-direction ${requestedWholeMatch ? 'match' : 'non-match'} trial.`);
     const preferred = requestedWholeMatch ? candidates.filter(item => item.evaluation.matchedCount === 3) : interferenceLevel >= 75 ? candidates.filter(item => item.evaluation.matchedCount >= 1 && item.evaluation.matchedCount <= 2) : candidates;
     const selected = pick(rng, preferred.length ? preferred : candidates);
-    return finaliseConflictTrial(target, previous, selected.trial, { match: requestedWholeMatch, roleSensitive, directionResolution: resolution, interferenceLevel });
+    return finaliseConflictTrial(target, continuityReference, selected.trial, { match: requestedWholeMatch, roleSensitive, directionResolution: resolution, interferenceLevel, referenceOffset: options.referenceOffset });
   }
   function generateWarmupTrial(rng, options = {}) { const c = requireSpatial(), resolution = c.normaliseResolution(options.directionResolution, 16), trial = c.generateTrial(rng, { matchProbability: random(rng) < .5 ? 1 : 0, interferenceLevel: options.interferenceLevel, directionResolution: resolution }), entailment = c.evaluateTrial(trial); Object.assign(trial, { submitted: false, mode: 0, publicMode: 1, nBackWarmup: true, scored: true, nBackRequestedMatch: false, nBackMatch: false, isMatch: false, statementMatchVector: [false,false,false], conclusionEntailed: entailment.isEntailed, conflictResponseVector: [false,false,false,entailment.isEntailed,false], mappingConflict: false, localStatementCompatibility: [false,false,false], roleSensitive: false, directionResolution: resolution, interferenceLevel: options.interferenceLevel, continuityProfile: null, interferenceProfile: `R${resolution}:000:${Number(entailment.isEntailed)}:0` }); return clearPresentationState(trial), trial.submitted = false, trial; }
   function evaluateHistory(history, currentIndex, nBackLevel, options = {}) { const level = Math.max(1, Math.min(8, Math.round(Number(nBackLevel) || 1))), targetIndex = currentIndex - level; if (targetIndex < 0) { const current = history[currentIndex], entailment = requireSpatial().evaluateTrial(current); return Object.freeze({ warmup: true, scored: true, isMatch: false, currentIndex, targetIndex, nBackLevel: level, statementMatches: Object.freeze([false,false,false]), conclusionEntailed: entailment.isEntailed, wholeTrialMatch: false, responseVector: Object.freeze([false,false,false,entailment.isEntailed,false]), directionResolution: current.directionResolution }); } const evaluation = evaluateConflictMatrix(history[targetIndex], history[currentIndex], options); return Object.freeze({ ...evaluation, warmup: false, scored: true, isMatch: evaluation.wholeTrialMatch, currentIndex, targetIndex, nBackLevel: level }); }
@@ -154,16 +152,17 @@
       const resolution = requireSpatial().normaliseResolution(this.directionResolution, null);
       if (!resolution) throw new Error('Mode 1 cannot generate a trial without a frozen compass resolution.');
       const settings = originalSettings(), level = Math.max(1, Math.min(8, Math.round(Number(this.n || settings.n) || 1))), interferenceLevel = Number(d.getElementById('interference-slider')?.value) || 0;
-      const previous = this.trials[this.trials.length - 1];
-      if (!previous) return generateWarmupTrial(this.rng, { interferenceLevel, directionResolution: resolution });
-      const target = this.trials[this.trials.length - level];
-      if (!target) {
-        const trial = generateConflictTrial(this.rng, previous, { previous, match: false, interferenceLevel, roleSensitive: true, directionResolution: resolution });
+      if (!this.trials.length) return generateWarmupTrial(this.rng, { interferenceLevel, directionResolution: resolution });
+      const targetIndex = this.trials.length - level;
+      const target = targetIndex >= 0 ? this.trials[targetIndex] : this.trials[0];
+      const isWarmup = targetIndex < 0;
+      const requestedMatch = isWarmup ? false : this.rng.next() < settings.matchProbability;
+      const trial = generateConflictTrial(this.rng, target, { continuityReference: target, referenceOffset: level, match: requestedMatch, interferenceLevel, roleSensitive: true, directionResolution: resolution });
+      if (isWarmup) {
         const entailment = requireSpatial().evaluateTrial(trial);
         Object.assign(trial, { nBackWarmup: true, nBackRequestedMatch: false, nBackMatch: false, isMatch: false, statementMatchVector: [false,false,false], conflictResponseVector: [false,false,false,entailment.isEntailed,false] });
-        return trial;
       }
-      return generateConflictTrial(this.rng, target, { previous, match: this.rng.next() < settings.matchProbability, interferenceLevel, roleSensitive: true, directionResolution: resolution });
+      return trial;
     };
     app.nextTrial = function(token = this.sessionToken) { if (Number(originalSettings().mode) !== 0) return originalNextTrial(token); if (!this.running || this.paused || token !== this.sessionToken) return null; clearTimeout(this.timerId); clearTimeout(advanceTimerId); advanceTimerId = null; const resolution = requireSpatial().normaliseResolution(this.directionResolution, null); if (!resolution) return this.failModeOneStartup?.(new Error('Mode 1 has no frozen compass resolution.')) || null; let trial = null, rendered = '', lastError = null; for (let attempt = 0; attempt < 32 && !trial; attempt++) { try { const candidate = clearPresentationState(this.makeTrial()); if (!candidate || !ensureResolutionClosed(candidate, resolution)) throw new Error('Generated trial failed resolution validation.'); candidate.submitted = false; const candidateRendered = requireSpatial().renderTrial(candidate); if (typeof candidateRendered !== 'string' || !candidateRendered.trim()) throw new Error('Mode 1 rendered an empty premise.'); trial = candidate; rendered = candidateRendered.trim(); } catch (error) { lastError = error; } } if (!trial) return this.failModeOneStartup?.(lastError || new Error('Mode 1 could not generate and render a valid trial.')) || null; if (!this.running || this.paused || token !== this.sessionToken) return null; premiseDisplay.textContent = rendered; this.current = trial; this.trials.push(trial); this.score.shown++; premiseDisplay.classList.remove('correct','incorrect'); if (feedback) feedback.textContent = ''; if (explanation) explanation.textContent = ''; input.reset(trial); this.awaiting = true; try { this.speak?.(rendered); } catch (_) {} try { this.updateStats?.(); } catch (_) {} return trial; };
     app.failModeOneStartup = function(error) { console.error('Mode 1 startup failed.', error); this.running = false; this.paused = false; this.awaiting = false; this.current = null; this.trials = []; this.sessionToken++; clearTimeout(this.timerId); clearTimeout(advanceTimerId); clearInterval(this.sessionTimerId); advanceTimerId = null; try { this.synth?.cancel(); } catch (_) {} try { this.stopDelta?.(); } catch (_) {} const countdown = d.getElementById('countdown-box'); if (countdown) countdown.textContent = ''; if (premiseDisplay) premiseDisplay.textContent = `START_FAILED: ${error?.message || 'Unknown Mode 1 startup error'}`; const start = d.getElementById('start-btn'), pause = d.getElementById('pause-btn'), stop = d.getElementById('stop-btn'); if (start) start.disabled = false; if (pause) pause.disabled = true; if (stop) stop.disabled = true; ui.select.disabled = false; ui.sync(); return null; };
@@ -173,6 +172,6 @@
     app.stop = function(...args) { clearTimeout(advanceTimerId); advanceTimerId = null; const result = originalStop(...args); this.directionResolution = null; this.current = null; ui.select.value = ''; matrix.classList.remove('active'); ui.sync(); return result; };
     app.__mandatoryCompassResolutionInstalled = true; ui.sync();
   }
-  function runConflictAudit(iterationsPerResolution = 500) { class AuditRng { constructor(seed) { this.s=seed>>>0; } next(){let v=this.s+=1831565813;v=Math.imul(v^v>>>15,1|v);v^=v+Math.imul(v^v>>>7,61|v);return((v^v>>>14)>>>0)/4294967296;} pick(values){return values[Math.floor(this.next()*values.length)];} shuffle(values){return fisherYates(this,values);} } const failures=[], rows=[]; for (const resolution of [4,8,16]) { const rng=new AuditRng(0x62000000+resolution), row={resolution,iterations:0,failures:0}; let history=[generateWarmupTrial(rng,{interferenceLevel:85,directionResolution:resolution})]; for(let i=0;i<iterationsPerResolution;i++){ const previous=history[history.length-1], target=previous, wantMatch=i%2===0; try{ const trial=generateConflictTrial(rng,target,{previous,match:wantMatch,interferenceLevel:85,roleSensitive:true,directionResolution:resolution}); const evaluation=evaluateConflictMatrix(target,trial,{roleSensitive:true}), continuity=continuityProfile(previous,trial); row.iterations++; if(!continuity.valid||evaluation.wholeTrialMatch!==wantMatch||!ensureResolutionClosed(trial,resolution))row.failures++; history.push(trial);}catch(error){row.failures++;if(failures.length<50)failures.push(`${resolution}-${i}:${error.message}`);} } if(row.failures)failures.push(`resolution-${resolution}-summary`); rows.push(row);} return {passed:failures.length===0,failures,iterationsPerResolution,rows,totalSimulations:rows.reduce((sum,row)=>sum+row.iterations,0)}; }
-  return { version: 23, LEVELS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, installBrowser, runAudit: runConflictAudit, runConflictAudit, ensureResolutionClosed, continuityProfile, declaredEditProfile };
+  function runConflictAudit(iterationsPerResolution = 500) { class AuditRng { constructor(seed) { this.s=seed>>>0; } next(){let v=this.s+=1831565813;v=Math.imul(v^v>>>15,1|v);v^=v+Math.imul(v^v>>>7,61|v);return((v^v>>>14)>>>0)/4294967296;} pick(values){return values[Math.floor(this.next()*values.length)];} shuffle(values){return fisherYates(this,values);} } const failures=[], rows=[]; for (const resolution of [4,8,16]) { const rng=new AuditRng(0x64000000+resolution), row={resolution,iterations:0,failures:0}; const history=[generateWarmupTrial(rng,{interferenceLevel:85,directionResolution:resolution})]; for(let i=0;i<iterationsPerResolution;i++){ const level=1+(i%8), targetIndex=Math.max(0,history.length-level), target=history[targetIndex], wantMatch=i%2===0; try{ const trial=generateConflictTrial(rng,target,{continuityReference:target,referenceOffset:level,match:wantMatch,interferenceLevel:85,roleSensitive:true,directionResolution:resolution}); const evaluation=evaluateConflictMatrix(target,trial,{roleSensitive:true}), continuity=continuityProfile(target,trial); row.iterations++; if(!continuity.valid||evaluation.wholeTrialMatch!==wantMatch||!ensureResolutionClosed(trial,resolution))row.failures++; history.push(trial);}catch(error){row.failures++;if(failures.length<50)failures.push(`${resolution}-${i}:${error.message}`);} } if(row.failures)failures.push(`resolution-${resolution}-summary`); rows.push(row);} return {passed:failures.length===0,failures,iterationsPerResolution,rows,totalSimulations:rows.reduce((sum,row)=>sum+row.iterations,0)}; }
+  return { version: 24, LEVELS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, installBrowser, runAudit: runConflictAudit, runConflictAudit, ensureResolutionClosed, continuityProfile, declaredEditProfile };
 });
