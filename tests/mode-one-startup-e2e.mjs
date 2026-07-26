@@ -119,11 +119,13 @@ async function runStartCase(resolution) {
   assert.equal(app.running, true, 'session stopped after Trial 1 startup');
   assert.equal(app.current.directionResolution, resolution, 'Trial 1 escaped selected resolution');
 
-  const pool = window.__modeOneSpatialCore.allowedCodes(resolution);
-  const evaluated = window.__modeOneSpatialCore.evaluateTrial(app.current);
+  const core = window.__modeOneSpatialCore;
+  const pool = core.allowedCodes(resolution);
+  const evaluated = core.evaluateTrial(app.current);
   const relations = app.current.premises.map(item => item.relation)
     .concat(app.current.conclusion.relation, evaluated.expectedRelation);
   assert.ok(relations.every(code => pool.includes(code)), 'Trial 1 contains a relation outside selected resolution');
+  assert.equal(core.renderTrial(app.current), text, 'visible Trial 1 differs from the canonical conflict-runtime rendering');
   assert.deepEqual(uncaught, [], `uncaught startup errors:\n${diagnostics(app, premise, uncaught)}`);
 
   app.stop(true);
