@@ -71,8 +71,7 @@ function diagnostics(app, premise, uncaught) {
     current: Boolean(app.current),
     trialCount: app.trials?.length,
     directionResolution: app.directionResolution,
-    coordinatorInstalled: app.__modeOneStartupCoordinatorInstalled,
-    conflictInstalled: app.__mandatoryCompassResolutionInstalled,
+    coordinatorVersion: app.__modeOneStartupCoordinatorVersion,
     trace: app.__modeOneStartupTrace,
     uncaught: uncaught.map(error => error?.stack || error?.message || String(error))
   }, null, 2);
@@ -84,6 +83,7 @@ async function runStartCase(resolution) {
   assert.ok(app, 'application instance missing');
   assert.equal(app.__mandatoryCompassResolutionInstalled, true, 'final Mode 1 conflict runtime did not install');
   assert.equal(app.__modeOneStartupCoordinatorInstalled, true, 'startup coordinator did not install last');
+  assert.equal(app.__modeOneStartupCoordinatorVersion, 4, 'authoritative startup coordinator version did not install');
 
   const mode = window.document.getElementById('logic-mode');
   const resolutionSelect = window.document.getElementById('direction-resolution');
@@ -92,12 +92,19 @@ async function runStartCase(resolution) {
 
   mode.value = '0';
   mode.dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.equal(start.disabled, true, 'Start must be disabled before a compass resolution is selected');
+
+  const blocked = await app.start();
+  assert.equal(blocked, false, 'programmatic start must also be blocked before resolution selection');
+  assert.equal(app.running, false, 'blocked start must not initialise a session');
+  assert.equal(premise.textContent.trim(), 'SYSTEM_READY', 'blocked start must not mutate the premise display');
+
   resolutionSelect.value = String(resolution);
   resolutionSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
   assert.equal(start.disabled, false, `Start remained disabled for ${resolution}-direction mode`);
 
   const first = await app.start();
-  assert.ok(first, `coordinated start returned no Trial 1:\n${diagnostics(app, premise, uncaught)}`);
+  assert.ok(first, `authoritative start returned no Trial 1:\n${diagnostics(app, premise, uncaught)}`);
 
   const text = premise.textContent.trim();
   assert.notEqual(text, 'SYSTEM_READY', `${resolution}-direction startup remained on SYSTEM_READY`);
@@ -108,6 +115,8 @@ async function runStartCase(resolution) {
   assert.equal(app.awaiting, true, 'Trial 1 did not enter response state');
   assert.equal(app.running, true, 'session stopped after Trial 1 startup');
   assert.equal(app.current.directionResolution, resolution, 'Trial 1 escaped selected resolution');
+  assert.equal(start.disabled, true, 'Start must remain disabled while the session is running');
+  assert.equal(resolutionSelect.disabled, true, 'resolution selector must freeze while the session is running');
 
   const core = window.__modeOneSpatialCore;
   const pool = core.allowedCodes(resolution);
@@ -120,8 +129,12 @@ async function runStartCase(resolution) {
 
   app.stop(true);
   assert.equal(app.running, false, 'Stop did not terminate the first session');
+  assert.equal(start.disabled, true, 'Stop must require a fresh direction selection before restart');
+  assert.equal(resolutionSelect.value, '', 'Stop must clear the prior compass selection');
+
   resolutionSelect.value = String(resolution);
   resolutionSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.equal(start.disabled, false, 'fresh compass selection must enable restart');
 
   const restarted = await app.start();
   assert.ok(restarted, `restart returned no Trial 1:\n${diagnostics(app, premise, uncaught)}`);
@@ -133,4 +146,4 @@ async function runStartCase(resolution) {
 }
 
 for (const resolution of [4, 8, 16]) await runStartCase(resolution);
-console.log('Mode 1 production-stack startup regression passed for 4, 8 and 16 directions.');
+console.log('Mode 1 authoritative startup and mandatory compass selection passed for 4, 8 and 16 directions.');
