@@ -1,0 +1,34 @@
+name: Mode 1 letter continuity
+
+on:
+  pull_request:
+    paths:
+      - mode-one-letter-continuity-v1.js
+      - tests/mode-one-letter-continuity-v1.test.js
+      - index.html
+      - .github/workflows/mode-one-letter-continuity.yml
+  push:
+    branches:
+      - main
+    paths:
+      - mode-one-letter-continuity-v1.js
+      - tests/mode-one-letter-continuity-v1.test.js
+      - index.html
+      - .github/workflows/mode-one-letter-continuity.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-continuity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check continuity runtime syntax
+        run: node --check mode-one-letter-continuity-v1.js
+      - name: Validate partial updates and logical invariance
+        run: node tests/mode-one-letter-continuity-v1.test.js
