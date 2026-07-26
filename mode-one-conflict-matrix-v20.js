@@ -121,6 +121,12 @@
     const originalSettings = app.settings.bind(app), originalStart = app.start.bind(app), originalNextTrial = app.nextTrial.bind(app), originalStop = app.stop.bind(app), originalTogglePause = app.togglePause?.bind(app);
     const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation');
     let advanceTimerId = null;
+    const forceVisiblePremise = rendered => {
+      if (!premiseDisplay) return;
+      premiseDisplay.classList.remove('hidden-mode','muted','correct','incorrect');
+      premiseDisplay.removeAttribute('aria-hidden');
+      premiseDisplay.textContent = rendered;
+    };
     app.settings = function() { const settings = originalSettings(); return { ...settings, directionResolution: this.running ? this.directionResolution : ui.getSelected() }; };
     app.getSelectedDirectionResolution = ui.getSelected;
     app.validateDirectionResolutionBeforeStart = ui.validate;
@@ -154,12 +160,11 @@
       if (!trial) return this.failModeOneStartup?.(lastError || new Error('Mode 1 could not generate and render a valid trial.')) || null;
       if (!this.running || this.paused || token !== this.sessionToken) return null;
       if (!premiseDisplay) return this.failModeOneStartup?.(new Error('Premise display element is missing.')) || null;
-      premiseDisplay.textContent = rendered;
+      forceVisiblePremise(rendered);
       if (premiseDisplay.textContent.trim() !== rendered) return this.failModeOneStartup?.(new Error('Premise DOM write did not persist.')) || null;
       this.current = trial;
       this.trials.push(trial);
       this.score.shown++;
-      premiseDisplay.classList.remove('correct','incorrect');
       if (feedback) feedback.textContent = '';
       if (explanation) explanation.textContent = '';
       input.reset(trial);
@@ -182,7 +187,7 @@
       try { this.stopDelta?.(); } catch (_) {}
       const countdown = d.getElementById('countdown-box');
       if (countdown) countdown.textContent = '';
-      if (premiseDisplay) premiseDisplay.textContent = `START_FAILED: ${error?.message || 'Unknown Mode 1 startup error'}`;
+      if (premiseDisplay) forceVisiblePremise(`START_FAILED: ${error?.message || 'Unknown Mode 1 startup error'}`);
       const start = d.getElementById('start-btn'), pause = d.getElementById('pause-btn'), stop = d.getElementById('stop-btn');
       if (start) start.disabled = false;
       if (pause) pause.disabled = true;
