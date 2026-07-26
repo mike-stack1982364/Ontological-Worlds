@@ -78,16 +78,6 @@ function diagnostics(app, premise, uncaught) {
   }, null, 2);
 }
 
-async function waitForTrial(window, app, premise, uncaught, timeoutMs = 5000) {
-  const started = Date.now();
-  while (Date.now() - started < timeoutMs) {
-    const text = premise.textContent.trim();
-    if (text !== 'SYSTEM_READY' && app.current && app.trials?.length === 1 && app.awaiting) return;
-    await new Promise(resolve => window.setTimeout(resolve, 25));
-  }
-  throw new Error(`Timed out waiting for Trial 1.\n${diagnostics(app, premise, uncaught)}`);
-}
-
 async function runStartCase(resolution) {
   const { dom, window, uncaught } = await boot();
   const app = window.__ontologicalWorlds;
@@ -106,8 +96,8 @@ async function runStartCase(resolution) {
   resolutionSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
   assert.equal(start.disabled, false, `Start remained disabled for ${resolution}-direction mode`);
 
-  start.click();
-  await waitForTrial(window, app, premise, uncaught);
+  const first = await app.start();
+  assert.ok(first, `coordinated start returned no Trial 1:\n${diagnostics(app, premise, uncaught)}`);
 
   const text = premise.textContent.trim();
   assert.notEqual(text, 'SYSTEM_READY', `${resolution}-direction startup remained on SYSTEM_READY`);
@@ -125,16 +115,16 @@ async function runStartCase(resolution) {
   const relations = app.current.premises.map(item => item.relation)
     .concat(app.current.conclusion.relation, evaluated.expectedRelation);
   assert.ok(relations.every(code => pool.includes(code)), 'Trial 1 contains a relation outside selected resolution');
-  assert.equal(core.renderTrial(app.current), text, 'visible Trial 1 differs from the canonical conflict-runtime rendering');
+  assert.equal(core.renderTrial(app.current), text, 'visible Trial 1 differs from canonical conflict rendering');
   assert.deepEqual(uncaught, [], `uncaught startup errors:\n${diagnostics(app, premise, uncaught)}`);
 
   app.stop(true);
   assert.equal(app.running, false, 'Stop did not terminate the first session');
-
   resolutionSelect.value = String(resolution);
   resolutionSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
-  start.click();
-  await waitForTrial(window, app, premise, uncaught);
+
+  const restarted = await app.start();
+  assert.ok(restarted, `restart returned no Trial 1:\n${diagnostics(app, premise, uncaught)}`);
   assert.notEqual(premise.textContent.trim(), 'SYSTEM_READY', 'restart remained on SYSTEM_READY');
   assert.equal(app.trials.length, 1, 'restart duplicated or omitted Trial 1');
   assert.equal(app.awaiting, true, 'restart did not enter response state');
