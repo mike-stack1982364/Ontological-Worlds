@@ -8,14 +8,6 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="light-theme.css">
   <style>
-    #extra-training-launcher-wrap{margin-top:10px}
-    #extra-training-btn{display:flex!important;align-items:center;justify-content:space-between;gap:8px;width:50%!important;height:56px!important;min-height:56px!important;max-height:56px!important;padding:0 14px!important;margin:0 auto!important;border-radius:11px!important;border:2px solid #0b4f88!important;background:linear-gradient(135deg,#083b69,#176aa8 58%,#49aee7)!important;color:#fff!important;font-size:clamp(.74rem,1.8vw,.95rem)!important;font-weight:900!important;line-height:1.05!important;letter-spacing:.035em;text-transform:uppercase;cursor:pointer!important;box-shadow:0 6px 14px rgba(18,79,140,.26)!important;touch-action:manipulation;user-select:none;-webkit-user-select:none;position:relative;z-index:3;box-sizing:border-box!important;text-decoration:none}
-    #extra-training-btn span{display:block;white-space:normal;text-align:left}
-    #extra-training-btn::after{content:'›';font-size:1.15em;line-height:1;font-weight:500;flex:0 0 auto}
-    #extra-training-btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
-    #extra-training-btn:active{transform:translateY(1px) scale(.995)}
-    #extra-training-btn:focus-visible{outline:4px solid rgba(73,174,231,.5);outline-offset:4px}
-    #extra-training-launcher-help{margin:8px 2px 0;color:#43566d;font-size:.76rem;line-height:1.4;font-weight:650}
     #direction-resolution-help,#direction-resolution-error{font-size:.75rem;line-height:1.45;margin-top:8px}
     #direction-resolution-help{color:#43566d}
     #direction-resolution-error{color:#a61f17;font-weight:800}
@@ -44,7 +36,7 @@
     #conflict-submit{display:block;width:min(100%,620px);min-height:38px;margin:8px auto 0;padding:8px 12px;border-radius:10px;font-size:.72rem;font-weight:900;text-transform:uppercase}
     #conflict-progress,#conflict-score{font-size:.7rem;margin-top:5px;color:#53697e;text-align:center;line-height:1.2}
     @media(max-width:760px){.response-stage{height:190px;flex-basis:190px}#conflict-matrix{padding-left:4px;padding-right:4px}.conflict-grid{gap:3px}.conflict-row{gap:3px}.conflict-label{font-size:.48rem;min-height:2.6em}.conflict-choice{min-height:66px;border-radius:11px;font-size:1rem;padding:5px 2px;border-width:1px}.conflict-row[data-decision="4"] .conflict-choice[data-value="1"]{font-size:clamp(.52rem,1.65vw,.76rem)}#conflict-submit{min-height:34px;margin-top:6px}}
-    @media(max-width:420px){#extra-training-btn{width:50%!important;height:52px!important;min-height:52px!important;max-height:52px!important;font-size:.72rem!important}.response-stage{height:184px;flex-basis:184px}.conflict-heading{font-size:.63rem}.conflict-label{font-size:.43rem}.conflict-choice{min-height:62px;font-size:.9rem}.conflict-row[data-decision="4"] .conflict-choice[data-value="1"]{font-size:.5rem}#conflict-progress,#conflict-score{font-size:.58rem}}
+    @media(max-width:420px){.response-stage{height:184px;flex-basis:184px}.conflict-heading{font-size:.63rem}.conflict-label{font-size:.43rem}.conflict-choice{min-height:62px;font-size:.9rem}.conflict-row[data-decision="4"] .conflict-choice[data-value="1"]{font-size:.5rem}#conflict-progress,#conflict-score{font-size:.58rem}}
   </style>
 </head>
 <body class="mode-one-conflict-active">
@@ -54,7 +46,6 @@
     <div id="session-countdown" class="session-countdown idle" role="timer" aria-label="Session time remaining">00:00</div>
     <section class="controls" aria-label="Game settings">
       <div class="control-group"><label for="logic-mode">Training mode</label><select id="logic-mode"><option value="0">Mode 1 — Relational Conflict Matrix</option><option value="1">Mode 2 — Ontological Integration</option><option value="2" disabled>Mode 3 — Released in future</option><option value="3" disabled>Mode 4 — Released in future</option><option value="4" disabled>Mode 5 — Released in future</option><option value="5" disabled>Mode 6 — Released in future</option><option value="6" disabled>Mode 7 — Released in future</option></select></div>
-      <div id="extra-training-launcher-wrap" class="control-group"><label for="extra-training-btn">Extra Training</label><a id="extra-training-btn" href="extra-training.html" aria-label="Open dedicated Ordered Number N-back training page"><span>Open Ordered Number N-back</span></a><p id="extra-training-launcher-help">Opens a separate full-screen number N-back trainer with 1–3 ordered numbers per trial and position-specific matching.</p></div>
       <div class="control-group"><label for="n-slider">N-back level: <span id="n-val">1</span></label><input id="n-slider" type="range" min="1" max="8" step="1" value="1" aria-valuemin="1" aria-valuemax="8" aria-valuetext="N-back level 1"></div>
       <div id="direction-resolution-group" class="control-group"><label for="direction-resolution">Compass directions</label><select id="direction-resolution" aria-describedby="direction-resolution-help direction-resolution-error" aria-invalid="false"><option value="">Choose direction count…</option><option value="4">4 directions</option><option value="8">8 directions</option><option value="16">16 directions — full resolution</option></select><p id="direction-resolution-help">4 uses north, east, south and west. 8 adds northeast, southeast, southwest and northwest. 16 adds the intermediate directions.</p><p id="direction-resolution-error" role="alert" hidden>Select 4, 8 or 16 compass directions before starting Mode 1.</p><div id="direction-resolution-status" aria-live="polite">COMPASS RESOLUTION: NOT SELECTED</div></div>
       <div class="control-group"><label for="session-slider">Session: <span id="session-val">15 MIN</span></label><input id="session-slider" type="range" min="1" max="120" step="1" value="15"></div>
