@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import { JSDOM } from 'jsdom';
 
 const html = fs.readFileSync('index.html', 'utf8').replace(/<script[^>]*src="[^"]+"[^>]*><\/script>/g, '');
+const SIMULATIONS_PER_RESOLUTION = 334;
+const TOTAL_SIMULATIONS = SIMULATIONS_PER_RESOLUTION * 3;
 
 function installBrowserStubs(window) {
   window.alert = () => {};
@@ -62,8 +64,10 @@ async function boot() {
   return { dom, window, uncaught };
 }
 
-function diagnostics(app, premise, uncaught) {
+function diagnostics(app, premise, uncaught, resolution, iteration) {
   return JSON.stringify({
+    resolution,
+    iteration,
     premise: premise.textContent.trim(),
     running: app.running,
     paused: app.paused,
@@ -77,7 +81,34 @@ function diagnostics(app, premise, uncaught) {
   }, null, 2);
 }
 
-async function runStartCase(resolution) {
+function assertCommittedTrial({ app, window, premise, start, resolutionSelect, uncaught, resolution, iteration }) {
+  const text = premise.textContent.trim();
+  const details = diagnostics(app, premise, uncaught, resolution, iteration);
+  assert.notEqual(text, 'SYSTEM_READY', `startup remained on SYSTEM_READY:\n${details}`);
+  assert.ok(text.length > 0, `startup rendered an empty premise:\n${details}`);
+  assert.ok(!text.startsWith('START_FAILED:'), `startup failed:\n${details}`);
+  assert.equal((text.match(/;/g) || []).length, 2, `Trial 1 must contain exactly three relational statements:\n${details}`);
+  assert.ok(app.current, `Trial 1 was not assigned to app.current:\n${details}`);
+  assert.equal(app.trials.length, 1, `Trial 1 was not committed exactly once:\n${details}`);
+  assert.equal(app.trials[0], app.current, `app.current must reference the sole committed trial:\n${details}`);
+  assert.equal(app.awaiting, true, `Trial 1 did not enter response state:\n${details}`);
+  assert.equal(app.running, true, `session stopped after Trial 1 startup:\n${details}`);
+  assert.equal(app.paused, false, `session entered paused state during startup:\n${details}`);
+  assert.equal(app.current.directionResolution, resolution, `Trial 1 escaped selected resolution:\n${details}`);
+  assert.equal(start.disabled, true, `Start must remain disabled while running:\n${details}`);
+  assert.equal(resolutionSelect.disabled, true, `resolution selector must freeze while running:\n${details}`);
+
+  const core = window.__modeOneSpatialCore;
+  const pool = core.allowedCodes(resolution);
+  const evaluated = core.evaluateTrial(app.current);
+  const relations = app.current.premises.map(item => item.relation)
+    .concat(app.current.conclusion.relation, evaluated.expectedRelation);
+  assert.ok(relations.every(code => pool.includes(code)), `Trial 1 contains a relation outside selected resolution:\n${details}`);
+  assert.equal(core.renderTrial(app.current), text, `visible Trial 1 differs from canonical rendering:\n${details}`);
+  assert.deepEqual(uncaught, [], `uncaught startup errors:\n${details}`);
+}
+
+async function runResolutionSimulations(resolution) {
   const { dom, window, uncaught } = await boot();
   const app = window.__ontologicalWorlds;
   assert.ok(app, 'application instance missing');
@@ -99,51 +130,33 @@ async function runStartCase(resolution) {
   assert.equal(app.running, false, 'blocked start must not initialise a session');
   assert.equal(premise.textContent.trim(), 'SYSTEM_READY', 'blocked start must not mutate the premise display');
 
-  resolutionSelect.value = String(resolution);
-  resolutionSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
-  assert.equal(start.disabled, false, `Start remained disabled for ${resolution}-direction mode`);
+  for (let iteration = 1; iteration <= SIMULATIONS_PER_RESOLUTION; iteration++) {
+    resolutionSelect.value = String(resolution);
+    resolutionSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
+    assert.equal(start.disabled, false, `Start remained disabled for ${resolution}-direction mode at iteration ${iteration}`);
 
-  const first = await app.start();
-  assert.ok(first, `authoritative start returned no Trial 1:\n${diagnostics(app, premise, uncaught)}`);
+    const first = await app.start();
+    assert.ok(first, `authoritative start returned no Trial 1:\n${diagnostics(app, premise, uncaught, resolution, iteration)}`);
+    assertCommittedTrial({ app, window, premise, start, resolutionSelect, uncaught, resolution, iteration });
 
-  const text = premise.textContent.trim();
-  assert.notEqual(text, 'SYSTEM_READY', `${resolution}-direction startup remained on SYSTEM_READY`);
-  assert.ok(!text.startsWith('START_FAILED:'), `${resolution}-direction startup failed: ${text}`);
-  assert.equal((text.match(/;/g) || []).length, 2, 'Trial 1 must contain exactly three relational statements');
-  assert.ok(app.current, 'Trial 1 was not assigned to app.current');
-  assert.equal(app.trials.length, 1, 'Trial 1 was not committed exactly once');
-  assert.equal(app.awaiting, true, 'Trial 1 did not enter response state');
-  assert.equal(app.running, true, 'session stopped after Trial 1 startup');
-  assert.equal(app.current.directionResolution, resolution, 'Trial 1 escaped selected resolution');
-  assert.equal(start.disabled, true, 'Start must remain disabled while the session is running');
-  assert.equal(resolutionSelect.disabled, true, 'resolution selector must freeze while the session is running');
+    app.stop(true);
+    assert.equal(app.running, false, `Stop did not terminate simulation ${iteration}`);
+    assert.equal(app.awaiting, false, `Stop left awaiting true in simulation ${iteration}`);
+    assert.equal(app.current, null, `Stop left app.current populated in simulation ${iteration}`);
+    assert.equal(start.disabled, true, `Stop must require a fresh direction selection in simulation ${iteration}`);
+    assert.equal(resolutionSelect.value, '', `Stop must clear the prior compass selection in simulation ${iteration}`);
+    assert.equal(resolutionSelect.disabled, false, `Stop must unlock the resolution selector in simulation ${iteration}`);
 
-  const core = window.__modeOneSpatialCore;
-  const pool = core.allowedCodes(resolution);
-  const evaluated = core.evaluateTrial(app.current);
-  const relations = app.current.premises.map(item => item.relation)
-    .concat(app.current.conclusion.relation, evaluated.expectedRelation);
-  assert.ok(relations.every(code => pool.includes(code)), 'Trial 1 contains a relation outside selected resolution');
-  assert.equal(core.renderTrial(app.current), text, 'visible Trial 1 differs from canonical conflict rendering');
-  assert.deepEqual(uncaught, [], `uncaught startup errors:\n${diagnostics(app, premise, uncaught)}`);
-
-  app.stop(true);
-  assert.equal(app.running, false, 'Stop did not terminate the first session');
-  assert.equal(start.disabled, true, 'Stop must require a fresh direction selection before restart');
-  assert.equal(resolutionSelect.value, '', 'Stop must clear the prior compass selection');
-
-  resolutionSelect.value = String(resolution);
-  resolutionSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
-  assert.equal(start.disabled, false, 'fresh compass selection must enable restart');
-
-  const restarted = await app.start();
-  assert.ok(restarted, `restart returned no Trial 1:\n${diagnostics(app, premise, uncaught)}`);
-  assert.notEqual(premise.textContent.trim(), 'SYSTEM_READY', 'restart remained on SYSTEM_READY');
-  assert.equal(app.trials.length, 1, 'restart duplicated or omitted Trial 1');
-  assert.equal(app.awaiting, true, 'restart did not enter response state');
+    const blockedRestart = await app.start();
+    assert.equal(blockedRestart, false, `restart without a fresh selection was not blocked in simulation ${iteration}`);
+    assert.equal(app.running, false, `blocked restart initialised a session in simulation ${iteration}`);
+  }
 
   dom.window.close();
+  return SIMULATIONS_PER_RESOLUTION;
 }
 
-for (const resolution of [4, 8, 16]) await runStartCase(resolution);
-console.log('Mode 1 authoritative startup and mandatory compass selection passed for 4, 8 and 16 directions.');
+let completed = 0;
+for (const resolution of [4, 8, 16]) completed += await runResolutionSimulations(resolution);
+assert.equal(completed, TOTAL_SIMULATIONS, 'simulation total did not reach the required threshold');
+console.log(`Mode 1 authoritative startup passed ${completed} complete production-stack simulations (${SIMULATIONS_PER_RESOLUTION} each for 4, 8 and 16 directions), with mandatory fresh compass selection before every start.`);
