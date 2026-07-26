@@ -11,7 +11,7 @@ permissions:
 jobs:
   startup-regression:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,7 +30,7 @@ jobs:
           node --check tests/mode-one-startup-e2e.mjs
       - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
-      - name: Prove Start countdown renders Trial 1
+      - name: Prove 1,002 Mode 1 startups render Trial 1
         run: node tests/mode-one-startup-e2e.mjs 2>&1 | tee mode-one-startup-output.txt
       - name: Upload startup regression diagnostics
         if: always()

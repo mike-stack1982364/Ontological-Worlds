@@ -14,10 +14,12 @@
     const pauseButton = d.getElementById('pause-btn');
     const stopButton = d.getElementById('stop-btn');
     const matrix = d.getElementById('conflict-matrix');
+    const feedback = d.getElementById('feedback');
+    const explanation = d.getElementById('trial-explanation');
     const core = root.__modeOneSpatialCore || root.__modeOneTriadicEntailmentCore;
     const conflict = root.__modeOneConflictMatrixV20;
 
-    if (!app || !modeSelect || !resolutionSelect || !premiseDisplay || !startButton || !core || !conflict) {
+    if (!app || !modeSelect || !resolutionSelect || !premiseDisplay || !countdown || !startButton || !core || !conflict) {
       console.error('Mode 1 startup coordinator could not install because required runtime elements are missing.');
       return;
     }
@@ -26,6 +28,12 @@
     const downstreamStart = app.start.bind(app);
     const downstreamStop = app.stop.bind(app);
     const sleep = milliseconds => new Promise(resolve => root.setTimeout(resolve, milliseconds));
+
+    const modeOneSelected = () => Number(modeSelect.value || 0) === 0;
+    const selectedResolution = () => {
+      const value = Number(resolutionSelect.value);
+      return [4, 8, 16].includes(value) ? value : null;
+    };
 
     const record = (event, details = {}) => {
       const entry = Object.freeze({
@@ -46,12 +54,6 @@
       return entry;
     };
 
-    const selectedResolution = () => {
-      const value = Number(resolutionSelect.value);
-      return [4, 8, 16].includes(value) ? value : null;
-    };
-    const modeOneSelected = () => Number(modeSelect.value || 0) === 0;
-
     const makePremiseVisible = text => {
       const value = String(text ?? '').trim();
       if (!value) throw new Error('Mode 1 produced an empty premise string.');
@@ -65,33 +67,6 @@
       premiseDisplay.setAttribute('aria-label', value);
       if (premiseDisplay.textContent.trim() !== value) throw new Error('Mode 1 premise DOM write did not persist.');
       return value;
-    };
-
-    const setControlsAfterFailure = () => {
-      startButton.disabled = false;
-      if (pauseButton) pauseButton.disabled = true;
-      if (stopButton) stopButton.disabled = true;
-      resolutionSelect.disabled = false;
-    };
-
-    const fail = error => {
-      const normalised = error instanceof Error ? error : new Error(String(error || 'Unknown Mode 1 startup error'));
-      record('START_FAILED', { message: normalised.message, stack: normalised.stack || '' });
-      app.running = false;
-      app.paused = false;
-      app.awaiting = false;
-      app.current = null;
-      app.trials = [];
-      app.sessionToken++;
-      clearTimeout(app.timerId);
-      clearInterval(app.sessionTimerId);
-      try { app.synth?.cancel(); } catch (_) {}
-      try { app.stopDelta?.(); } catch (_) {}
-      if (countdown) countdown.textContent = '';
-      try { makePremiseVisible(`START_FAILED: ${normalised.message}`); } catch (_) {}
-      setControlsAfterFailure();
-      console.error('Mode 1 startup failed.', normalised);
-      return null;
     };
 
     const resetMatrix = trial => {
@@ -108,122 +83,162 @@
       if (progress) progress.textContent = trial?.scored ? '0 of 5 decisions entered' : '';
     };
 
+    const syncIdleStartAvailability = () => {
+      if (app.running) return;
+      startButton.disabled = modeOneSelected() ? selectedResolution() === null : false;
+    };
+
+    const fail = error => {
+      const normalised = error instanceof Error ? error : new Error(String(error || 'Unknown Mode 1 startup error'));
+      record('START_FAILED', { message: normalised.message, stack: normalised.stack || '' });
+      app.running = false;
+      app.paused = false;
+      app.awaiting = false;
+      app.current = null;
+      app.trials = [];
+      app.sessionToken++;
+      clearTimeout(app.timerId);
+      clearInterval(app.sessionTimerId);
+      try { app.synth?.cancel(); } catch (_) {}
+      try { app.stopDelta?.(); } catch (_) {}
+      countdown.textContent = '';
+      try { makePremiseVisible(`START_FAILED: ${normalised.message}`); } catch (_) {}
+      if (pauseButton) pauseButton.disabled = true;
+      if (stopButton) stopButton.disabled = true;
+      resolutionSelect.disabled = false;
+      syncIdleStartAvailability();
+      console.error('Mode 1 startup failed.', normalised);
+      return null;
+    };
+
     const createFirstTrial = resolution => {
       const interferenceLevel = Number(d.getElementById('interference-slider')?.value) || 0;
-      let trial = null;
-      let rendered = '';
       let lastError = null;
       for (let attempt = 1; attempt <= 32; attempt++) {
         try {
-          const candidate = conflict.generateWarmupTrial(app.rng, {
+          const trial = conflict.generateWarmupTrial(app.rng, {
             interferenceLevel,
             directionResolution: resolution
           });
-          if (!candidate || !conflict.ensureResolutionClosed(candidate, resolution)) {
+          if (!trial || !conflict.ensureResolutionClosed(trial, resolution)) {
             throw new Error('Generated Trial 1 failed resolution validation.');
           }
-          const text = core.renderTrial(candidate);
-          if (typeof text !== 'string' || !text.trim()) throw new Error('Trial 1 renderer returned an empty premise.');
-          candidate.submitted = false;
-          candidate._answered = false;
-          trial = candidate;
-          rendered = text.trim();
+          const rendered = core.renderTrial(trial);
+          if (typeof rendered !== 'string' || !rendered.trim()) {
+            throw new Error('Trial 1 renderer returned an empty premise.');
+          }
+          trial.submitted = false;
+          trial._answered = false;
           record('FIRST_TRIAL_GENERATED', { attempt, resolution });
-          break;
+          return { trial, rendered: rendered.trim() };
         } catch (error) {
           lastError = error;
           record('FIRST_TRIAL_ATTEMPT_FAILED', { attempt, message: error?.message || String(error) });
         }
       }
-      if (!trial) throw lastError || new Error('Mode 1 failed all Trial 1 generation attempts.');
-      return { trial, rendered };
+      throw lastError || new Error('Mode 1 failed all Trial 1 generation attempts.');
     };
 
-    const commitFirstTrial = ({ trial, rendered }) => {
+    const commitFirstTrial = ({ trial, rendered }, resolution, token) => {
+      if (!app.running || app.paused || token !== app.sessionToken) {
+        throw new Error('Mode 1 startup state changed before Trial 1 could be committed.');
+      }
+      if (trial.directionResolution !== resolution) {
+        throw new Error('Trial 1 does not use the selected compass resolution.');
+      }
       makePremiseVisible(rendered);
       app.current = trial;
       app.trials = [trial];
       if (app.score && typeof app.score.shown === 'number') app.score.shown = 1;
       app.awaiting = true;
+      if (feedback) feedback.textContent = '';
+      if (explanation) explanation.textContent = '';
       resetMatrix(trial);
       try { app.updateStats?.(); } catch (_) {}
       try { app.speak?.(rendered); } catch (_) {}
-      record('FIRST_TRIAL_COMMITTED');
+      record('FIRST_TRIAL_COMMITTED', { resolution });
       return trial;
     };
 
-    const hasValidFirstTrial = resolution => {
-      const text = premiseDisplay.textContent.trim();
-      return Boolean(
-        app.running &&
-        !app.paused &&
-        app.awaiting &&
-        app.current &&
-        Array.isArray(app.trials) &&
-        app.trials.length === 1 &&
-        app.current.directionResolution === resolution &&
-        text &&
-        text !== 'SYSTEM_READY' &&
-        !text.startsWith('START_FAILED:')
-      );
+    const initialiseModeOneSession = resolution => {
+      app.running = true;
+      app.paused = false;
+      app.sessionToken++;
+      app.trials = [];
+      app.current = null;
+      app.awaiting = false;
+      app.inventionMemory?.clear?.();
+      app.rts = [];
+      app.score = { hits: 0, misses: 0, falseAlarms: 0, correctRejects: 0, timeouts: 0, shown: 0, scored: 0 };
+      app.n = Number(app.settings?.().n || 1);
+      app.startedAt = Date.now();
+      app.endsAt = app.startedAt + 60000 * Number(app.settings?.().minutes || 15);
+      app.directionResolution = resolution;
+      startButton.disabled = true;
+      resolutionSelect.disabled = true;
+      if (pauseButton) pauseButton.disabled = false;
+      if (stopButton) stopButton.disabled = false;
+      d.body.classList.remove('practice-active');
+      try { app.syncDelta?.(); } catch (_) {}
+      try { app.updateStats?.(); } catch (_) {}
+      try { app.startSessionClock?.(); } catch (_) {}
+      return app.sessionToken;
     };
 
-    app.start = async function coordinatedModeOneStart(...args) {
+    app.start = async function authoritativeModeOneStart(...args) {
       if (!modeOneSelected()) return downstreamStart(...args);
       if (this.running) return false;
 
       const resolution = selectedResolution();
       if (!resolution) {
         try { this.validateDirectionResolutionBeforeStart?.(true); } catch (_) {}
+        syncIdleStartAvailability();
         return false;
       }
 
       record('START_ENTER', { resolution });
-      this.directionResolution = resolution;
-      let downstreamError = null;
-      try {
-        await Promise.resolve(downstreamStart(...args));
-      } catch (error) {
-        downstreamError = error;
-        record('DOWNSTREAM_START_FAILED', { message: error?.message || String(error) });
-      }
+      const token = initialiseModeOneSession(resolution);
 
-      if (!this.running) {
-        this.running = true;
-        this.paused = false;
-        this.sessionToken++;
-        this.trials = [];
-        this.current = null;
-        this.awaiting = false;
-        if (startButton) startButton.disabled = true;
-        if (pauseButton) pauseButton.disabled = false;
-        if (stopButton) stopButton.disabled = false;
+      for (const value of [3, 2, 1]) {
+        if (!this.running || this.paused || token !== this.sessionToken) return null;
+        countdown.textContent = String(value);
+        await sleep(650);
       }
-
-      const token = this.sessionToken;
-      if (countdown?.textContent) countdown.textContent = '';
-      if (!this.running || this.paused || token !== this.sessionToken) {
-        return fail(downstreamError || new Error('Mode 1 startup state changed before Trial 1 generation.'));
-      }
+      countdown.textContent = '';
 
       try {
         const generated = createFirstTrial(resolution);
-        commitFirstTrial(generated);
+        const first = commitFirstTrial(generated, resolution, token);
+        if (
+          !this.running ||
+          this.paused ||
+          !this.awaiting ||
+          !this.current ||
+          this.trials.length !== 1 ||
+          this.current !== first ||
+          premiseDisplay.textContent.trim() !== generated.rendered
+        ) {
+          throw new Error('Countdown completed without one committed visible Trial 1.');
+        }
+        record('START_SUCCESS', { resolution });
+        return first;
       } catch (error) {
         return fail(error);
       }
-
-      if (!hasValidFirstTrial(resolution)) return fail(new Error('Countdown completed without a committed visible Trial 1.'));
-      record('START_SUCCESS');
-      return this.current;
     };
 
     app.stop = function coordinatedStop(...args) {
       const result = downstreamStop(...args);
       app.current = null;
       app.awaiting = false;
+      syncIdleStartAvailability();
       return result;
     };
+
+    resolutionSelect.addEventListener('input', syncIdleStartAvailability);
+    resolutionSelect.addEventListener('change', syncIdleStartAvailability);
+    modeSelect.addEventListener('change', syncIdleStartAvailability);
+    root.addEventListener('pageshow', syncIdleStartAvailability);
 
     root.addEventListener('error', event => {
       if (app.running && modeOneSelected()) record('WINDOW_ERROR', { message: event.message || '', stack: event.error?.stack || '' });
@@ -233,7 +248,8 @@
     });
 
     app.__modeOneStartupCoordinatorInstalled = true;
-    app.__modeOneStartupCoordinatorVersion = 3;
+    app.__modeOneStartupCoordinatorVersion = 4;
+    syncIdleStartAvailability();
     record('COORDINATOR_INSTALLED');
   };
 
