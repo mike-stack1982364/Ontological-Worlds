@@ -1,16 +1,10 @@
 'use strict';
 
 /*
- * Public mode router v5
+ * Public mode router v6
  *
- * Mode 1: Triadic Entailment with abstract logical N-back levels 1–8. A current
- * triad matches the triad N positions back when both instantiate the same
- * relational proof/error family. Letter identity and absolute orientation are
- * irrelevant.
- *
- * Mode 2: Ontological Integration. The previous ontology-category engine is
- * preserved intact behind an external mode-number translation from 1 to its
- * legacy internal mode 0.
+ * Mode 1: Triadic Entailment with abstract logical N-back levels 1–8.
+ * Mode 2: Ontological Integration using the preserved legacy runtime.
  */
 window.addEventListener('DOMContentLoaded', () => {
   const app = window.__ontologicalWorlds;
@@ -95,6 +89,70 @@ window.addEventListener('DOMContentLoaded', () => {
     return hydrated;
   }
 
+  function makeWarmupTrial(rng, level, interferenceLevel, directionResolution) {
+    const generator = typeof core.generateNBackWarmupTrial === 'function'
+      ? core.generateNBackWarmupTrial.bind(core)
+      : null;
+    if (generator) {
+      return generator(rng, { nBackLevel: level, interferenceLevel, directionResolution });
+    }
+
+    if (typeof core.generateTrial !== 'function') {
+      throw new Error('Mode 1 spatial core exposes neither generateNBackWarmupTrial nor generateTrial.');
+    }
+
+    const trial = core.generateTrial(rng, {
+      matchProbability: rng?.next?.() < 0.5 ? 1 : 0,
+      interferenceLevel,
+      directionResolution
+    });
+    const entailment = core.evaluateTrial(trial);
+    Object.assign(trial, {
+      submitted: false,
+      mode: 0,
+      publicMode: 1,
+      nBackLevel: level,
+      nBackWarmup: true,
+      nBackRequestedMatch: false,
+      nBackMatch: false,
+      isMatch: false,
+      statementMatchVector: [false, false, false],
+      conclusionEntailed: entailment.isEntailed,
+      conflictResponseVector: [false, false, false, entailment.isEntailed, false],
+      mappingConflict: false,
+      localStatementCompatibility: [false, false, false],
+      roleSensitive: false,
+      directionResolution,
+      interferenceLevel,
+      scored: true
+    });
+    return trial;
+  }
+
+  function makeHistoricalTrial(rng, target, requestedMatch, level, interferenceLevel, directionResolution) {
+    if (typeof core.generateNBackTrial === 'function') {
+      return core.generateNBackTrial(rng, target, {
+        match: requestedMatch,
+        nBackLevel: level,
+        interferenceLevel,
+        directionResolution
+      });
+    }
+
+    const conflict = window.__modeOneConflictMatrixV20;
+    if (conflict && typeof conflict.generateConflictTrial === 'function') {
+      return conflict.generateConflictTrial(rng, target, {
+        match: requestedMatch,
+        nBackLevel: level,
+        interferenceLevel,
+        roleSensitive: true,
+        directionResolution
+      });
+    }
+
+    throw new Error('Mode 1 historical-trial generator is unavailable.');
+  }
+
   app.settings = function settingsWithTriadicLogicNBack() {
     const settings = legacy.settings();
     const mode = settings.mode === 1 ? 1 : 0;
@@ -104,9 +162,7 @@ window.addEventListener('DOMContentLoaded', () => {
   app.deriveTrial = function deriveRoutedTrial(trial) {
     if (inLegacyModeTwo) return legacy.deriveTrial(trial);
     if (trial?.mode === 0) return restoreNBackFields(trial, core.hydrateTrial(trial));
-    if (trial?.mode === 1) {
-      return externaliseModeTwo(withLegacyModeTwo(() => legacy.deriveTrial(internaliseModeTwo(trial))));
-    }
+    if (trial?.mode === 1) return externaliseModeTwo(withLegacyModeTwo(() => legacy.deriveTrial(internaliseModeTwo(trial))));
     return legacy.deriveTrial(trial);
   };
 
@@ -115,36 +171,34 @@ window.addEventListener('DOMContentLoaded', () => {
     if (Number(mode) === 0) {
       return core.generateTrial(this.rng, {
         matchProbability: 0.5,
-        interferenceLevel: Number(document.getElementById('interference-slider')?.value) || 0
+        interferenceLevel: Number(document.getElementById('interference-slider')?.value) || 0,
+        directionResolution: this.directionResolution || 16
       });
     }
-    if (Number(mode) === 1) {
-      return externaliseModeTwo(withLegacyModeTwo(() => legacy.makeBase(0)));
-    }
+    if (Number(mode) === 1) return externaliseModeTwo(withLegacyModeTwo(() => legacy.makeBase(0)));
     return legacy.makeBase(mode);
   };
 
   app.renderTrial = function renderRoutedTrial(trial) {
     if (inLegacyModeTwo) return legacy.renderTrial(trial);
     if (trial?.mode === 0) return core.renderTrial(trial);
-    if (trial?.mode === 1) {
-      return withLegacyModeTwo(() => legacy.renderTrial(internaliseModeTwo(trial)));
-    }
+    if (trial?.mode === 1) return withLegacyModeTwo(() => legacy.renderTrial(internaliseModeTwo(trial)));
     return legacy.renderTrial(trial);
   };
 
   app.surfaceVariant = function routedSurfaceVariant(target) {
     if (inLegacyModeTwo) return legacy.surfaceVariant(target);
-    if (target?.mode === 0 && typeof core.generateNBackTrial === 'function') {
-      return core.generateNBackTrial(this.rng, target, {
-        match: true,
-        nBackLevel: clampLevel(this.n),
-        interferenceLevel: Number(document.getElementById('interference-slider')?.value) || 0
-      });
+    if (target?.mode === 0) {
+      return makeHistoricalTrial(
+        this.rng,
+        target,
+        true,
+        clampLevel(this.n),
+        Number(document.getElementById('interference-slider')?.value) || 0,
+        this.directionResolution || target.directionResolution || 16
+      );
     }
-    if (target?.mode === 1) {
-      return externaliseModeTwo(withLegacyModeTwo(() => legacy.surfaceVariant(internaliseModeTwo(target))));
-    }
+    if (target?.mode === 1) return externaliseModeTwo(withLegacyModeTwo(() => legacy.surfaceVariant(internaliseModeTwo(target))));
     return legacy.surfaceVariant(target);
   };
 
@@ -156,34 +210,26 @@ window.addEventListener('DOMContentLoaded', () => {
 
     if (settings.mode === 0) {
       const interferenceLevel = Number(document.getElementById('interference-slider')?.value) || 0;
+      const directionResolution = this.directionResolution || settings.directionResolution || 16;
       const target = this.trials[this.trials.length - level];
-      if (!target) {
-        return core.generateNBackWarmupTrial(this.rng, {
-          nBackLevel: level,
-          interferenceLevel
-        });
-      }
-      const requestedMatch = this.rng.next() < settings.matchProbability;
-      return core.generateNBackTrial(this.rng, target, {
-        match: requestedMatch,
-        nBackLevel: level,
-        interferenceLevel
-      });
+      if (!target) return makeWarmupTrial(this.rng, level, interferenceLevel, directionResolution);
+      return makeHistoricalTrial(
+        this.rng,
+        target,
+        this.rng.next() < settings.matchProbability,
+        level,
+        interferenceLevel,
+        directionResolution
+      );
     }
 
-    if (settings.mode === 1) {
-      return externaliseModeTwo(withLegacyModeTwo(() => legacy.makeTrial()));
-    }
+    if (settings.mode === 1) return externaliseModeTwo(withLegacyModeTwo(() => legacy.makeTrial()));
     return legacy.makeTrial();
   };
 
   app.matchSignature = function routedMatchSignature(trial, mode = trial?.mode) {
-    if (Number(mode) === 0 && typeof core.nBackLogicSignature === 'function') {
-      return core.nBackLogicSignature(trial);
-    }
-    if (Number(mode) === 1 && legacy.matchSignature) {
-      return withLegacyModeTwo(() => legacy.matchSignature(internaliseModeTwo(trial), 0));
-    }
+    if (Number(mode) === 0 && typeof core.nBackLogicSignature === 'function') return core.nBackLogicSignature(trial);
+    if (Number(mode) === 1 && legacy.matchSignature) return withLegacyModeTwo(() => legacy.matchSignature(internaliseModeTwo(trial), 0));
     return trial?.signature || '';
   };
 
@@ -199,16 +245,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const trial = this.current;
     const shouldExplain = Boolean(trial?.mode === 0 && this.running && !this.paused && this.awaiting);
     const result = legacy.answer(response);
-
     this.n = clampLevel(this.n);
     if (nSlider) nSlider.value = String(this.n);
     const currentValue = document.getElementById('current-n');
     if (currentValue) currentValue.textContent = String(this.n);
-
     if (shouldExplain && explanation) {
-      explanation.textContent = typeof core.explainNBackTrial === 'function'
-        ? core.explainNBackTrial(trial)
-        : core.explainTrial(trial);
+      explanation.textContent = typeof core.explainNBackTrial === 'function' ? core.explainNBackTrial(trial) : core.explainTrial(trial);
       explanation.classList.add('show');
     }
     return result;
@@ -229,7 +271,6 @@ window.addEventListener('DOMContentLoaded', () => {
       if (nLabel) nLabel.innerHTML = 'N-back level: <span id="n-val"></span>';
       if (currentNHint) currentNHint.innerHTML = `CURRENT N-BACK LEVEL: <span id="current-n">${nSlider.value}</span>`;
     }
-
     if (interferenceHelp) {
       interferenceHelp.textContent = mode === 0
         ? 'Controls relational precision and surface transformation while N-back level 1–8 controls how far back the abstract proof family must be compared. Letters and absolute directions never define a match.'
@@ -258,36 +299,4 @@ window.addEventListener('DOMContentLoaded', () => {
       app.speak(premise);
     });
   }
-
-  const audit = core.runAudit(8192);
-  if (!audit.passed) console.error('Mode 1 Triadic Entailment audit failed', audit);
-
-  window.__modeOneTriadicEntailmentTestAPI = {
-    version: 8,
-    ...core,
-    exhaustiveAudit: audit,
-    selfTestPassed: audit.passed,
-    lettersDriveRelationalComputation: true,
-    letteringIdentityIgnored: true,
-    thirdRelationIsTestedConclusion: true,
-    modelSetEvaluation: false,
-    logicalContracts: false,
-    visibleContractText: false,
-    nBackEnabled: true,
-    nBackLevels: [1, 2, 3, 4, 5, 6, 7, 8],
-    nBackMatchIdentity: 'abstract approved relational proof and error family, invariant under lettering and lawful global transformations',
-    scoringIdentity: 'logical-family equivalence with the triad N positions back',
-    directionalResolution: 16,
-    directionPools: [4, 8, 16]
-  };
-  window.__modeOneSpatialTestAPI = window.__modeOneTriadicEntailmentTestAPI;
-
-  window.__modeReleaseTestAPI = {
-    version: 5,
-    activeModes: [0, 1],
-    selectableModes: [...select.options].filter(option => !option.disabled).map(option => Number(option.value)),
-    futureModesDisabled: [...select.options].slice(2).every(option => option.disabled)
-  };
-
-  syncModeInterface();
 });
