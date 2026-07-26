@@ -13,15 +13,18 @@
     const startButton = d.getElementById('start-btn');
     const pauseButton = d.getElementById('pause-btn');
     const stopButton = d.getElementById('stop-btn');
+    const matrix = d.getElementById('conflict-matrix');
+    const core = root.__modeOneSpatialCore || root.__modeOneTriadicEntailmentCore;
+    const conflict = root.__modeOneConflictMatrixV20;
 
-    if (!app || !modeSelect || !premiseDisplay || !startButton) {
+    if (!app || !modeSelect || !resolutionSelect || !premiseDisplay || !startButton || !core || !conflict) {
       console.error('Mode 1 startup coordinator could not install because required runtime elements are missing.');
       return;
     }
     if (app.__modeOneStartupCoordinatorInstalled) return;
 
     const downstreamStart = app.start.bind(app);
-    const downstreamNextTrial = app.nextTrial.bind(app);
+    const downstreamStop = app.stop.bind(app);
     const sleep = milliseconds => new Promise(resolve => root.setTimeout(resolve, milliseconds));
 
     const record = (event, details = {}) => {
@@ -43,6 +46,12 @@
       return entry;
     };
 
+    const selectedResolution = () => {
+      const value = Number(resolutionSelect.value);
+      return [4, 8, 16].includes(value) ? value : null;
+    };
+    const modeOneSelected = () => Number(modeSelect.value || 0) === 0;
+
     const makePremiseVisible = text => {
       const value = String(text ?? '').trim();
       if (!value) throw new Error('Mode 1 produced an empty premise string.');
@@ -59,32 +68,25 @@
     };
 
     const setControlsAfterFailure = () => {
-      if (startButton) startButton.disabled = false;
+      startButton.disabled = false;
       if (pauseButton) pauseButton.disabled = true;
       if (stopButton) stopButton.disabled = true;
-      if (resolutionSelect) resolutionSelect.disabled = false;
+      resolutionSelect.disabled = false;
     };
 
     const fail = error => {
       const normalised = error instanceof Error ? error : new Error(String(error || 'Unknown Mode 1 startup error'));
       record('START_FAILED', { message: normalised.message, stack: normalised.stack || '' });
-      try {
-        if (typeof app.failModeOneStartup === 'function') app.failModeOneStartup(normalised);
-        else {
-          app.running = false;
-          app.paused = false;
-          app.awaiting = false;
-          app.current = null;
-          app.trials = [];
-          app.sessionToken++;
-          clearTimeout(app.timerId);
-          clearInterval(app.sessionTimerId);
-          try { app.synth?.cancel(); } catch (_) {}
-          try { app.stopDelta?.(); } catch (_) {}
-        }
-      } catch (secondaryError) {
-        console.error('Mode 1 failure handler itself failed.', secondaryError);
-      }
+      app.running = false;
+      app.paused = false;
+      app.awaiting = false;
+      app.current = null;
+      app.trials = [];
+      app.sessionToken++;
+      clearTimeout(app.timerId);
+      clearInterval(app.sessionTimerId);
+      try { app.synth?.cancel(); } catch (_) {}
+      try { app.stopDelta?.(); } catch (_) {}
       if (countdown) countdown.textContent = '';
       try { makePremiseVisible(`START_FAILED: ${normalised.message}`); } catch (_) {}
       setControlsAfterFailure();
@@ -92,13 +94,65 @@
       return null;
     };
 
-    const modeOneSelected = () => Number(modeSelect.value || 0) === 0;
-    const selectedResolution = () => {
-      const value = Number(resolutionSelect?.value);
-      return [4, 8, 16].includes(value) ? value : null;
+    const resetMatrix = trial => {
+      if (!matrix) return;
+      matrix.classList.add('active');
+      matrix.dataset.submitting = 'false';
+      matrix.dataset.startedAt = String(Date.now());
+      matrix.querySelectorAll('.conflict-choice').forEach(button => {
+        button.disabled = !Boolean(trial?.scored);
+        button.classList.remove('feedback-correct', 'feedback-incorrect', 'selected');
+        button.querySelectorAll('.conflict-feedback-icon').forEach(icon => icon.remove());
+      });
+      const progress = matrix.querySelector('#conflict-progress');
+      if (progress) progress.textContent = trial?.scored ? '0 of 5 decisions entered' : '';
     };
 
-    const hasValidFirstTrial = () => {
+    const createFirstTrial = resolution => {
+      const interferenceLevel = Number(d.getElementById('interference-slider')?.value) || 0;
+      let trial = null;
+      let rendered = '';
+      let lastError = null;
+      for (let attempt = 1; attempt <= 32; attempt++) {
+        try {
+          const candidate = conflict.generateWarmupTrial(app.rng, {
+            interferenceLevel,
+            directionResolution: resolution
+          });
+          if (!candidate || !conflict.ensureResolutionClosed(candidate, resolution)) {
+            throw new Error('Generated Trial 1 failed resolution validation.');
+          }
+          const text = core.renderTrial(candidate);
+          if (typeof text !== 'string' || !text.trim()) throw new Error('Trial 1 renderer returned an empty premise.');
+          candidate.submitted = false;
+          candidate._answered = false;
+          trial = candidate;
+          rendered = text.trim();
+          record('FIRST_TRIAL_GENERATED', { attempt, resolution });
+          break;
+        } catch (error) {
+          lastError = error;
+          record('FIRST_TRIAL_ATTEMPT_FAILED', { attempt, message: error?.message || String(error) });
+        }
+      }
+      if (!trial) throw lastError || new Error('Mode 1 failed all Trial 1 generation attempts.');
+      return { trial, rendered };
+    };
+
+    const commitFirstTrial = ({ trial, rendered }) => {
+      makePremiseVisible(rendered);
+      app.current = trial;
+      app.trials = [trial];
+      if (app.score && typeof app.score.shown === 'number') app.score.shown = 1;
+      app.awaiting = true;
+      resetMatrix(trial);
+      try { app.updateStats?.(); } catch (_) {}
+      try { app.speak?.(rendered); } catch (_) {}
+      record('FIRST_TRIAL_COMMITTED');
+      return trial;
+    };
+
+    const hasValidFirstTrial = resolution => {
       const text = premiseDisplay.textContent.trim();
       return Boolean(
         app.running &&
@@ -107,52 +161,11 @@
         app.current &&
         Array.isArray(app.trials) &&
         app.trials.length === 1 &&
+        app.current.directionResolution === resolution &&
         text &&
         text !== 'SYSTEM_READY' &&
         !text.startsWith('START_FAILED:')
       );
-    };
-
-    const createFirstTrialDirectly = token => {
-      record('DIRECT_FIRST_TRIAL_ENTER', { token });
-      if (!app.running || app.paused || token !== app.sessionToken) {
-        throw new Error('Mode 1 startup state changed before Trial 1 could be generated.');
-      }
-      if (typeof app.makeTrial !== 'function') throw new Error('Mode 1 trial generator is unavailable.');
-      if (typeof app.renderTrial !== 'function') throw new Error('Mode 1 trial renderer is unavailable.');
-
-      let trial = null;
-      let rendered = '';
-      let lastError = null;
-      for (let attempt = 1; attempt <= 32; attempt++) {
-        try {
-          const candidate = app.makeTrial();
-          if (!candidate) throw new Error('Mode 1 generator returned no trial.');
-          const text = app.renderTrial(candidate);
-          if (typeof text !== 'string' || !text.trim()) throw new Error('Mode 1 renderer returned an empty premise.');
-          trial = candidate;
-          rendered = text.trim();
-          record('DIRECT_FIRST_TRIAL_GENERATED', { attempt });
-          break;
-        } catch (error) {
-          lastError = error;
-          record('DIRECT_FIRST_TRIAL_ATTEMPT_FAILED', { attempt, message: error?.message || String(error) });
-        }
-      }
-      if (!trial) throw lastError || new Error('Mode 1 failed all direct Trial 1 generation attempts.');
-      if (!app.running || app.paused || token !== app.sessionToken) {
-        throw new Error('Mode 1 startup state changed before Trial 1 could be committed.');
-      }
-
-      makePremiseVisible(rendered);
-      app.current = trial;
-      app.trials = [trial];
-      if (app.score && typeof app.score.shown === 'number') app.score.shown = 1;
-      app.awaiting = true;
-      try { app.updateStats?.(); } catch (_) {}
-      try { app.speak?.(rendered); } catch (_) {}
-      record('DIRECT_FIRST_TRIAL_COMMITTED');
-      return trial;
     };
 
     app.start = async function coordinatedModeOneStart(...args) {
@@ -166,48 +179,50 @@
       }
 
       record('START_ENTER', { resolution });
-      const initialToken = this.sessionToken;
-      let downstreamResult;
+      this.directionResolution = resolution;
+      let downstreamError = null;
       try {
-        downstreamResult = downstreamStart(...args);
-        await Promise.resolve(downstreamResult);
+        await Promise.resolve(downstreamStart(...args));
       } catch (error) {
-        return fail(error);
+        downstreamError = error;
+        record('DOWNSTREAM_START_FAILED', { message: error?.message || String(error) });
+      }
+
+      if (!this.running) {
+        this.running = true;
+        this.paused = false;
+        this.sessionToken++;
+        this.trials = [];
+        this.current = null;
+        this.awaiting = false;
+        if (startButton) startButton.disabled = true;
+        if (pauseButton) pauseButton.disabled = false;
+        if (stopButton) stopButton.disabled = false;
       }
 
       const token = this.sessionToken;
-      record('DOWNSTREAM_START_RESOLVED', { initialToken, token });
-      if (!this.running || this.paused) return fail(new Error('Mode 1 stopped before Trial 1 was established.'));
-
-      for (let attempt = 0; attempt < 8 && !hasValidFirstTrial(); attempt++) {
-        await sleep(25);
-      }
-      if (hasValidFirstTrial()) {
-        makePremiseVisible(premiseDisplay.textContent);
-        record('FIRST_TRIAL_CONFIRMED_FROM_DOWNSTREAM');
-        return this.current;
+      if (countdown?.textContent) countdown.textContent = '';
+      if (!this.running || this.paused || token !== this.sessionToken) {
+        return fail(downstreamError || new Error('Mode 1 startup state changed before Trial 1 generation.'));
       }
 
       try {
-        const result = downstreamNextTrial(token);
-        await Promise.resolve(result);
-      } catch (error) {
-        record('DOWNSTREAM_NEXT_TRIAL_FAILED', { message: error?.message || String(error) });
-      }
-      if (hasValidFirstTrial()) {
-        makePremiseVisible(premiseDisplay.textContent);
-        record('FIRST_TRIAL_CONFIRMED_AFTER_NEXT_TRIAL');
-        return this.current;
-      }
-
-      try {
-        createFirstTrialDirectly(token);
+        const generated = createFirstTrial(resolution);
+        commitFirstTrial(generated);
       } catch (error) {
         return fail(error);
       }
-      if (!hasValidFirstTrial()) return fail(new Error('Countdown completed without a committed visible Trial 1.'));
+
+      if (!hasValidFirstTrial(resolution)) return fail(new Error('Countdown completed without a committed visible Trial 1.'));
       record('START_SUCCESS');
       return this.current;
+    };
+
+    app.stop = function coordinatedStop(...args) {
+      const result = downstreamStop(...args);
+      app.current = null;
+      app.awaiting = false;
+      return result;
     };
 
     root.addEventListener('error', event => {
@@ -218,7 +233,7 @@
     });
 
     app.__modeOneStartupCoordinatorInstalled = true;
-    app.__modeOneStartupCoordinatorVersion = 2;
+    app.__modeOneStartupCoordinatorVersion = 3;
     record('COORDINATOR_INSTALLED');
   };
 
