@@ -113,17 +113,22 @@ window.addEventListener('DOMContentLoaded', () => {
   const originalMakeTrial = app.makeTrial.bind(app);
   app.makeTrial = function patchedMakeTrial() {
     const trial = originalMakeTrial();
+    if (!trial) return trial;
     trial._answered = false;
     return trial;
   };
 
   const originalNextTrial = app.nextTrial.bind(app);
   app.nextTrial = async function patchedNextTrial(token) {
-    await originalNextTrial(token);
+    const trial = await originalNextTrial(token);
     if (this.awaiting && this.current && !this.current._answered) {
-      this._responseRemaining = this.settings().seconds * 1000;
-      this._responseDeadline = performance.now() + this._responseRemaining;
+      const seconds = Number(this.settings().seconds);
+      if (Number.isFinite(seconds) && seconds > 0) {
+        this._responseRemaining = seconds * 1000;
+        this._responseDeadline = performance.now() + this._responseRemaining;
+      }
     }
+    return trial ?? this.current ?? null;
   };
 
   const originalAnswer = app.answer.bind(app);
@@ -140,15 +145,21 @@ window.addEventListener('DOMContentLoaded', () => {
     else this.current.started = performance.now() - this._pausedElapsed;
     this._responseRemaining = duration;
     this._responseDeadline = performance.now() + duration;
-    document.getElementById('match-btn').disabled = false;
-    document.getElementById('no-match-btn').disabled = false;
+    const match = document.getElementById('match-btn');
+    const noMatch = document.getElementById('no-match-btn');
+    if (match) match.disabled = false;
+    if (noMatch) noMatch.disabled = false;
     const bar = document.getElementById('timer-bar');
-    bar.style.transition = 'none';
-    bar.style.width = `${100 * duration / (this.settings().seconds * 1000)}%`;
-    requestAnimationFrame(() => {
-      bar.style.transition = `width ${duration / 1000}s linear`;
-      bar.style.width = '0%';
-    });
+    if (bar) {
+      bar.style.transition = 'none';
+      const seconds = Number(this.settings().seconds);
+      const total = Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : duration;
+      bar.style.width = `${100 * duration / total}%`;
+      requestAnimationFrame(() => {
+        bar.style.transition = `width ${duration / 1000}s linear`;
+        bar.style.width = '0%';
+      });
+    }
     clearTimeout(this.timerId);
     this.timerId = setTimeout(() => this.answer(null), duration);
   };
@@ -160,20 +171,24 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // The exact same canonical string is exposed visually and audibly.
     const premise = document.getElementById('premise-display');
-    premise.textContent = text;
-    premise.setAttribute('aria-label', text);
-    this.applyPremiseVisibility();
+    if (premise) {
+      premise.textContent = text;
+      premise.setAttribute('aria-label', text);
+      this.applyPremiseVisibility();
+    }
     await this.speak(text);
 
     if (!this.running || this.paused || token !== this.sessionToken || this.current._answered) return;
-    this._openResponseWindow(this.settings().seconds * 1000, false);
+    const seconds = Number(this.settings().seconds);
+    if (Number.isFinite(seconds) && seconds > 0) this._openResponseWindow(seconds * 1000, false);
   };
 
   app.togglePause = function togglePause() {
     if (!this.running) return;
     this.paused = !this.paused;
-    document.getElementById('paused-overlay').classList.toggle('show', this.paused);
-    document.getElementById('pause-btn').textContent = this.paused ? 'Resume' : 'Pause';
+    document.getElementById('paused-overlay')?.classList.toggle('show', this.paused);
+    const pauseButton = document.getElementById('pause-btn');
+    if (pauseButton) pauseButton.textContent = this.paused ? 'Resume' : 'Pause';
 
     if (this.paused) {
       if (this.awaiting) {
@@ -188,7 +203,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     try { this.synth?.resume(); } catch (_) {}
     try { this.syncDelta(); } catch (_) {}
-    if (this.awaiting && this.current && !this.current._answered) {
+    if (this.awaiting && this.current && !this.current._answered && this._responseRemaining > 0) {
       this._openResponseWindow(this._responseRemaining, true);
     } else if (this.current && !this.current._answered) {
       this._replayCurrentPremise();
