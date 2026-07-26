@@ -114,26 +114,31 @@ async function runResolutionSimulations(resolution) {
   assert.ok(app, 'application instance missing');
   assert.equal(app.__mandatoryCompassResolutionInstalled, true, 'final Mode 1 conflict runtime did not install');
   assert.equal(app.__modeOneStartupCoordinatorInstalled, true, 'startup coordinator did not install last');
-  assert.equal(app.__modeOneStartupCoordinatorVersion, 4, 'authoritative startup coordinator version did not install');
+  assert.equal(app.__modeOneStartupCoordinatorVersion, 5, 'explicit-selection startup coordinator version did not install');
 
   const mode = window.document.getElementById('logic-mode');
   const resolutionSelect = window.document.getElementById('direction-resolution');
   const start = window.document.getElementById('start-btn');
   const premise = window.document.getElementById('premise-display');
+  const status = window.document.getElementById('direction-resolution-status');
 
   mode.value = '0';
   mode.dispatchEvent(new window.Event('change', { bubbles: true }));
-  assert.equal(start.disabled, true, 'Start must be disabled before a compass resolution is selected');
+  assert.equal(resolutionSelect.value, '', 'Mode 1 must begin without a retained direction selection');
+  assert.equal(start.disabled, true, 'Start must be disabled before an explicit compass selection');
+  assert.equal(status?.textContent, 'COMPASS RESOLUTION: NOT SELECTED');
 
   const blocked = await app.start();
-  assert.equal(blocked, false, 'programmatic start must also be blocked before resolution selection');
+  assert.equal(blocked, false, 'programmatic start must also be blocked before selection');
   assert.equal(app.running, false, 'blocked start must not initialise a session');
   assert.equal(premise.textContent.trim(), 'SYSTEM_READY', 'blocked start must not mutate the premise display');
 
   for (let iteration = 1; iteration <= SIMULATIONS_PER_RESOLUTION; iteration++) {
     resolutionSelect.value = String(resolution);
+    resolutionSelect.dispatchEvent(new window.Event('input', { bubbles: true }));
     resolutionSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
-    assert.equal(start.disabled, false, `Start remained disabled for ${resolution}-direction mode at iteration ${iteration}`);
+    assert.equal(start.disabled, false, `Start remained disabled after explicit ${resolution}-direction selection at iteration ${iteration}`);
+    assert.equal(status?.textContent, `COMPASS RESOLUTION: ${resolution} DIRECTIONS`);
 
     const first = await app.start();
     assert.ok(first, `authoritative start returned no Trial 1:\n${diagnostics(app, premise, uncaught, resolution, iteration)}`);
@@ -146,6 +151,7 @@ async function runResolutionSimulations(resolution) {
     assert.equal(start.disabled, true, `Stop must require a fresh direction selection in simulation ${iteration}`);
     assert.equal(resolutionSelect.value, '', `Stop must clear the prior compass selection in simulation ${iteration}`);
     assert.equal(resolutionSelect.disabled, false, `Stop must unlock the resolution selector in simulation ${iteration}`);
+    assert.equal(status?.textContent, 'COMPASS RESOLUTION: NOT SELECTED');
 
     const blockedRestart = await app.start();
     assert.equal(blockedRestart, false, `restart without a fresh selection was not blocked in simulation ${iteration}`);
@@ -159,4 +165,4 @@ async function runResolutionSimulations(resolution) {
 let completed = 0;
 for (const resolution of [4, 8, 16]) completed += await runResolutionSimulations(resolution);
 assert.equal(completed, TOTAL_SIMULATIONS, 'simulation total did not reach the required threshold');
-console.log(`Mode 1 authoritative startup passed ${completed} complete production-stack simulations (${SIMULATIONS_PER_RESOLUTION} each for 4, 8 and 16 directions), with mandatory fresh compass selection before every start.`);
+console.log(`Mode 1 Start-gating passed ${completed} complete production-stack simulations: Start stayed disabled before selection, enabled immediately after explicit 4/8/16-direction selection, and reset after Stop.`);
