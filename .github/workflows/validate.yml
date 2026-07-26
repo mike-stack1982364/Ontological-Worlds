@@ -31,7 +31,13 @@ jobs:
       - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
       - name: Prove Start countdown renders Trial 1
-        run: node tests/mode-one-startup-e2e.mjs
+        run: node tests/mode-one-startup-e2e.mjs 2>&1 | tee mode-one-startup-output.txt
+      - name: Upload startup regression diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mode-one-startup-regression-output
+          path: mode-one-startup-output.txt
 
   legacy-validation:
     runs-on: ubuntu-latest
