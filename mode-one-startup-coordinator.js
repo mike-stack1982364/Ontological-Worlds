@@ -16,6 +16,8 @@
     const matrix = d.getElementById('conflict-matrix');
     const feedback = d.getElementById('feedback');
     const explanation = d.getElementById('trial-explanation');
+    const resolutionStatus = d.getElementById('direction-resolution-status');
+    const resolutionError = d.getElementById('direction-resolution-error');
     const core = root.__modeOneSpatialCore || root.__modeOneTriadicEntailmentCore;
     const conflict = root.__modeOneConflictMatrixV20;
 
@@ -28,11 +30,14 @@
     const downstreamStart = app.start.bind(app);
     const downstreamStop = app.stop.bind(app);
     const sleep = milliseconds => new Promise(resolve => root.setTimeout(resolve, milliseconds));
+    const VALID_RESOLUTIONS = new Set([4, 8, 16]);
+
+    let explicitSelection = false;
 
     const modeOneSelected = () => Number(modeSelect.value || 0) === 0;
     const selectedResolution = () => {
       const value = Number(resolutionSelect.value);
-      return [4, 8, 16].includes(value) ? value : null;
+      return VALID_RESOLUTIONS.has(value) ? value : null;
     };
 
     const record = (event, details = {}) => {
@@ -46,12 +51,44 @@
         current: Boolean(app.current),
         trialCount: Array.isArray(app.trials) ? app.trials.length : null,
         premise: premiseDisplay.textContent || '',
+        explicitSelection,
+        selectedResolution: selectedResolution(),
         ...details
       });
       if (!Array.isArray(app.__modeOneStartupTrace)) app.__modeOneStartupTrace = [];
       app.__modeOneStartupTrace.push(entry);
       if (app.__modeOneStartupTrace.length > 200) app.__modeOneStartupTrace.shift();
       return entry;
+    };
+
+    const updateResolutionStatus = () => {
+      const resolution = selectedResolution();
+      if (resolutionStatus) {
+        resolutionStatus.textContent = explicitSelection && resolution
+          ? `COMPASS RESOLUTION: ${resolution} DIRECTIONS`
+          : 'COMPASS RESOLUTION: NOT SELECTED';
+      }
+      if (resolutionError && explicitSelection && resolution) resolutionError.hidden = true;
+      resolutionSelect.setAttribute('aria-invalid', explicitSelection && resolution ? 'false' : 'true');
+    };
+
+    const syncIdleStartAvailability = () => {
+      if (app.running) return;
+      const resolution = selectedResolution();
+      const canStartModeOne = explicitSelection && resolution !== null;
+      startButton.disabled = modeOneSelected() ? !canStartModeOne : false;
+      resolutionSelect.disabled = false;
+      updateResolutionStatus();
+    };
+
+    const markExplicitSelection = event => {
+      const resolution = selectedResolution();
+      explicitSelection = resolution !== null;
+      record('COMPASS_SELECTION_CHANGED', {
+        eventType: event?.type || 'unknown',
+        resolution
+      });
+      syncIdleStartAvailability();
     };
 
     const makePremiseVisible = text => {
@@ -83,11 +120,6 @@
       if (progress) progress.textContent = trial?.scored ? '0 of 5 decisions entered' : '';
     };
 
-    const syncIdleStartAvailability = () => {
-      if (app.running) return;
-      startButton.disabled = modeOneSelected() ? selectedResolution() === null : false;
-    };
-
     const fail = error => {
       const normalised = error instanceof Error ? error : new Error(String(error || 'Unknown Mode 1 startup error'));
       record('START_FAILED', { message: normalised.message, stack: normalised.stack || '' });
@@ -106,6 +138,8 @@
       if (pauseButton) pauseButton.disabled = true;
       if (stopButton) stopButton.disabled = true;
       resolutionSelect.disabled = false;
+      explicitSelection = false;
+      resolutionSelect.value = '';
       syncIdleStartAvailability();
       console.error('Mode 1 startup failed.', normalised);
       return null;
@@ -190,7 +224,7 @@
       if (this.running) return false;
 
       const resolution = selectedResolution();
-      if (!resolution) {
+      if (!explicitSelection || !resolution) {
         try { this.validateDirectionResolutionBeforeStart?.(true); } catch (_) {}
         syncIdleStartAvailability();
         return false;
@@ -231,14 +265,23 @@
       const result = downstreamStop(...args);
       app.current = null;
       app.awaiting = false;
+      explicitSelection = false;
+      resolutionSelect.value = '';
       syncIdleStartAvailability();
       return result;
     };
 
-    resolutionSelect.addEventListener('input', syncIdleStartAvailability);
-    resolutionSelect.addEventListener('change', syncIdleStartAvailability);
-    modeSelect.addEventListener('change', syncIdleStartAvailability);
-    root.addEventListener('pageshow', syncIdleStartAvailability);
+    resolutionSelect.addEventListener('input', markExplicitSelection);
+    resolutionSelect.addEventListener('change', markExplicitSelection);
+    modeSelect.addEventListener('change', () => {
+      if (!modeOneSelected()) explicitSelection = false;
+      syncIdleStartAvailability();
+    });
+    root.addEventListener('pageshow', () => {
+      explicitSelection = false;
+      if (!app.running && modeOneSelected()) resolutionSelect.value = '';
+      syncIdleStartAvailability();
+    });
 
     root.addEventListener('error', event => {
       if (app.running && modeOneSelected()) record('WINDOW_ERROR', { message: event.message || '', stack: event.error?.stack || '' });
@@ -248,7 +291,9 @@
     });
 
     app.__modeOneStartupCoordinatorInstalled = true;
-    app.__modeOneStartupCoordinatorVersion = 4;
+    app.__modeOneStartupCoordinatorVersion = 5;
+    explicitSelection = false;
+    if (!app.running && modeOneSelected()) resolutionSelect.value = '';
     syncIdleStartAvailability();
     record('COORDINATOR_INSTALLED');
   };
