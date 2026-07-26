@@ -1,58 +1,29 @@
 <!doctype html>
 <html lang="en-AU">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <meta name="theme-color" content="#ffffff">
-  <title>Ontological-Worlds</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="light-theme.css">
-  <style>
-    #direction-resolution-help,#direction-resolution-error{font-size:.75rem;line-height:1.45;margin-top:8px}
-    #direction-resolution-help{color:#43566d}
-    #direction-resolution-error{color:#a61f17;font-weight:800}
-    #direction-resolution-status{margin-top:8px;font-size:.75rem;font-weight:900;letter-spacing:.04em;color:#173f67}
-    .game-area{overflow:visible!important}
-    .response-stage{position:relative;width:100%;height:214px;flex:0 0 214px;margin:0;overflow:visible}
-    .response-buttons{display:none!important}
-    .timer-container{display:none!important}
-    #conflict-matrix{display:block!important;position:absolute;z-index:5;top:0;left:50%;transform:translateX(-50%);width:100vw;max-width:none;margin:0;padding:8px clamp(8px,1.4vw,22px);background:rgba(255,255,255,.98);border-top:1px solid #c8d3df;border-bottom:1px solid #c8d3df;box-sizing:border-box}
-    .conflict-heading{font-weight:900;letter-spacing:.055em;text-transform:uppercase;margin:0 auto 7px;color:#173f67;text-align:center;font-size:clamp(.72rem,1vw,.95rem)}
-    .conflict-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(6px,.7vw,12px);width:100%;margin:0}
-    .conflict-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;min-width:0}
-    .conflict-label{grid-column:1/-1;min-height:2.2em;display:flex;align-items:flex-end;justify-content:center;text-align:center;font-size:clamp(.58rem,.72vw,.78rem);font-weight:800;line-height:1.15;color:#30465d;padding:0 2px}
-    .conflict-choice{position:relative;width:100%;min-width:0;min-height:78px;border-radius:16px;font-size:clamp(1.25rem,2.15vw,2.25rem);font-weight:900;line-height:1;padding:8px 4px;white-space:normal;box-shadow:0 4px 12px rgba(15,42,70,.08);letter-spacing:.05em;overflow:hidden}
-    .conflict-choice.feedback-correct,.conflict-choice.feedback-incorrect{opacity:1!important}
-    .conflict-choice.feedback-correct{background:#d8f7e4!important;border-color:#087a3f!important;color:#065f32!important}
-    .conflict-choice.feedback-incorrect{background:#ffe1df!important;border-color:#b42318!important;color:#9b1c14!important}
-    .conflict-feedback-icon{position:absolute!important;inset:0!important;z-index:2147483647!important;display:grid!important;place-items:center!important;background:rgba(255,255,255,.97)!important;opacity:1!important;visibility:visible!important;pointer-events:none!important}
-    .conflict-feedback-icon svg{display:block!important;width:min(58%,72px)!important;height:min(58%,72px)!important;overflow:visible!important}
-    .conflict-feedback-icon.correct{color:#087a3f!important}.conflict-feedback-icon.incorrect{color:#b42318!important}
-    .conflict-row[data-decision="4"] .conflict-choice[data-value="1"]{font-size:clamp(.72rem,1.05vw,1.18rem);letter-spacing:.015em;white-space:nowrap;padding-left:2px;padding-right:2px}
-    .conflict-choice[data-value="1"]{background:#e9f8ef;color:#086b3a;border:2px solid #55a879}
-    .conflict-choice[data-value="0"]{background:#fff0ef;color:#a61f17;border:2px solid #d78b86}
-    .conflict-row[data-decision="3"] .conflict-choice{background:#eef4fb;color:#123f6b;border-color:#8fa3b9}
-    .conflict-choice.selected{outline:4px solid #183f67;outline-offset:2px}.conflict-choice[disabled]{opacity:.64}
-    #conflict-submit{display:block;width:min(100%,620px);min-height:38px;margin:8px auto 0;padding:8px 12px;border-radius:10px;font-size:.72rem;font-weight:900;text-transform:uppercase}
-    #conflict-progress,#conflict-score{font-size:.7rem;margin-top:5px;color:#53697e;text-align:center;line-height:1.2}
-    @media(max-width:760px){.response-stage{height:190px;flex-basis:190px}#conflict-matrix{padding-left:4px;padding-right:4px}.conflict-grid{gap:3px}.conflict-row{gap:3px}.conflict-label{font-size:.48rem;min-height:2.6em}.conflict-choice{min-height:66px;border-radius:11px;font-size:1rem;padding:5px 2px;border-width:1px}.conflict-row[data-decision="4"] .conflict-choice[data-value="1"]{font-size:clamp(.52rem,1.65vw,.76rem)}#conflict-submit{min-height:34px;margin-top:6px}}
-    @media(max-width:420px){.response-stage{height:184px;flex-basis:184px}.conflict-heading{font-size:.63rem}.conflict-label{font-size:.43rem}.conflict-choice{min-height:62px;font-size:.9rem}.conflict-row[data-decision="4"] .conflict-choice[data-value="1"]{font-size:.5rem}#conflict-progress,#conflict-score{font-size:.58rem}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<title>Ontological Worlds</title>
+<link rel="stylesheet" href="style.css?v=20260726-start-enable-v5">
 </head>
-<body class="mode-one-conflict-active">
-  <div class="lion-backdrop" aria-hidden="true"></div>
-  <main class="container">
-    <h1>Ontological-Worlds</h1>
-    <div id="session-countdown" class="session-countdown idle" role="timer" aria-label="Session time remaining">00:00</div>
-    <section class="controls" aria-label="Game settings">
-      <div class="control-group"><label for="logic-mode">Training mode</label><select id="logic-mode"><option value="0">Mode 1 — Relational Conflict Matrix</option><option value="1">Mode 2 — Ontological Integration</option><option value="2" disabled>Mode 3 — Released in future</option><option value="3" disabled>Mode 4 — Released in future</option><option value="4" disabled>Mode 5 — Released in future</option><option value="5" disabled>Mode 6 — Released in future</option><option value="6" disabled>Mode 7 — Released in future</option></select></div>
-      <div class="control-group"><label for="n-slider">N-back level: <span id="n-val">1</span></label><input id="n-slider" type="range" min="1" max="8" step="1" value="1" aria-valuemin="1" aria-valuemax="8" aria-valuetext="N-back level 1"></div>
-      <div id="direction-resolution-group" class="control-group"><label for="direction-resolution">Compass directions</label><select id="direction-resolution" aria-describedby="direction-resolution-help direction-resolution-error" aria-invalid="false"><option value="">Choose direction count…</option><option value="4">4 directions</option><option value="8">8 directions</option><option value="16">16 directions — full resolution</option></select><p id="direction-resolution-help">4 uses north, east, south and west. 8 adds northeast, southeast, southwest and northwest. 16 adds the intermediate directions.</p><p id="direction-resolution-error" role="alert" hidden>Select 4, 8 or 16 compass directions before starting Mode 1.</p><div id="direction-resolution-status" aria-live="polite">COMPASS RESOLUTION: NOT SELECTED</div></div>
-      <div class="control-group"><label for="session-slider">Session: <span id="session-val">15 MIN</span></label><input id="session-slider" type="range" min="1" max="120" step="1" value="15"></div>
-      <div class="control-group" aria-labelledby="accessibility-label"><label id="accessibility-label">Premise accessibility</label><p style="font-size:.75rem;color:#43566d;line-height:1.45;margin-bottom:10px">Every generated premise is supplied through visible text and optional speech using the same canonical content.</p><div class="toggle-row"><label><input id="audio-only" type="checkbox"> Audio-only display</label><label><input id="keyboard" type="checkbox" checked> Keyboard controls</label><label><input id="haptic" type="checkbox" checked> Haptics</label><label><input id="adaptive" type="checkbox"> Adaptive N</label></div><input id="hide-text" type="checkbox" hidden aria-hidden="true" tabindex="-1"></div>
-      <div class="control-group"><label for="rate-slider">Spoken-premise rate: <span id="rate-val">0.85x</span></label><input id="rate-slider" type="range" min="0.4" max="1.6" step="0.05" value="0.85"></div>
-      <div class="control-group"><label for="premise-vol">Spoken-premise volume: <span id="premise-vol-val">70%</span></label><input id="premise-vol" type="range" min="0" max="100" step="1" value="70"><div class="vol-meter" aria-hidden="true"><div id="premise-vol-meter"></div></div><button id="premise-test-btn" class="small-btn" type="button" style="margin-top:10px">🔊 Test premise volume</button></div>
-      <div class="control-group"><div class="toggle-row"><label><input id="delta-bg" type="checkbox"> 1 Hz binaural background</label></div><label for="delta-vol" style="margin-top:10px">Background volume: <span id="delta-vol-val">35%</span></label><input id="delta-vol" type="range" min="0" max="100" step="1" value="35"><label for="speech-boost" style="margin-top:10px">Speech/background separation: <span id="speech-boost-val">140%</span></label><input id="speech-boost" type="range" min="100" max="300" step="5" value="140"></div>
+<body>
+  <header class="site-header"><h1>Ontological-Worlds</h1></header>
+  <main>
+    <section class="controls-panel" aria-label="Training controls">
+      <label for="logic-mode">Training mode</label>
+      <select id="logic-mode"><option value="0">Mode 1 — Relational Conflict Matrix</option><option value="1">Mode 2 — Ontological Integration</option></select>
+      <label for="n-slider">N-back level: <span id="n-val">1</span></label><input id="n-slider" type="range" min="1" max="8" step="1" value="1" aria-valuemin="1" aria-valuemax="8" aria-valuenow="1" aria-valuetext="N-back level 1">
+      <div id="direction-resolution-group"><label for="direction-resolution">Compass directions</label><select id="direction-resolution"><option value="" selected disabled>Select directions</option><option value="4">4 directions</option><option value="8">8 directions</option><option value="16">16 directions</option></select><p id="direction-resolution-help">4 uses north, east, south and west. 8 adds northeast, southeast, southwest and northwest. 16 adds the intermediate directions.</p><p id="direction-resolution-error" hidden>Please select 4, 8 or 16 compass directions before starting.</p><p id="direction-resolution-status">COMPASS RESOLUTION: NOT SELECTED</p></div>
+      <label for="session-slider">Session: <span id="session-val">15 MIN</span></label><input id="session-slider" type="range" min="1" max="120" step="1" value="15">
+      <h2>Premise accessibility</h2><p>Every generated premise is supplied through visible text and optional speech using the same canonical content.</p>
+      <div class="toggle-row"><label><input id="audio-only" type="checkbox"> Audio-only display</label><label><input id="keyboard" type="checkbox" checked> Keyboard controls</label><label><input id="haptic" type="checkbox" checked> Haptics</label><label><input id="adaptive" type="checkbox"> Adaptive N</label></div>
+      <label for="rate-slider">Spoken-premise rate: <span id="rate-val">0.85x</span></label><input id="rate-slider" type="range" min="0.25" max="2" step="0.05" value="0.85">
+      <label for="premise-vol">Spoken-premise volume: <span id="premise-vol-val">70%</span></label><input id="premise-vol" type="range" min="0" max="100" value="70"><div id="premise-vol-meter"></div>
+      <button id="premise-test-btn" type="button" class="small-btn">🔊 Test premise volume</button>
+      <label><input id="delta-bg" type="checkbox"> 1 Hz binaural background</label>
+      <label for="delta-vol">Background volume: <span id="delta-vol-val">35%</span></label><input id="delta-vol" type="range" min="0" max="100" value="35">
+      <label for="speech-boost">Speech/background separation: <span id="speech-boost-val">140%</span></label><input id="speech-boost" type="range" min="100" max="250" value="140">
       <div class="button-group"><button id="start-btn" type="button" disabled>Start</button><button id="pause-btn" type="button" disabled>Pause</button><button id="stop-btn" type="button" disabled>Stop</button></div>
       <div class="button-group"><button id="tutorial-btn" class="small-btn" type="button">Tutorial</button><button id="history-btn" class="small-btn" type="button">History</button></div>
     </section>
@@ -61,13 +32,13 @@
   <div id="paused-overlay" aria-live="assertive"><h2>PAUSED</h2><p>Tap anywhere or press P to continue.</p></div>
   <section id="tutorial" class="modal" role="dialog" aria-modal="true" aria-labelledby="tutorial-title"><div class="modal-inner"><button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button><h2 id="tutorial-title">How to Train</h2><h3>Mode 1 — Relational Conflict Matrix</h3><p>Trial 1 establishes the initial relational world. Every later trial preserves controlled partial structure while changing one complete letter-role and one direction. Maximal relational interference and a balanced whole-triad Match/No Match distribution are fixed internally so users cannot weaken or bias the intended training. Compare Statements 1–3 with the trial N positions earlier, decide whether Statement 3 follows from the first two statements, and then judge the complete triad.</p><p>Keyboard mapping: Statement 1 A/S, Statement 2 D/F, Statement 3 H/J, within-trial entailment K/L, and complete-triad N-back Spacebar/N. In every pair, the left key is the positive response and the right key is the negative response.</p><h3>Mode 2 — Ontological Integration</h3><p>Mode 2 does not require or use the Mode 1 compass-resolution selector.</p><button id="dismiss-tutorial" class="small-btn" type="button">Close</button></div></section>
   <section id="history" class="modal" role="dialog" aria-modal="true" aria-labelledby="history-title"><div class="modal-inner"><button class="modal-close" data-close="history" aria-label="Close history">×</button><h2 id="history-title">Session History</h2><div id="history-list"></div><div class="modal-actions"><button id="export-btn" class="small-btn" type="button">Export CSV</button><button id="clear-btn" class="small-btn" type="button">Clear</button><button id="dismiss-history" class="small-btn" type="button">Close</button></div></section>
-  <script src="app.js?v=20260726-authoritative-start-v4"></script>
+  <script src="app.js?v=20260726-start-enable-v5"></script>
   <script src="mode-one-match-logic.js"></script>
-  <script src="mode-one-spatial-core.js?v=20260726-authoritative-start-v4"></script>
+  <script src="mode-one-spatial-core.js?v=20260725-4"></script>
   <script src="mode-router-v2.js"></script>
   <script src="mode-two-ontology-nback-v14.js"></script>
   <script src="audio-accessibility.js"></script>
-  <script src="mode-one-conflict-matrix-v20.js?v=20260726-authoritative-start-v4"></script>
-  <script src="mode-one-startup-coordinator.js?v=20260726-authoritative-start-v4"></script>
+  <script src="mode-one-conflict-matrix-v20.js?v=20260726-start-enable-v5"></script>
+  <script src="mode-one-startup-coordinator.js?v=20260726-start-enable-v5"></script>
 </body>
 </html>
