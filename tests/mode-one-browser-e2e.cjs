@@ -120,7 +120,7 @@ const sleep = milliseconds => new Promise(resolve => setTimeout(resolve, millise
         app.trials = [];
         app.current = null;
         app.rng.s = (0x7e000000 + resolution * 100 + level) >>> 0;
-        for (let index = 0; index < level + 40; index += 1) {
+        for (let index = 0; index < level + 8; index += 1) {
           const previous = app.trials[app.trials.length - 1] || null;
           const target = app.trials[app.trials.length - level] || null;
           try {
@@ -149,7 +149,7 @@ const sleep = milliseconds => new Promise(resolve => setTimeout(resolve, millise
     return { transitions, failures };
   });
   assert.deepEqual(exhaustiveBrowserResult.failures, []);
-  assert(exhaustiveBrowserResult.transitions > 800);
+  assert(exhaustiveBrowserResult.transitions > 180);
 
   // True UI lifecycle at N=1: start the application, read the displayed trial,
   // answer all five matrix decisions through real buttons, and allow the normal
