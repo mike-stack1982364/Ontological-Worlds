@@ -25,18 +25,6 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-save jsdom@26
-      - name: Add local delegation diagnostic
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('tests/interference-smoke.mjs')
-          text = path.read_text(encoding='utf-8')
-          marker = "assert.equal(modeTwoTrial.mode, 1);\n"
-          diagnostic = "assert.equal(modeTwoTrial.mode, 1);\nconsole.error('MODE_TWO_TRIAL_DIAGNOSTIC', JSON.stringify({ keys: Object.keys(modeTwoTrial), trial: modeTwoTrial, makeTrialSource: app.makeTrial.toString().slice(0, 500) }));\n"
-          if marker not in text:
-              raise SystemExit('Mode 2 diagnostic marker missing')
-          path.write_text(text.replace(marker, diagnostic, 1), encoding='utf-8')
-          PY
       - name: Run focused smoke and retain full output
         shell: bash
         run: |
@@ -54,4 +42,5 @@ jobs:
           path: |
             interference-smoke.log
             interference-smoke.exit
+            mode-one-letter-continuity-v1.js
           if-no-files-found: error
