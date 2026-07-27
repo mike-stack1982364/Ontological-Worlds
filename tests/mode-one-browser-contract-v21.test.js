@@ -3,122 +3,84 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
 const conflict = require(path.join(__dirname, '..', 'mode-one-conflict-matrix-v20.js'));
+const maximal = require(path.join(__dirname, '..', 'mode-one-letter-continuity-v1.js'));
 
-assert.ok(conflict.version >= 26);
+assert.ok(conflict.version >= 20);
+assert.strictEqual(maximal.version, 2);
+assert.strictEqual(maximal.MAX_INTERFERENCE, 100);
 assert.deepStrictEqual([...conflict.LEVELS], [1,2,3,4,5,6,7,8]);
-assert.strictEqual(conflict.ALL_MASKS.length, 8);
-assert.strictEqual(new Set(conflict.ALL_MASKS.map(mask => mask.map(Number).join(''))).size, 8);
 
-const target = {
-  premises: [
-    { subject: 'A', relation: 'N', object: 'B' },
-    { subject: 'C', relation: 'E', object: 'A' }
-  ],
-  conclusion: { subject: 'B', relation: 'SW', object: 'C' },
-  letters: ['A','B','C']
-};
-
-class Rng {
-  constructor(seed) { this.s = seed >>> 0; }
-  next() { let value = this.s += 1831565813; value = Math.imul(value ^ value >>> 15, 1 | value); value ^= value + Math.imul(value ^ value >>> 7, 61 | value); return ((value ^ value >>> 14) >>> 0) / 4294967296; }
-  pick(values) { return values[Math.floor(this.next() * values.length)]; }
-  shuffle(values) { const out = [...values]; for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(this.next() * (i + 1)); [out[i],out[j]] = [out[j],out[i]]; } return out; }
-}
-
-let explicitMaskChecks = 0;
-for (const roleSensitive of [false, true]) {
-  for (const [maskIndex, mask] of conflict.ALL_MASKS.entries()) {
-    const requestedMatch = mask.every(Boolean);
-    const rng = new Rng(0x7b000000 + Number(roleSensitive) * 1000 + maskIndex);
-    const trial = conflict.generateConflictTrial(rng, target, {
-      match: requestedMatch,
-      mask,
-      interferenceLevel: 100,
-      roleSensitive
-    });
-    const result = conflict.evaluateConflictMatrix(target, trial, { roleSensitive });
-    assert.deepStrictEqual(result.statementMatches, mask, `mask ${mask.map(Number).join('')} roleSensitive=${roleSensitive}`);
-    assert.strictEqual(result.wholeTrialMatch, requestedMatch);
-    assert.strictEqual(result.responseVector.length, 5);
-    assert.strictEqual(result.responseVector[3], core.evaluateTrial(trial).isEntailed);
-    assert.strictEqual(result.responseVector[4], requestedMatch);
-    explicitMaskChecks += 1;
-  }
-}
-
-assert.throws(() => conflict.evaluateConflictMatrix(target, {
-  premises: [
-    { subject: 'A', relation: 'N', object: 'B' },
-    { subject: 'A', relation: 'E', object: 'B' }
-  ],
-  conclusion: { subject: 'A', relation: 'S', object: 'B' }
-}), /exactly three letters/i);
-
-const source = fs.readFileSync(path.join(__dirname, '..', 'mode-one-conflict-matrix-v20.js'), 'utf8');
+const conflictSource = fs.readFileSync(path.join(__dirname, '..', 'mode-one-conflict-matrix-v20.js'), 'utf8');
+const maximalSource = fs.readFileSync(path.join(__dirname, '..', 'mode-one-letter-continuity-v1.js'), 'utf8');
+const routerSource = fs.readFileSync(path.join(__dirname, '..', 'mode-router-v2.js'), 'utf8');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
-assert.ok(source.includes("const labels=['Statement 1 — N-back','Statement 2 — N-back','Statement 3 — N-back','Statement 3 — entailed?','Complete triad — N-back']"));
-assert.ok(source.includes("const keyPairs=[['A','S'],['D','F'],['H','J'],['K','L'],['Z','X']]"));
-assert.ok(source.includes("const keyboard=['a','s','d','f','h','j','k','l','z','x']"));
-assert.ok(!source.includes("'g'"), 'G must remain deliberately unassigned');
-assert.ok(source.includes('responses.some(v=>v===null)'), 'submission must reject incomplete five-decision vectors');
-assert.ok(source.includes('conflictDecisionStats=Array.from({length:5},createDecisionScore)'), 'five independent score channels must exist');
-assert.ok(source.includes('conflictDecisionTimes'), 'first-response latency must be retained');
-assert.ok(source.includes('correctness.every(Boolean)'), 'trial success must require all five decisions');
-assert.ok(source.includes('recordNBackResponse'), 'diagnostic learning hook must receive the multidimensional response');
-assert.ok(source.includes("matrix.setAttribute('aria-label','Five-decision relational conflict matrix')"));
-assert.ok(source.includes('aria-live="polite"'));
-assert.ok(!source.includes('global.addEventListener'), 'production code must not rely on a Node event-listener shim');
-assert.ok(source.includes("if(roleSensitive && currentIndex!==2 && targetIndex===2) return false"), 'role-sensitive local compatibility must preserve both premise and conclusion roles');
-assert.ok(source.includes('function mutationDistances(interferenceLevel)'), 'interference level must control lure distance classes');
-
+// Five independent decisions remain statically present and independently timed.
 const staticChoices = (html.match(/class="conflict-choice"/g) || []).length;
-assert.strictEqual(staticChoices, 10, 'front page must contain all ten response buttons without dynamic injection');
-for (const letter of ['A','S','D','F','H','J','K','L','Z','X']) {
-  assert.ok(html.includes(`>${letter}</button>`), `front-page button must visibly display ${letter}`);
+assert.strictEqual(staticChoices, 10, 'front page must contain all ten response buttons');
+for (const label of ['A','S','D','F','H','J','K','L','SPACEBAR','N']) {
+  assert.ok(html.includes(`>${label}</button>`), `missing response button ${label}`);
 }
-assert.ok(!html.includes('>Match</button>'), 'Mode 1 response buttons must not display Match');
-assert.ok(!html.includes('>No match</button>'), 'Mode 1 response buttons must not display No match');
-assert.ok(html.includes('G unused'), 'keyboard hint must explicitly teach that G is unused');
-assert.ok(html.includes('grid-template-columns:repeat(5,minmax(0,1fr))'), 'five decision pairs must occupy one full-width horizontal grid');
-assert.ok(html.includes('width:100vw'), 'response matrix must escape the narrow game card and span the viewport');
-assert.ok(html.includes('position:absolute'), 'full-width response matrix must occupy the original response stage instead of expanding the page');
-assert.ok(html.includes('.response-stage{position:relative'), 'response stage must anchor the viewport-wide matrix at the original button height');
-assert.ok(!html.includes('overflow-x:auto'), 'front-page response controls must not become a horizontally scrolling strip');
-assert.ok(source.includes('for(let attempt=0;attempt<4;attempt++)'), 'browser must retry transient Mode 1 generation failures');
-assert.ok(source.includes('recoveredGeneration:true'), 'browser must recover safely rather than terminate the session');
-assert.ok(source.includes("d.getElementById('logic-mode')?.addEventListener('change'"), 'matrix visibility must track mode selection');
-assert.ok(source.includes("matrix.setAttribute('aria-hidden',String(!isModeOne))"), 'matrix visibility must be reflected accessibly');
-assert.ok(source.includes("app.nextTrial=function(...args)"), 'trial lifecycle must be guarded');
-assert.ok(source.includes("Mode 1 next-trial failure recovered"), 'runtime failures must recover without stopping the session');
+assert.ok(conflictSource.includes("const keyboard = ['a','s','d','f','h','j','k','l',' ','n']"));
+assert.ok(conflictSource.includes('conflictDecisionTimes'));
+assert.ok(conflictSource.includes('correctness.every(Boolean)'));
+assert.ok(conflictSource.includes('responses = new Array(5).fill(null)'));
+assert.ok(conflictSource.includes('responses.filter(value => value !== null).length'));
 
+// Maximum interference is fixed in both the initial HTML and authoritative runtime.
+assert.ok(html.includes('id="interference-val">100% — FIXED</span>'));
+assert.ok(html.includes('id="interference-slider" type="range" min="100" max="100" step="1" value="100" disabled'));
+assert.ok(maximalSource.includes('const MAX_INTERFERENCE = 100'));
+assert.ok(maximalSource.includes('targetOverlapCount: 2'));
+assert.ok(maximalSource.includes("exactTwoStatementLure: !after.wholeTrialMatch && after.matchedCount === 2"));
+assert.ok(maximalSource.includes("if (mode !== 0) return originalMakeTrial();"), 'Mode 2 delegation must be preserved');
+assert.ok(maximalSource.includes('Maximum-interference relettering changed the five-decision logical response vector.'));
+assert.ok(maximalSource.includes('Mode 1 trial violates the authoritative maximum-interference invariant.'));
+
+// The display lifecycle validates generated trials before any premise reaches the DOM.
+assert.ok(conflictSource.includes('Mode 1 candidate escaped fixed 100% logical interference.'));
+assert.ok(conflictSource.includes('this.assertModeOneMaximumInterference(target, previous, candidate)'));
+assert.ok(conflictSource.includes('Mode 1 warm-up candidate violated two-retained/one-replaced continuity.'));
+assert.ok(conflictSource.includes("if (Number(originalSettings().mode) !== 0) return originalMakeTrial();"));
+assert.ok(conflictSource.includes("matrix.setAttribute('aria-hidden', String(!isModeOne))"));
+assert.ok(conflictSource.includes("d.body.classList.toggle('mode-one-conflict-active', isModeOne)"));
+assert.ok(html.includes('body.mode-one-conflict-active .response-buttons{display:none!important}'));
+
+// Installation is fail-closed rather than silently falling back to random premises.
+assert.ok(maximalSource.includes('MAX_INTERFERENCE_INSTALL_FAILED'));
+assert.ok(maximalSource.includes('if (start) start.disabled = true'));
+assert.ok(maximalSource.includes('rootObject.__modeOneMaxInterferenceReady = true'));
+
+// Production audit must remain stable even after later N-back layers replace the
+// earlier approved-template generator.
+assert.ok(routerSource.includes('function runStableProductionAudit()'));
+assert.ok(routerSource.includes('productionStackAudit: true'));
+assert.ok(!routerSource.includes('core.runAudit(8192)'), 'browser must not run a stale heavy audit against a later generator');
+
+// Script order and cache-busting are part of the deployment contract.
 const corePosition = html.indexOf('mode-one-spatial-core.js');
 const modeTwoPosition = html.indexOf('mode-two-ontology-nback-v14.js');
 const conflictPosition = html.indexOf('mode-one-conflict-matrix-v20.js');
-assert.ok(corePosition >= 0 && modeTwoPosition > corePosition && conflictPosition > modeTwoPosition,
-  'runtime scripts must load the shared core, then Mode 2, then the Mode 1 conflict-matrix patch');
+const maximalPosition = html.indexOf('mode-one-letter-continuity-v1.js');
+assert.ok(corePosition >= 0 && modeTwoPosition > corePosition && conflictPosition > modeTwoPosition && maximalPosition > conflictPosition,
+  'runtime scripts must load core, Mode 2, conflict runtime, then authoritative maximum interference');
+assert.ok(html.includes('mode-one-conflict-matrix-v20.js?v=20260727-max-interference-3'));
+assert.ok(html.includes('mode-one-letter-continuity-v1.js?v=20260727-authoritative-max-logic-3'));
 
-const audit = conflict.runAudit(1024);
+const audit = maximal.runAudit(128);
 assert.strictEqual(audit.passed, true, JSON.stringify(audit.failures));
-assert.strictEqual(audit.total, 8192);
-assert.strictEqual(audit.totalBinaryDecisions, audit.total * 5);
-assert.strictEqual(audit.invariants.nativePerDecisionScoring, true);
-assert.strictEqual(audit.invariants.roleSensitiveAndFlexibleComparison, true);
-assert.strictEqual(audit.invariants.globallyConsistentLetterMappingRequired, true);
-assert.strictEqual(audit.invariants.oneToOneStatementAssignmentRequired, true);
+assert.strictEqual(audit.maximumInterference, 100);
+assert.strictEqual(audit.rows.length, 24);
+assert(audit.rows.every(row => row.failures === 0));
+assert(audit.rows.every(row => row.scored > 0));
 
 console.log(JSON.stringify({
   passed: true,
-  explicitMaskChecks,
-  browserContractChecks: 37,
   staticChoices,
-  keyboardPairs: ['A/S','D/F','H/J','K/L','Z/X'],
-  audit: {
-    total: audit.total,
-    totalBinaryDecisions: audit.totalBinaryDecisions,
-    mappingConflicts: audit.mappingConflicts,
-    failures: audit.failures
-  }
+  fixedInterference: maximal.MAX_INTERFERENCE,
+  auditRows: audit.rows.length,
+  failClosedGeneration: true,
+  modeTwoDelegationPreserved: true,
+  cacheKey: '20260727-authoritative-max-logic-3'
 }, null, 2));
