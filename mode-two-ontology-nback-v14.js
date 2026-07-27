@@ -2,7 +2,7 @@
 (function expose(root,factory){
   const api=factory(root);
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
-  if(root){root.__modeTwoOntologyNBackV14=api;if(typeof root.addEventListener==='function')root.addEventListener('DOMContentLoaded',()=>api.installBrowser(root));}
+  if(root){root.__modeTwoOntologyNBackV14=api;const install=()=>api.installBrowser(root);if(root.document?.readyState==='loading'&&typeof root.addEventListener==='function')root.addEventListener('DOMContentLoaded',install,{once:true});else install();}
 })(typeof window!=='undefined'?window:globalThis,root=>{
   const LEVELS=Object.freeze([1,2,3,4,5,6,7,8]);
   const ONTOLOGY_CATEGORIES=Object.freeze(['All','Difference','Action','Division','Connection','Multiplication','Projection','Encompassment','Completion']);
