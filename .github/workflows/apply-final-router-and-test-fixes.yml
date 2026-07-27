@@ -1,6 +1,9 @@
 name: Apply final router and validation fixes
 
 on:
+  pull_request:
+    paths:
+      - .github/workflows/apply-final-router-and-test-fixes.yml
   push:
     branches:
       - agent/complete-max-interference-100
