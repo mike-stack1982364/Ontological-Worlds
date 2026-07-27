@@ -23,15 +23,14 @@ jobs:
 
           maximal = Path('mode-one-letter-continuity-v1.js')
           text = maximal.read_text(encoding='utf-8')
-          old = "    app.makeTrial = function() {\n"
-          new = "    const authoritativeMakeTrial = function() {\n"
-          if old in text:
-              text = text.replace(old, new, 1)
-          old = "    };\n    app.assertModeOneMaximumInterference = function(targetTrial, previousTrial, currentTrial) {"
-          new = "    };\n    app.makeTrial = authoritativeMakeTrial;\n    const reassertAuthoritativeGenerator = () => {\n      if (app.makeTrial !== authoritativeMakeTrial) {\n        app.makeTrial = authoritativeMakeTrial;\n        rootObject.__modeOneMaxInterferenceLateOverrideRecovered = true;\n      }\n    };\n    rootObject.setTimeout(reassertAuthoritativeGenerator, 0);\n    rootObject.setTimeout(reassertAuthoritativeGenerator, 50);\n    app.assertModeOneMaximumInterference = function(targetTrial, previousTrial, currentTrial) {"
-          if old not in text:
-              raise SystemExit('Could not locate maximum-interference assignment boundary')
-          text = text.replace(old, new, 1)
+          if 'const authoritativeMakeTrial = function()' not in text:
+              text = text.replace('    app.makeTrial = function() {\n', '    const authoritativeMakeTrial = function() {\n', 1)
+          boundary = '    };\n    app.assertModeOneMaximumInterference = function(targetTrial, previousTrial, currentTrial) {'
+          replacement = "    };\n    app.makeTrial = authoritativeMakeTrial;\n    const reassertAuthoritativeGenerator = () => {\n      if (app.makeTrial !== authoritativeMakeTrial) {\n        app.makeTrial = authoritativeMakeTrial;\n        rootObject.__modeOneMaxInterferenceLateOverrideRecovered = true;\n      }\n    };\n    rootObject.setTimeout(reassertAuthoritativeGenerator, 0);\n    rootObject.setTimeout(reassertAuthoritativeGenerator, 50);\n    app.assertModeOneMaximumInterference = function(targetTrial, previousTrial, currentTrial) {"
+          if 'reassertAuthoritativeGenerator' not in text:
+              if boundary not in text:
+                  raise SystemExit('Could not locate maximum-interference assignment boundary')
+              text = text.replace(boundary, replacement, 1)
           if 'const authoritativeMakeTrial = function()' not in text or 'reassertAuthoritativeGenerator' not in text:
               raise SystemExit('Authoritative generator ownership patch failed')
           maximal.write_text(text, encoding='utf-8')
@@ -53,7 +52,9 @@ jobs:
 
           index = Path('index.html')
           text = index.read_text(encoding='utf-8')
-          text = text.replace('mode-one-completion-v11.js</script>', 'mode-one-completion-v11.js?v=20260727-max-generator-owner-1</script>')
+          text = text.replace('mode-one-completion-v11.js"></script>', 'mode-one-completion-v11.js?v=20260727-max-generator-owner-1"></script>')
+          if '20260727-max-generator-owner-1' not in text:
+              raise SystemExit('Completion cache-key patch failed')
           index.write_text(text, encoding='utf-8')
           PY
       - name: Validate ownership patch
