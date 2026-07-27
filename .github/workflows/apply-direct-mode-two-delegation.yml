@@ -1,0 +1,76 @@
+name: Apply direct Mode 2 delegation
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/apply-direct-mode-two-delegation.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/complete-max-interference-100
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Delegate Mode 2 directly to its canonical generator
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('mode-one-letter-continuity-v1.js')
+          text = path.read_text(encoding='utf-8')
+          old = """      if (mode !== 0) return originalMakeTrial();
+      const settings = this.settings();
+"""
+          new = """      if (mode !== 0) {
+        if (mode === 1) {
+          const modeTwo = rootObject.__modeTwoOntologyNBackV14;
+          if (!modeTwo?.generateTrial || !modeTwo?.generateNBackTrial) {
+            throw new Error('Mode 2 canonical generator is unavailable.');
+          }
+          const modeTwoSettings = this.settings();
+          const modeTwoLevel = Math.max(1, Math.min(8, Math.round(Number(this.n || modeTwoSettings.n) || 1)));
+          const modeTwoHistory = Array.isArray(this.trials) ? this.trials : [];
+          const modeTwoTarget = modeTwoHistory[modeTwoHistory.length - modeTwoLevel] || null;
+          if (!modeTwoTarget) {
+            const warmup = modeTwo.generateTrial(this.rng, { matchProbability: this.rng.next() < 0.5 ? 1 : 0 });
+            warmup.nBackWarmup = true;
+            warmup.scored = false;
+            return warmup;
+          }
+          return modeTwo.generateNBackTrial(this.rng, modeTwoTarget, {
+            match: this.rng.next() < modeTwoSettings.matchProbability,
+            nBackLevel: modeTwoLevel
+          });
+        }
+        return originalMakeTrial();
+      }
+      const settings = this.settings();
+"""
+          if old not in text:
+              raise SystemExit('Maximum runtime delegation anchor missing')
+          text = text.replace(old, new, 1)
+          if "Mode 2 canonical generator is unavailable." not in text:
+              raise SystemExit('Direct Mode 2 delegation patch failed')
+          path.write_text(text, encoding='utf-8')
+          PY
+          node --check mode-one-letter-continuity-v1.js
+      - name: Verify the production-composition smoke test
+        run: |
+          npm install --no-save jsdom@26
+          node tests/interference-smoke.mjs
+      - name: Commit direct Mode 2 delegation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mode-one-letter-continuity-v1.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Delegate Mode 2 directly from maximum runtime"
+          git push origin HEAD:agent/complete-max-interference-100
