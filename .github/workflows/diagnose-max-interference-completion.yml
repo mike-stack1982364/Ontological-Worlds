@@ -1,132 +1,26 @@
-name: Diagnose Mode 1 completion
+name: Comprehensive relational validation
 
 on:
   pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  diagnose:
+  validate-complete-stack:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: agent/complete-max-interference-100
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Apply resolution-closed maximum-interference seed
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path('mode-one-letter-continuity-v1.js')
-          text = path.read_text(encoding='utf-8')
-          anchor = "  function generateMaximalWarmupTrial(rng, previousTrial, options = {}) {\n"
-          helper = """  function generateResolutionClosedSeed(rng, directionResolution) {
-    requireDependencies();
-    const resolution = core.normaliseResolution(directionResolution, null);
-    if (!resolution) throw new Error('Maximum-interference seed requires a valid compass resolution.');
-    const pool = core.allowedCodes(resolution);
-    if (!pool.length) throw new Error('Maximum-interference seed has no permitted compass relations.');
-    const selectedLetters = shuffle(rng, LETTER_POOL).slice(0, 3);
-    const [first, bridge, last] = selectedLetters;
-    const relation = pick(rng, pool);
-    let premises = [
-      { subject: first, relation, object: bridge },
-      { subject: bridge, relation, object: last }
-    ];
-    premises = premises.map(statement => random(rng) < 0.5 ? core.invert(statement) : statement);
-    if (random(rng) < 0.5) premises.reverse();
-    const expectedRelation = core.entailedDirection(premises, first, last);
-    if (!pool.includes(expectedRelation)) throw new Error('Maximum-interference seed composition escaped the selected resolution.');
-    const conclusionEntailed = random(rng) < 0.5;
-    const assertedRelation = conclusionEntailed
-      ? expectedRelation
-      : pick(rng, pool.filter(code => code !== expectedRelation));
-    const trial = {
-      submitted: false,
-      mode: 0,
-      publicMode: 1,
-      letters: selectedLetters.slice(),
-      symbols: selectedLetters.slice(),
-      premises,
-      conclusion: { subject: first, relation: assertedRelation, object: last },
-      requestedMatch: conclusionEntailed,
-      directionResolution: resolution,
-      interferenceLevel: MAX_INTERFERENCE,
-      maxLogicalInterference: true,
-      nBackWarmup: true,
-      scored: true
-    };
-    const evaluation = core.evaluateTrial(trial);
-    const allRelations = [...premises.map(statement => statement.relation), assertedRelation, evaluation.expectedRelation];
-    if (!allRelations.every(code => pool.includes(code)) || evaluation.expectedRelation !== expectedRelation) {
-      throw new Error('Maximum-interference seed failed independent resolution validation.');
-    }
-    Object.assign(trial, {
-      expectedRelation: evaluation.expectedRelation,
-      distinctionClass: evaluation.distinctionClass,
-      isEntailed: evaluation.isEntailed,
-      conclusionEntailed: evaluation.isEntailed,
-      nBackRequestedMatch: false,
-      nBackMatch: false,
-      isMatch: false,
-      statementMatchVector: [false, false, false],
-      conflictResponseVector: [false, false, false, evaluation.isEntailed, false],
-      mappingConflict: false,
-      localStatementCompatibility: [false, false, false],
-      roleSensitive: true,
-      interferenceProfile: `MAX100:SEED:000:${Number(evaluation.isEntailed)}:0`,
-      explanation: core.explainTrial ? core.explainTrial(trial) : '',
-      logicalInterference: Object.freeze({
-        level: MAX_INTERFERENCE,
-        source: 'initial-seed',
-        initialTrial: true,
-        directionResolution: resolution,
-        valid: true
-      })
-    });
-    return trial;
-  }
-
-"""
-          if 'function generateResolutionClosedSeed' not in text:
-              if anchor not in text:
-                  raise SystemExit('Warm-up generator anchor missing')
-              text = text.replace(anchor, helper + anchor, 1)
-
-          old = """    if (!previousTrial) {
-      const trial = conflict.generateWarmupTrial(rng, { interferenceLevel: MAX_INTERFERENCE, directionResolution });
-      trial.interferenceLevel = MAX_INTERFERENCE;
-      trial.maxLogicalInterference = true;
-      trial.logicalInterference = Object.freeze({ level: MAX_INTERFERENCE, source: 'initial-seed', initialTrial: true, valid: true });
-      return trial;
-    }
-"""
-          if old in text:
-              text = text.replace(old, "    if (!previousTrial) return generateResolutionClosedSeed(rng, directionResolution);\n", 1)
-          if 'return generateResolutionClosedSeed(rng, directionResolution)' not in text:
-              raise SystemExit('Resolution-closed seed was not connected')
-          path.write_text(text, encoding='utf-8')
-          PY
-          node --check mode-one-letter-continuity-v1.js
-          node tests/mode-one-max-interference-v2.test.js
-      - name: Commit seed implementation
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add mode-one-letter-continuity-v1.js
-          if ! git diff --cached --quiet; then
-            git commit -m "Generate resolution-closed maximum-interference seeds"
-            git push origin HEAD:agent/complete-max-interference-100
-          fi
-      - name: Install test dependencies
+      - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
-      - name: Run every relevant test and preserve complete logs
+      - name: Run complete relational validation suite
         shell: bash
         run: |
           mkdir -p diagnostic-logs
@@ -150,7 +44,7 @@ jobs:
           run_test nback-v9 node tests/mode-one-nback-v9.test.js
           run_test nback-v10 node tests/mode-one-nback-v10.test.js
           run_test nback-v11 node tests/mode-one-nback-v11.test.js
-          run_test mode-two node tests/mode-one-match-logic.test.js
+          run_test mode-one-match-logic node tests/mode-one-match-logic.test.js
           run_test mode-two-v14 node tests/mode-two-ontology-nback-v14.test.js
           run_test mode-two-v15 node tests/mode-two-ontology-nback-deep-v15.test.js
           run_test conflict-matrix node tests/mode-one-conflict-matrix-v20.test.js
@@ -165,6 +59,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: mode-one-complete-diagnostics
+          name: comprehensive-relational-diagnostics
           path: diagnostic-logs
           if-no-files-found: error
