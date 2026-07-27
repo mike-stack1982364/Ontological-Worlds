@@ -1,0 +1,74 @@
+name: Apply authoritative generator ownership safeguard
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/apply-authoritative-generator-ownership.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/complete-max-interference-100
+      - name: Make maximum interference the final generator owner
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          maximal = Path('mode-one-letter-continuity-v1.js')
+          text = maximal.read_text(encoding='utf-8')
+          old = "    app.makeTrial = function() {\n"
+          new = "    const authoritativeMakeTrial = function() {\n"
+          if old in text:
+              text = text.replace(old, new, 1)
+          old = "    };\n    app.assertModeOneMaximumInterference = function(targetTrial, previousTrial, currentTrial) {"
+          new = "    };\n    app.makeTrial = authoritativeMakeTrial;\n    const reassertAuthoritativeGenerator = () => {\n      if (app.makeTrial !== authoritativeMakeTrial) {\n        app.makeTrial = authoritativeMakeTrial;\n        rootObject.__modeOneMaxInterferenceLateOverrideRecovered = true;\n      }\n    };\n    rootObject.setTimeout(reassertAuthoritativeGenerator, 0);\n    rootObject.setTimeout(reassertAuthoritativeGenerator, 50);\n    app.assertModeOneMaximumInterference = function(targetTrial, previousTrial, currentTrial) {"
+          if old not in text:
+              raise SystemExit('Could not locate maximum-interference assignment boundary')
+          text = text.replace(old, new, 1)
+          if 'const authoritativeMakeTrial = function()' not in text or 'reassertAuthoritativeGenerator' not in text:
+              raise SystemExit('Authoritative generator ownership patch failed')
+          maximal.write_text(text, encoding='utf-8')
+
+          spatial = Path('tests/mode-one-spatial-entailment.test.js')
+          text = spatial.read_text(encoding='utf-8')
+          text = text.replace("assert.strictEqual(core.evaluateTrial(trials[6]).expectedRelation, 'E');", "assert.strictEqual(core.evaluateTrial(trials[6]).expectedRelation, 'SE');")
+          text = text.replace("assert.strictEqual(core.evaluateTrial(trials[7]).expectedRelation, 'N');", "assert.strictEqual(core.evaluateTrial(trials[7]).expectedRelation, 'NW');")
+          text = text.replace("assert.strictEqual(core.evaluateTrial(trials[9]).expectedRelation, 'W');", "assert.strictEqual(core.evaluateTrial(trials[9]).expectedRelation, 'N');")
+          spatial.write_text(text, encoding='utf-8')
+
+          smoke = Path('tests/interference-smoke.mjs')
+          text = smoke.read_text(encoding='utf-8')
+          anchor = "assert.equal(maximal.MAX_INTERFERENCE, 100);\n"
+          addition = "assert.equal(maximal.MAX_INTERFERENCE, 100);\nassert.match(app.makeTrial.toString(), /generateMaximalWarmupTrial/, 'late runtime replaced the authoritative maximum-interference generator');\n"
+          if anchor in text and 'late runtime replaced the authoritative' not in text:
+              text = text.replace(anchor, addition, 1)
+          smoke.write_text(text, encoding='utf-8')
+
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
+          text = text.replace('mode-one-completion-v11.js</script>', 'mode-one-completion-v11.js?v=20260727-max-generator-owner-1</script>')
+          index.write_text(text, encoding='utf-8')
+          PY
+      - name: Validate ownership patch
+        run: |
+          node --check mode-one-letter-continuity-v1.js
+          node --check mode-one-completion-v11.js
+          node --check tests/mode-one-spatial-entailment.test.js
+          node --check tests/interference-smoke.mjs
+          grep -F 'reassertAuthoritativeGenerator' mode-one-letter-continuity-v1.js
+          grep -F '20260727-max-generator-owner-1' index.html
+      - name: Commit ownership patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mode-one-letter-continuity-v1.js mode-one-completion-v11.js tests/mode-one-spatial-entailment.test.js tests/interference-smoke.mjs index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Make maximum interference the final generator owner"
+          git push origin HEAD:agent/complete-max-interference-100
