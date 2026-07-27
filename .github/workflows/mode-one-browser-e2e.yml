@@ -1,0 +1,97 @@
+name: Mode 1 real-browser verification
+
+on:
+  pull_request:
+    paths:
+      - index.html
+      - app.js
+      - mode-one-spatial-core.js
+      - mode-one-approved-trials-v7.js
+      - mode-one-nback-v8.js
+      - mode-one-nback-v9.js
+      - mode-one-nback-v10.js
+      - mode-one-nback-v11.js
+      - mode-router-v2.js
+      - mode-two-ontology-nback-v14.js
+      - mode-one-conflict-matrix-v20.js
+      - mode-one-letter-continuity-v1.js
+      - tests/mode-one-browser-e2e.cjs
+      - .github/workflows/mode-one-browser-e2e.yml
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - app.js
+      - mode-one-spatial-core.js
+      - mode-one-approved-trials-v7.js
+      - mode-one-nback-v8.js
+      - mode-one-nback-v9.js
+      - mode-one-nback-v10.js
+      - mode-one-nback-v11.js
+      - mode-router-v2.js
+      - mode-two-ontology-nback-v14.js
+      - mode-one-conflict-matrix-v20.js
+      - mode-one-letter-continuity-v1.js
+      - tests/mode-one-browser-e2e.cjs
+      - .github/workflows/mode-one-browser-e2e.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  local-browser:
+    name: Local Chromium lifecycle
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Serve repository
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/ontological-worlds-http.log 2>&1 &
+          echo $! > /tmp/ontological-worlds-http.pid
+          for attempt in $(seq 1 30); do
+            curl --fail --silent http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/ontological-worlds-http.log
+          exit 1
+      - name: Verify maximum interference through the real UI
+        env:
+          BASE_URL: http://127.0.0.1:4173/
+          EXPECTED_CACHE_KEY: 20260727-authoritative-max-logic-3
+          DEPLOYMENT_RETRIES: '1'
+        run: node tests/mode-one-browser-e2e.cjs
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/ontological-worlds-http.log || true
+
+  deployed-browser:
+    name: Deployed GitHub Pages lifecycle
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: local-browser
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Wait for deployment and verify the live application
+        env:
+          BASE_URL: https://mike-stack1982364.github.io/Ontological-Worlds/
+          EXPECTED_CACHE_KEY: 20260727-authoritative-max-logic-3
+          DEPLOYMENT_RETRIES: '24'
+          DEPLOYMENT_RETRY_DELAY_MS: '15000'
+        run: node tests/mode-one-browser-e2e.cjs
