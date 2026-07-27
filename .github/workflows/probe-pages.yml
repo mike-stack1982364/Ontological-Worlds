@@ -1,0 +1,21 @@
+name: Probe deployed page
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe GitHub Pages deployment
+        run: |
+          curl --fail --location --retry 4 --retry-delay 5 --max-time 30 \
+            --output deployed-index.html \
+            https://mike-stack1982364.github.io/Ontological-Worlds/
+          test -s deployed-index.html
+          grep -F 'Ontological-Worlds' deployed-index.html
+          grep -F 'mode-one-letter-continuity-v1.js' deployed-index.html
