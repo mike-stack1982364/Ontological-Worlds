@@ -144,11 +144,11 @@ for (const directionResolution of [4, 8, 16]) {
         assert.ok(analysis.previousOverlapCount >= 1);
         assert.equal(analysis.introducedRelativeToTarget, 1);
         assert.equal(evaluation.matchedCount, evaluation.wholeTrialMatch ? 3 : 2);
-        assert.deepEqual(trial.conflictResponseVector, [
-          ...evaluation.statementMatches,
+        assert.equal(JSON.stringify(Array.from(trial.conflictResponseVector)), JSON.stringify([
+          ...Array.from(evaluation.statementMatches),
           evaluation.conclusionEntailed,
           evaluation.wholeTrialMatch
-        ]);
+        ]));
         if (level === 1) {
           assert.equal(overlapCount(letters(previous), letters(trial)), 2, 'N=1 produced a disjoint or non-partial transition');
         }
@@ -156,7 +156,7 @@ for (const directionResolution of [4, 8, 16]) {
       } else if (previous) {
         assert.equal(overlapCount(letters(previous), letters(trial)), 2, 'warm-up transition did not retain exactly two predecessor letters');
         assert.equal(trial.nBackWarmup, true);
-        assert.deepEqual(trial.conflictResponseVector.slice(0, 3), [false, false, false]);
+        assert.equal(JSON.stringify(Array.from(trial.conflictResponseVector.slice(0, 3))), JSON.stringify([false, false, false]));
       }
 
       app.trials.push(trial);
