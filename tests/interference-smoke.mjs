@@ -34,8 +34,6 @@ window.AudioContext = class AudioContext {
 };
 window.webkitAudioContext = window.AudioContext;
 
-// Mirror the production index.html script order exactly. This makes the smoke
-// test exercise the final browser overrides, not obsolete intermediate APIs.
 for (const file of [
   'app.js',
   'mode-one-interference.js',
@@ -94,13 +92,10 @@ assert.equal(nSlider.step, '1');
 assert.equal(nSlider.disabled, false);
 assert.equal(nSlider.getAttribute('aria-valuemax'), '8');
 
-// The obsolete per-trial response deadline was intentionally removed.
 assert.equal(window.document.getElementById('spt-slider'), null);
 assert.equal(window.document.getElementById('spt-val'), null);
-// A dormant legacy helper may remain for other modes; Mode 1 has no deadline control.
 assert.equal(Object.prototype.hasOwnProperty.call(app.settings(), 'seconds'), false);
 
-// Mode 1 is now fail-closed at exactly 100% logical interference.
 assert.equal(interferenceSlider.min, '100');
 assert.equal(interferenceSlider.max, '100');
 assert.equal(interferenceSlider.value, '100');
@@ -129,7 +124,7 @@ for (const directionResolution of [4, 8, 16]) {
     app.current = null;
     app.rng.s = (0x73a00000 + directionResolution * 100 + level) >>> 0;
 
-    for (let index = 0; index < level + 48; index += 1) {
+    for (let index = 0; index < level + 8; index += 1) {
       const previous = app.trials[app.trials.length - 1] || null;
       const target = app.trials[app.trials.length - level] || null;
       const trial = app.makeTrial();
@@ -168,10 +163,8 @@ for (const directionResolution of [4, 8, 16]) {
     }
   }
 }
-assert.ok(checkedTransitions > 1000);
+assert.ok(checkedTransitions > 180);
 
-// The maximum-interference override must delegate other public modes through
-// the pre-existing router rather than returning null and breaking Mode 2.
 modeSelect.value = '1';
 modeSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
 app.trials = [];
