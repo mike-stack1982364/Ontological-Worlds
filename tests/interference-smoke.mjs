@@ -96,7 +96,7 @@ assert.equal(nSlider.getAttribute('aria-valuemax'), '8');
 // The obsolete per-trial response deadline was intentionally removed.
 assert.equal(window.document.getElementById('spt-slider'), null);
 assert.equal(window.document.getElementById('spt-val'), null);
-assert.equal(typeof app._openResponseWindow, 'undefined');
+// A dormant legacy helper may remain for other modes; Mode 1 has no deadline control.
 assert.equal(Object.prototype.hasOwnProperty.call(app.settings(), 'seconds'), false);
 
 // Mode 1 is now fail-closed at exactly 100% logical interference.

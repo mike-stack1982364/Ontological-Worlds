@@ -30,7 +30,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const legacy = {
     settings: app.settings.bind(app),
-    deriveTrial: app.deriveTrial.bind(app),
+    deriveTrial: typeof app.deriveTrial === 'function' ? app.deriveTrial.bind(app) : trial => trial,
     makeBase: app.makeBase.bind(app),
     renderTrial: app.renderTrial.bind(app),
     surfaceVariant: app.surfaceVariant.bind(app),

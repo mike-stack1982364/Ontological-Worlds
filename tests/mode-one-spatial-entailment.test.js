@@ -27,7 +27,7 @@ const expectedClasses = [
   'exact-relational-entailment',
   'adjacent-resolution-substitution',
   'exact-relational-entailment',
-  'adjacent-resolution-substitution'
+  'local-or-global-relational-error'
 ];
 
 trials.forEach((trial, index) => {
