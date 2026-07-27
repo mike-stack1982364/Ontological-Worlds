@@ -3,6 +3,16 @@
 const assert = require('assert');
 const path = require('path');
 const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
+const applyApprovedTrials = require(path.join(__dirname, '..', 'mode-one-approved-trials-v7.js'));
+
+// The production browser loads the exact spatial core first and then installs
+// the approved ten-family Mode 1 generator. Audit that same stack rather than
+// asking the unpatched algebra module for browser-only template methods.
+applyApprovedTrials(core);
+
+assert.ok(core.version >= 7);
+assert.strictEqual(core.__approvedTriadicEntailmentV7, true);
+assert.strictEqual(core.runtimeGenerator, 'approved-ten-template-orbits-v7');
 
 const trials = core.canonicalTrials();
 assert.strictEqual(trials.length, 10);
@@ -46,31 +56,42 @@ const inverted = JSON.parse(JSON.stringify(trials[0]));
 inverted.premises = inverted.premises.map(core.invert);
 assert.strictEqual(core.evaluateTrial(inverted).isEntailed, true, 'Equivalent inverse wording must preserve entailment.');
 
-const audit = core.runAudit(16384);
-assert.strictEqual(audit.passed, true, audit.failures.join(', '));
-assert.strictEqual(audit.directionalResolution, 16);
-assert.deepStrictEqual(audit.directionPools, [4, 8, 16]);
-assert(audit.directionCoverage >= 14);
-assert.strictEqual(audit.lettersDriveRelationalComputation, true);
-assert.strictEqual(audit.letteringIdentityIgnored, true);
-assert.strictEqual(audit.conclusionRecomputedFromPremises, true);
-assert.strictEqual(audit.proofBindingRegulation, true);
-assert.strictEqual(audit.visibleContractText, false);
-assert.strictEqual(audit.exactlyThreeStatements, true);
-assert(audit.matches > 0);
-assert(audit.nonMatches > 0);
-assert(audit.invarianceChecks > 0);
-assert(audit.distinctions.includes('adjacent-resolution-substitution'));
-assert(audit.distinctions.includes('wrong-letter-pair'));
-assert(audit.distinctions.includes('subject-object-reversal'));
+// Independently retain coverage of the unpatched compass algebra across all
+// three supported resolutions.
+const resolutionAudit = core.runResolutionAudit(4096);
+assert.strictEqual(resolutionAudit.passed, true, resolutionAudit.failures.join(', '));
+assert.deepStrictEqual(resolutionAudit.perResolution.map(row => row.resolution), [4, 8, 16]);
+assert(resolutionAudit.perResolution.every(row => row.matches > 0 && row.nonMatches > 0 && row.failures === 0));
+
+const approvedAudit = core.runAudit(16384);
+assert.strictEqual(approvedAudit.passed, true, approvedAudit.failures.join(', '));
+assert.strictEqual(approvedAudit.directionalResolution, 16);
+assert.deepStrictEqual(approvedAudit.directionPools, [4, 8, 16]);
+assert.strictEqual(approvedAudit.directionCoverage, 16);
+assert.strictEqual(approvedAudit.lettersDriveRelationalComputation, true);
+assert.strictEqual(approvedAudit.letteringIdentityIgnored, true);
+assert.strictEqual(approvedAudit.conclusionRecomputedFromPremises, true);
+assert.strictEqual(approvedAudit.proofBindingRegulation, true);
+assert.strictEqual(approvedAudit.visibleContractText, false);
+assert.strictEqual(approvedAudit.exactlyThreeStatements, true);
+assert(approvedAudit.matches > 0);
+assert(approvedAudit.nonMatches > 0);
+assert(approvedAudit.invarianceChecks > 0);
+assert.deepStrictEqual(approvedAudit.templateCoverage, [1,2,3,4,5,6,7,8,9,10]);
+assert(approvedAudit.distinctions.includes('adjacent-resolution-substitution'));
+assert(approvedAudit.distinctions.includes('wrong-letter-pair'));
+assert(approvedAudit.distinctions.includes('subject-object-reversal'));
 
 console.log(JSON.stringify({
   passed: true,
-  canonicalTrials: trials.map((trial, index) => ({
-    trial: index + 1,
-    rendered: core.renderTrial(trial),
-    expected: trial.expected,
-    result: core.evaluateTrial(trial)
-  })),
-  exhaustiveAudit: audit
+  canonicalTrials: trials.length,
+  resolutionAudit: resolutionAudit.perResolution,
+  approvedAudit: {
+    iterations: approvedAudit.iterations,
+    matches: approvedAudit.matches,
+    nonMatches: approvedAudit.nonMatches,
+    templateCoverage: approvedAudit.templateCoverage,
+    directionCoverage: approvedAudit.directionCoverage,
+    invarianceChecks: approvedAudit.invarianceChecks
+  }
 }, null, 2));
