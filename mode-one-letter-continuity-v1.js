@@ -311,10 +311,11 @@
     }
     if (app.__modeOneAuthoritativeMaxInterferenceInstalled) return true;
 
+    const originalMakeTrial = app.makeTrial.bind(app);
     forceMaximumInterferenceUI(documentObject);
     app.makeTrial = function() {
       const mode = Number(documentObject.getElementById('logic-mode')?.value ?? this.settings?.().mode ?? 0);
-      if (mode !== 0) return null;
+      if (mode !== 0) return originalMakeTrial();
       const settings = this.settings();
       const directionResolution = core.normaliseResolution(this.directionResolution ?? settings.directionResolution, null);
       if (!directionResolution) throw new Error('Maximum-interference Mode 1 requires a frozen compass resolution.');
