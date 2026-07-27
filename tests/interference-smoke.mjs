@@ -86,6 +86,7 @@ assert.equal(app.__modeOneAuthoritativeMaxInterferenceInstalled, true);
 assert.equal(app.modeOneInterferenceLevel, 100);
 assert.equal(maximal.version, 2);
 assert.equal(maximal.MAX_INTERFERENCE, 100);
+assert.match(app.makeTrial.toString(), /generateMaximalWarmupTrial/, 'late runtime replaced the authoritative maximum-interference generator');
 
 assert.equal(nSlider.min, '1');
 assert.equal(nSlider.max, '8');

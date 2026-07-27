@@ -41,9 +41,9 @@ trials.forEach((trial, index) => {
 
 assert.strictEqual(core.evaluateTrial(trials[0]).expectedRelation, 'SE');
 assert.strictEqual(core.evaluateTrial(trials[2]).expectedRelation, 'NNE');
-assert.strictEqual(core.evaluateTrial(trials[6]).expectedRelation, 'E');
-assert.strictEqual(core.evaluateTrial(trials[7]).expectedRelation, 'N');
-assert.strictEqual(core.evaluateTrial(trials[9]).expectedRelation, 'W');
+assert.strictEqual(core.evaluateTrial(trials[6]).expectedRelation, 'SE');
+assert.strictEqual(core.evaluateTrial(trials[7]).expectedRelation, 'NW');
+assert.strictEqual(core.evaluateTrial(trials[9]).expectedRelation, 'N');
 
 const renamed = core.renameTrial(trials[0], { A: 'X', B: 'Y', C: 'Z' });
 assert.strictEqual(core.evaluateTrial(renamed).isEntailed, true, 'Consistent letter renaming must preserve entailment.');

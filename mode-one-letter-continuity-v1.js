@@ -313,7 +313,7 @@
 
     const originalMakeTrial = app.makeTrial.bind(app);
     forceMaximumInterferenceUI(documentObject);
-    app.makeTrial = function() {
+    const authoritativeMakeTrial = function() {
       const mode = Number(documentObject.getElementById('logic-mode')?.value ?? this.settings?.().mode ?? 0);
       if (mode !== 0) return originalMakeTrial();
       const settings = this.settings();
@@ -331,6 +331,15 @@
         directionResolution
       });
     };
+    app.makeTrial = authoritativeMakeTrial;
+    const reassertAuthoritativeGenerator = () => {
+      if (app.makeTrial !== authoritativeMakeTrial) {
+        app.makeTrial = authoritativeMakeTrial;
+        rootObject.__modeOneMaxInterferenceLateOverrideRecovered = true;
+      }
+    };
+    rootObject.setTimeout(reassertAuthoritativeGenerator, 0);
+    rootObject.setTimeout(reassertAuthoritativeGenerator, 50);
     app.assertModeOneMaximumInterference = function(targetTrial, previousTrial, currentTrial) {
       const analysis = analyseTransition(targetTrial, previousTrial, currentTrial, { roleSensitive: true });
       if (!analysis.valid) throw new Error('Mode 1 trial violates the authoritative maximum-interference invariant.');
