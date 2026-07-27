@@ -91,14 +91,14 @@ window.addEventListener('DOMContentLoaded', () => {
     modeTwoPreserved: true
   };
 
-  // Run after every DOMContentLoaded installer has finished. The conflict-matrix
-  // runtime is loaded later in index.html and must own nextTrial, while this
-  // final patch supplies one deterministic, resolution-closed makeTrial.
+  // Legacy fallback only: the authoritative maximum-interference runtime loads
+  // after this file and owns Mode 1 generation. Never replace that runtime from
+  // a delayed callback, because doing so would reintroduce unrestricted letters.
   window.setTimeout(() => {
     const runtime = window.__modeOneConflictMatrixV20;
     const liveApp = window.__ontologicalWorlds;
     const spatial = window.__modeOneSpatialCore || window.__modeOneTriadicEntailmentCore;
-    if (!runtime || !liveApp || !spatial || liveApp.__resolutionClosedGeneratorV1) return;
+    if (!runtime || !liveApp || !spatial || liveApp.__resolutionClosedGeneratorV1 || liveApp.__modeOneAuthoritativeMaxInterferenceInstalled) return;
 
     const random = rng => rng?.next ? rng.next() : Math.random();
     const shuffle = (rng, values) => rng?.shuffle ? rng.shuffle(values) : [...values].sort(() => random(rng) - 0.5);
@@ -117,8 +117,6 @@ window.addEventListener('DOMContentLoaded', () => {
         { subject: first, relation, object: bridge },
         { subject: bridge, relation, object: last }
       ];
-      // Inversion preserves each relation semantically and therefore preserves
-      // the endpoint result, while retaining surface-form variation.
       premises = premises.map(statement => random(rng) < 0.5 ? spatial.invert(statement) : statement);
       if (random(rng) < 0.5) premises.reverse();
 
