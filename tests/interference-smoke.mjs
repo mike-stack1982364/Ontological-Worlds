@@ -55,9 +55,14 @@ for (const file of [
   'extra-training.js',
   'mode-one-conflict-matrix-v20.js',
   'mode-one-letter-continuity-v1.js'
-]) window.eval(fs.readFileSync(file, 'utf8'));
+]) {
+  const source = fs.readFileSync(file, 'utf8');
+  window.eval(`${source}\n//# sourceURL=${file}`);
+}
 
-window.document.dispatchEvent(new window.Event('DOMContentLoaded', { bubbles: true }));
+if (window.document.readyState === 'loading') {
+  await new Promise(resolve => window.document.addEventListener('DOMContentLoaded', resolve, { once: true }));
+}
 await new Promise(resolve => setTimeout(resolve, 120));
 
 const app = window.__ontologicalWorlds;

@@ -25,7 +25,7 @@ const expectedClasses = [
   'subject-object-reversal',
   'wrong-letter-pair',
   'exact-relational-entailment',
-  'local-or-global-relational-error',
+  'adjacent-resolution-substitution',
   'exact-relational-entailment',
   'adjacent-resolution-substitution'
 ];

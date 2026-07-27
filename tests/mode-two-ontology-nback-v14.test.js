@@ -5,6 +5,7 @@ global.addEventListener = global.addEventListener || (() => {});
 const assert = require('assert');
 const path = require('path');
 const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
+require(path.join(__dirname, '..', 'mode-one-approved-trials-v7.js'))(core);
 const modeTwo = require(path.join(__dirname, '..', 'mode-two-ontology-nback-v14.js'));
 
 assert.deepStrictEqual([...modeTwo.LEVELS], [1,2,3,4,5,6,7,8]);
