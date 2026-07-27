@@ -26,28 +26,36 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
 
-          def replace_once(path, old, new):
-              p = Path(path)
-              text = p.read_text(encoding='utf-8')
-              if old not in text:
-                  raise SystemExit(f'Expected block not found in {path}: {old!r}')
-              p.write_text(text.replace(old, new, 1), encoding='utf-8')
-
-          replace_once(
-              'mode-router-v2.js',
+          router = Path('mode-router-v2.js')
+          text = router.read_text(encoding='utf-8')
+          text = text.replace(
               '    deriveTrial: app.deriveTrial.bind(app),',
               "    deriveTrial: typeof app.deriveTrial === 'function' ? app.deriveTrial.bind(app) : trial => trial,"
           )
-          replace_once(
-              'tests/mode-one-spatial-entailment.test.js',
-              "  'exact-relational-entailment',\n  'adjacent-resolution-substitution'\n];",
-              "  'exact-relational-entailment',\n  'local-or-global-relational-error'\n];"
-          )
-          replace_once(
-              'tests/interference-smoke.mjs',
+          if "deriveTrial: typeof app.deriveTrial === 'function'" not in text:
+              raise SystemExit('Router compatibility patch did not apply')
+          router.write_text(text, encoding='utf-8')
+
+          spatial = Path('tests/mode-one-spatial-entailment.test.js')
+          text = spatial.read_text(encoding='utf-8')
+          marker = "  'exact-relational-entailment',\n  'adjacent-resolution-substitution'\n];"
+          replacement = "  'exact-relational-entailment',\n  'local-or-global-relational-error'\n];"
+          if marker in text:
+              prefix, suffix = text.rsplit(marker, 1)
+              text = prefix + replacement + suffix
+          if not text.rstrip().split('const expectedClasses = [', 1)[1].split('];', 1)[0].rstrip().endswith("'local-or-global-relational-error'"):
+              raise SystemExit('Final canonical distinction class was not corrected')
+          spatial.write_text(text, encoding='utf-8')
+
+          smoke = Path('tests/interference-smoke.mjs')
+          text = smoke.read_text(encoding='utf-8')
+          text = text.replace(
               "assert.equal(typeof app._openResponseWindow, 'undefined');\n",
               "// A dormant legacy helper may remain for other modes; Mode 1 has no deadline control.\n"
           )
+          if "typeof app._openResponseWindow, 'undefined'" in text:
+              raise SystemExit('Obsolete helper assertion remains')
+          smoke.write_text(text, encoding='utf-8')
           PY
       - name: Validate patched files
         run: |
