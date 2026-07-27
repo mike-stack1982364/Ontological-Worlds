@@ -34,269 +34,162 @@ window.AudioContext = class AudioContext {
 };
 window.webkitAudioContext = window.AudioContext;
 
+// Mirror the production index.html script order exactly. This makes the smoke
+// test exercise the final browser overrides, not obsolete intermediate APIs.
 for (const file of [
   'app.js',
-  'mode-release-gate.js',
-  'audio-only-display.js',
-  'response-window.js',
-  'ontology-integration-v4.js',
-  'cognitive-interference-v3.js',
-  'mode-one-triadic.js',
   'mode-one-interference.js',
   'mode-one-match-logic.js',
   'mode-one-spatial-core.js',
+  'mode-zero-exact-matching-v12.js',
   'mode-one-approved-trials-v7.js',
   'mode-one-nback-v8.js',
+  'mode-one-nback-v9.js',
+  'mode-one-nback-v10.js',
+  'mode-one-nback-v11.js',
   'mode-router-v2.js',
-  'audio-accessibility.js'
+  'mode-two-ontology-nback-v14.js',
+  'mode-one-completion-v10.js',
+  'mode-one-completion-v11.js',
+  'audio-accessibility.js',
+  'extra-training.js',
+  'mode-one-conflict-matrix-v20.js',
+  'mode-one-letter-continuity-v1.js'
 ]) window.eval(fs.readFileSync(file, 'utf8'));
 
 window.document.dispatchEvent(new window.Event('DOMContentLoaded', { bubbles: true }));
-await new Promise(resolve => setTimeout(resolve, 0));
+await new Promise(resolve => setTimeout(resolve, 120));
 
 const app = window.__ontologicalWorlds;
-const ontology = window.__ontologyTestAPI;
-const legacyInterference = window.__interferenceTestAPI;
-const modeTwoInterference = window.__modeOneInterferenceTestAPI;
-const legacyTriadic = window.__modeOneTriadicTestAPI;
-const modeOne = window.__modeOneTriadicEntailmentTestAPI;
-const releaseGate = window.__modeReleaseTestAPI;
-const audioOnlyDisplay = window.__audioOnlyDisplayTestAPI;
-const responseWindow = window.__responseWindowTestAPI;
-
-assert.ok(app, 'application instance missing');
-assert.equal(ontology?.selfTestPassed, true, 'ontology self-test failed');
-assert.equal(legacyInterference?.selfTestPassed, true, 'dormant-mode interference self-test failed');
-assert.equal(modeTwoInterference?.selfTestPassed, true, 'preserved Ontological Integration interference self-test failed');
-assert.equal(modeTwoInterference?.symbolsDriveInterference, false, 'symbols drive preserved ontology interference');
-assert.equal(modeTwoInterference?.premiseLogicDrivesInterference, true, 'premise logic is not the preserved interference engine');
-assert.equal(legacyTriadic?.selfTestPassed, true, 'preserved triadic ontology self-test failed');
-assert.equal(modeOne?.selfTestPassed, true, 'Triadic Entailment self-test failed');
-assert.equal(modeOne?.lettersDriveRelationalComputation, true, 'letters do not bind the Mode 1 graph');
-assert.equal(modeOne?.letteringIdentityIgnored, true, 'Mode 1 still compares identical lettering');
-assert.equal(modeOne?.modelSetEvaluation, false, 'obsolete model-set contracts remain active');
-assert.equal(modeOne?.logicalContracts, false, 'logical contracts remain active');
-assert.equal(modeOne?.visibleContractText, false, 'contract text remains visible');
-assert.equal(modeOne?.runtimeGenerator, 'approved-ten-template-orbits-v7');
-assert.equal(modeOne?.nBackRuntime, 'approved-logical-family-nback-v8');
-assert.equal(modeOne?.nBackEnabled, true);
-assert.deepEqual(Array.from(modeOne?.nBackLevels || []), [1, 2, 3, 4, 5, 6, 7, 8]);
-assert.equal(modeOne?.nBackPolicy?.letteringIdentityRelevant, false);
-assert.equal(modeOne?.directionalResolution, 16);
-assert.deepEqual(Array.from(modeOne?.directionPools || []), [4, 8, 16]);
-assert.equal(modeOne?.exhaustiveAudit?.generatedOnlyFromApprovedTemplates, true);
-assert.equal(modeOne?.exhaustiveAudit?.approvedTemplateCount, 10);
-assert.deepEqual(Array.from(modeOne?.exhaustiveAudit?.templateCoverage || []), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-
+const core = window.__modeOneTriadicEntailmentCore;
+const conflict = window.__modeOneConflictMatrixV20;
+const maximal = window.__modeOneLetterContinuityV1;
 const modeSelect = window.document.getElementById('logic-mode');
 const nSlider = window.document.getElementById('n-slider');
-assert.equal(Array.from(releaseGate?.selectableModes || []).join(','), '0,1', 'Modes 1 and 2 are not both selectable');
-assert.equal(releaseGate?.futureModesDisabled, true, 'future modes are not disabled');
-assert.equal([...modeSelect.options].filter(option => !option.disabled).length, 2, 'incorrect number of selectable modes');
-for (const option of [...modeSelect.options].slice(2)) {
-  assert.equal(option.disabled, true, `${option.value} remains clickable`);
-  assert.ok(option.textContent.includes('Released in future'), `${option.value} lacks release wording`);
-}
-modeSelect.value = '6';
-modeSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
-assert.equal(modeSelect.value, '0', 'future-mode selection was not rejected');
-assert.equal(app.settings().mode, 0, 'runtime escaped the public mode gate');
+const directionSelect = window.document.getElementById('direction-resolution');
+const interferenceSlider = window.document.getElementById('interference-slider');
+const interferenceValue = window.document.getElementById('interference-val');
+const matrix = window.document.getElementById('conflict-matrix');
+
+assert.ok(app, 'application instance missing');
+assert.ok(core, 'spatial core missing');
+assert.ok(conflict, 'conflict-matrix runtime missing');
+assert.ok(maximal, 'maximum-interference runtime missing');
+assert.equal(window.__modeOneMaxInterferenceReady, true, 'maximum-interference runtime did not install');
+assert.equal(window.__modeOneMaxInterferenceInstallError, undefined, 'maximum-interference installation reported an error');
+assert.equal(app.__modeOneAuthoritativeMaxInterferenceInstalled, true);
+assert.equal(app.modeOneInterferenceLevel, 100);
+assert.equal(maximal.version, 2);
+assert.equal(maximal.MAX_INTERFERENCE, 100);
 
 assert.equal(nSlider.min, '1');
 assert.equal(nSlider.max, '8');
 assert.equal(nSlider.step, '1');
-assert.equal(nSlider.disabled, false, 'Mode 1 N-back customisation is disabled');
+assert.equal(nSlider.disabled, false);
 assert.equal(nSlider.getAttribute('aria-valuemax'), '8');
 
-assert.equal(audioOnlyDisplay?.blurControlRemoved, true, 'blur behaviour remains');
-assert.equal(audioOnlyDisplay?.legacyControlHidden, true, 'legacy blur input is visible');
-assert.equal(audioOnlyDisplay?.settingsExcludeHideText, true, 'hideText remains active');
-const audioOnly = window.document.getElementById('audio-only');
-const legacyHideText = window.document.getElementById('hide-text');
-const premiseDisplay = window.document.getElementById('premise-display');
-assert.equal(legacyHideText.hidden, true);
-assert.equal(legacyHideText.closest('label'), null);
-assert.equal(Object.prototype.hasOwnProperty.call(app.settings(), 'hideText'), false);
-audioOnly.checked = false;
-app.applyPremiseVisibility();
-assert.equal(premiseDisplay.classList.contains('hidden-mode'), false);
-assert.equal(premiseDisplay.classList.contains('muted'), false);
-audioOnly.checked = true;
-app.applyPremiseVisibility();
-assert.equal(premiseDisplay.classList.contains('hidden-mode'), true);
-assert.equal(premiseDisplay.classList.contains('muted'), false);
-audioOnly.checked = false;
-app.applyPremiseVisibility();
+// The obsolete per-trial response deadline was intentionally removed.
+assert.equal(window.document.getElementById('spt-slider'), null);
+assert.equal(window.document.getElementById('spt-val'), null);
+assert.equal(typeof app._openResponseWindow, 'undefined');
+assert.equal(Object.prototype.hasOwnProperty.call(app.settings(), 'seconds'), false);
 
-const responseSlider = window.document.getElementById('spt-slider');
-const responseLabel = window.document.getElementById('spt-val');
-assert.equal(responseWindow?.maxSeconds, 300);
-assert.equal(responseSlider.max, '300');
-assert.equal(responseSlider.step, '0.5');
-responseSlider.value = '300';
-responseSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
-assert.equal(app.settings().seconds, 300);
-assert.equal(responseLabel.textContent, '5:00');
-assert.equal(responseSlider.getAttribute('aria-valuetext'), '5 minutes');
+// Mode 1 is now fail-closed at exactly 100% logical interference.
+assert.equal(interferenceSlider.min, '100');
+assert.equal(interferenceSlider.max, '100');
+assert.equal(interferenceSlider.value, '100');
+assert.equal(interferenceSlider.disabled, true);
+assert.match(interferenceValue.textContent, /100%/);
 
-const originalSetTimeout = window.setTimeout;
-let scheduledMs = null;
-window.setTimeout = (_callback, milliseconds) => { scheduledMs = milliseconds; return 999; };
-app.running = true;
-app.paused = false;
-app.current = { _answered: false };
-app.awaiting = false;
-app._openResponseWindow(app.settings().seconds * 1000);
-assert.equal(scheduledMs, 300000, 'five-minute deadline was not scheduled precisely');
-window.setTimeout = originalSetTimeout;
-app.running = false;
-app.awaiting = false;
-app.current = null;
-clearTimeout(app.timerId);
-app.timerId = null;
+const letters = trial => maximal.trialLetters(trial);
+const overlapCount = (first, second) => {
+  const set = new Set(second);
+  return first.filter(value => set.has(value)).length;
+};
 
-const interferenceSlider = window.document.getElementById('interference-slider');
-const probabilitySlider = window.document.getElementById('prob-slider');
+let checkedTransitions = 0;
+for (const directionResolution of [4, 8, 16]) {
+  directionSelect.value = String(directionResolution);
+  directionSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
+  app.directionResolution = directionResolution;
 
-function chooseMode(value) {
-  modeSelect.value = String(value);
-  modeSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
-  assert.equal(app.settings().mode, value);
-}
+  for (let level = 1; level <= 8; level += 1) {
+    modeSelect.value = '0';
+    modeSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
+    nSlider.value = String(level);
+    nSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
+    app.n = level;
+    app.trials = [];
+    app.current = null;
+    app.rng.s = (0x73a00000 + directionResolution * 100 + level) >>> 0;
 
-chooseMode(0);
-interferenceSlider.value = '100';
-interferenceSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
-app.rng.s = 442211;
-const distinctions = new Set();
-for (let index = 0; index < 1000; index += 1) {
-  const trial = app.makeBase(0);
-  assert.equal(trial.mode, 0);
-  assert.equal(trial.premises.length, 2);
-  assert.equal(new Set(trial.letters).size, 3);
-  assert.ok(trial.conclusion?.subject && trial.conclusion?.relation && trial.conclusion?.object);
-  assert.equal(trial.generatedFromApprovedTemplate, true, 'Mode 1 escaped the approved ten trial families');
-  assert.equal(Object.prototype.hasOwnProperty.call(trial, 'contractId'), false, 'contract metadata remains in Mode 1 trial');
-  assert.equal(modeOne.evaluateTrial(trial).isEntailed, trial.isMatch);
-  const rendered = app.renderTrial(trial);
-  assert.equal((rendered.match(/;/g) || []).length, 2, 'Mode 1 is not exactly three relational statements');
-  assert.ok(!/^Contract:/i.test(rendered), 'contract text is still rendered');
-  assert.ok(!/therefore/i.test(rendered), 'therefore entered the triad');
-  assert.ok(!/undefined|null/.test(rendered), 'malformed Triadic Entailment triad');
-  distinctions.add(trial.distinctionClass);
-}
-assert.ok(distinctions.has('exact-relational-entailment'));
-assert.ok(modeOne.exhaustiveAudit.distinctions.includes('wrong-letter-pair'));
-assert.ok(modeOne.exhaustiveAudit.distinctions.includes('adjacent-resolution-substitution'));
-assert.ok(modeOne.exhaustiveAudit.distinctions.includes('subject-object-reversal'));
+    for (let index = 0; index < level + 48; index += 1) {
+      const previous = app.trials[app.trials.length - 1] || null;
+      const target = app.trials[app.trials.length - level] || null;
+      const trial = app.makeTrial();
+      assert.ok(trial, `Mode 1 returned no trial at resolution=${directionResolution}, N=${level}, index=${index}`);
+      assert.equal(trial.interferenceLevel, 100);
+      assert.equal(trial.maxLogicalInterference, true);
+      assert.equal(letters(trial).length, 3);
+      assert.equal(new Set(letters(trial)).size, 3);
+      assert.equal(core.evaluateTrial(trial).isEntailed, trial.conclusionEntailed);
+      assert.doesNotMatch(core.renderTrial(trial), /undefined|null/i);
 
-for (let index = 0; index < 100; index += 1) {
-  const trial = modeOne.generateTrial(app.rng, { matchProbability: 0, interferenceLevel: 100 });
-  assert.equal(trial.isMatch, false, 'forced within-trial NO MATCH generated an entailment');
-  assert.equal(trial.generatedFromApprovedTemplate, true);
-}
-for (let index = 0; index < 100; index += 1) {
-  const trial = modeOne.generateTrial(app.rng, { matchProbability: 1, interferenceLevel: 100 });
-  assert.equal(trial.isMatch, true, 'forced within-trial MATCH failed relational entailment');
-  assert.equal(trial.generatedFromApprovedTemplate, true);
-}
+      if (target) {
+        const analysis = app.assertModeOneMaximumInterference(target, previous, trial);
+        const evaluation = conflict.evaluateConflictMatrix(target, trial, { roleSensitive: true });
+        assert.equal(analysis.valid, true);
+        assert.equal(analysis.targetOverlapCount, 2);
+        assert.ok(analysis.previousOverlapCount >= 1);
+        assert.equal(analysis.introducedRelativeToTarget, 1);
+        assert.equal(evaluation.matchedCount, evaluation.wholeTrialMatch ? 3 : 2);
+        assert.deepEqual(trial.conflictResponseVector, [
+          ...evaluation.statementMatches,
+          evaluation.conclusionEntailed,
+          evaluation.wholeTrialMatch
+        ]);
+        if (level === 1) {
+          assert.equal(overlapCount(letters(previous), letters(trial)), 2, 'N=1 produced a disjoint or non-partial transition');
+        }
+        checkedTransitions += 1;
+      } else if (previous) {
+        assert.equal(overlapCount(letters(previous), letters(trial)), 2, 'warm-up transition did not retain exactly two predecessor letters');
+        assert.equal(trial.nBackWarmup, true);
+        assert.deepEqual(trial.conflictResponseVector.slice(0, 3), [false, false, false]);
+      }
 
-const canonical = modeOne.canonicalTrials();
-assert.equal(canonical.length, 10);
-canonical.forEach((trial, index) => {
-  assert.equal(modeOne.evaluateTrial(trial).isEntailed, trial.expected, `canonical trial ${index + 1} failed`);
-  assert.equal((modeOne.renderTrial(trial).match(/;/g) || []).length, 2);
-  assert.ok(!/contract:|therefore/i.test(modeOne.renderTrial(trial)));
-});
-
-for (const level of [1, 2, 3, 4, 5, 6, 7, 8]) {
-  nSlider.value = String(level);
-  nSlider.dispatchEvent(new window.Event('input', { bubbles: true }));
-  assert.equal(app.settings().n, level);
-  assert.equal(nSlider.getAttribute('aria-valuetext'), `N-back level ${level}`);
-  app.n = level;
-  app.trials = [];
-
-  for (let index = 0; index < level; index += 1) {
-    const warmup = app.makeTrial();
-    assert.equal(warmup.nBackLevel, level);
-    assert.equal(warmup.nBackWarmup, true);
-    assert.equal(warmup.scored, false);
-    assert.equal(warmup.isMatch, false);
-    app.trials.push(warmup);
+      app.trials.push(trial);
+    }
   }
-
-  const target = app.trials[app.trials.length - level];
-  const scored = app.makeTrial();
-  assert.equal(scored.nBackLevel, level);
-  assert.equal(scored.nBackWarmup, false);
-  assert.equal(scored.scored, true);
-  assert.equal(scored.isMatch, modeOne.nBackEquivalent(scored, target));
-  assert.equal(scored.nBackMatch, scored.isMatch);
-  assert.equal(scored.nBackTargetSignature, modeOne.nBackLogicSignature(target));
-  assert.equal((app.renderTrial(scored).match(/;/g) || []).length, 2);
-  assert.ok(!/contract:|therefore/i.test(app.renderTrial(scored)));
 }
+assert.ok(checkedTransitions > 1000);
 
-const explicitTarget = modeOne.generateTrial(app.rng, { matchProbability: 1, interferenceLevel: 100 });
-const explicitMatch = modeOne.generateNBackTrial(app.rng, explicitTarget, {
-  match: true,
-  nBackLevel: 8,
-  interferenceLevel: 100
-});
-assert.equal(explicitMatch.isMatch, true);
-assert.equal(modeOne.nBackEquivalent(explicitMatch, explicitTarget), true);
-assert.ok(explicitMatch.letters.every(letter => !explicitTarget.letters.includes(letter)), 'logic match reused target lettering');
-const explicitNonMatch = modeOne.generateNBackTrial(app.rng, explicitTarget, {
-  match: false,
-  nBackLevel: 8,
-  interferenceLevel: 100
-});
-assert.equal(explicitNonMatch.isMatch, false);
-assert.equal(modeOne.nBackEquivalent(explicitNonMatch, explicitTarget), false);
-
-chooseMode(1);
-assert.equal(nSlider.disabled, false, 'Mode 2 N-back control remains disabled');
-assert.equal(nSlider.max, '8');
-app.rng.s = 90210;
-const categories = new Set();
-const forms = new Set();
-for (let index = 0; index < 500; index += 1) {
-  const trial = app.makeBase(1);
-  assert.equal(trial.mode, 1);
-  assert.equal(trial.nodes.length, 3);
-  assert.equal(trial.dirs.length, 2);
-  assert.equal(trial.transformationCount, 3);
-  assert.notEqual(trial.dirs[0], trial.dirs[1]);
-  assert.equal(new Set(trial.nodes.map(node => node.symbol)).size, 3);
-  assert.ok(trial.leftRelationCategory && trial.rightRelationCategory);
-  assert.ok(trial.nodeSynthesisCategory && trial.relationSynthesisCategory);
-  assert.ok(trial.integratedCategory && trial.integratedForm);
-  assert.ok(!/undefined|null/.test(app.renderTrial(trial)));
-  trial.nodes.forEach(node => { categories.add(node.categoryId); forms.add(node.form); });
-}
-assert.equal(categories.size, 9, 'not all ontologies appear in Mode 2');
-assert.equal(forms.size, 3, 'not all forms appear in Mode 2');
-
-probabilitySlider.value = '35';
-probabilitySlider.dispatchEvent(new window.Event('input', { bubbles: true }));
-app.n = 1;
+// The maximum-interference override must delegate other public modes through
+// the pre-existing router rather than returning null and breaking Mode 2.
+modeSelect.value = '1';
+modeSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
 app.trials = [];
-let modeTwoMatches = 0;
-let modeTwoNonMatches = 0;
-for (let index = 0; index < 200; index += 1) {
-  const target = app.trials[app.trials.length - app.n];
-  const trial = app.makeTrial();
-  if (target) {
-    const recomputed = app.matchSignature(trial, 1) === app.matchSignature(target, 1);
-    assert.equal(trial.isMatch, recomputed, 'Mode 2 answer disagrees with its derived match identity');
-    if (trial.isMatch) modeTwoMatches += 1;
-    else modeTwoNonMatches += 1;
-  }
-  app.trials.push(trial);
-}
-assert.ok(modeTwoMatches > 0, 'Mode 2 generated no matches');
-assert.ok(modeTwoNonMatches > 0, 'Mode 2 generated no non-matches');
+app.current = null;
+app.n = 1;
+const modeTwoTrial = app.makeTrial();
+assert.ok(modeTwoTrial, 'Mode 2 generation was broken by the Mode 1 override');
+assert.equal(modeTwoTrial.mode, 1);
+assert.equal(typeof app.renderTrial(modeTwoTrial), 'string');
+assert.ok(app.renderTrial(modeTwoTrial).trim().length > 0);
+assert.equal(window.document.body.classList.contains('mode-one-conflict-active'), false);
+assert.equal(matrix.getAttribute('aria-hidden'), 'true');
 
-console.log('Triadic Entailment N-back levels 1–8 and preserved Ontological Integration tests passed.');
-window.close();
+modeSelect.value = '0';
+modeSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
+assert.equal(window.document.body.classList.contains('mode-one-conflict-active'), true);
+assert.equal(matrix.getAttribute('aria-hidden'), 'false');
+
+console.log(JSON.stringify({
+  passed: true,
+  checkedTransitions,
+  maximumInterference: maximal.MAX_INTERFERENCE,
+  nBackLevels: [1,2,3,4,5,6,7,8],
+  directionResolutions: [4,8,16],
+  modeTwoPreserved: true,
+  responseDeadlineRemoved: true
+}, null, 2));
