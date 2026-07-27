@@ -1,0 +1,44 @@
+name: Focused production-composition smoke
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/focused-interference-smoke.yml
+      - tests/interference-smoke.mjs
+      - mode-one-completion-v11.js
+      - mode-one-letter-continuity-v1.js
+      - mode-one-conflict-matrix-v20.js
+      - index.html
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save jsdom@26
+      - name: Run focused smoke and retain full output
+        shell: bash
+        run: |
+          set +e
+          node tests/interference-smoke.mjs > interference-smoke.log 2>&1
+          code=$?
+          set -e
+          cat interference-smoke.log
+          echo "$code" > interference-smoke.exit
+          exit "$code"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: focused-interference-smoke
+          path: |
+            interference-smoke.log
+            interference-smoke.exit
+          if-no-files-found: error
