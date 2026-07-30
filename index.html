@@ -45,7 +45,7 @@
     .conflict-feedback-icon.correct{color:#087a3f!important}.conflict-feedback-icon.incorrect{color:#b42318!important}
     .conflict-row[data-decision="4"] .conflict-choice[data-value="1"]{font-size:clamp(.72rem,1.05vw,1.18rem);letter-spacing:.015em;white-space:nowrap;padding-left:2px;padding-right:2px}
     .conflict-choice[data-value="1"]{background:#e9f8ef;color:#086b3a;border:2px solid #55a879}
-    .conflict-choice[data-value="0"]{background:#fff0ef;color:#a61f17;border:2px solid #d78b86}
+    .conflict-row:not([data-decision="3"]) .conflict-choice[data-value="0"]:not(.feedback-correct):not(.feedback-incorrect){background:#F1E4FF!important;color:#6818A5!important;border:2px solid #B96AF4!important}
     .conflict-row[data-decision="3"] .conflict-choice{background:#eef4fb;color:#123f6b;border-color:#8fa3b9}
     .conflict-choice.selected{outline:4px solid #183f67;outline-offset:2px}.conflict-choice[disabled]{opacity:.64}
     #conflict-submit{display:block;width:min(100%,620px);min-height:38px;margin:8px auto 0;padding:8px 12px;border-radius:10px;font-size:.72rem;font-weight:900;text-transform:uppercase}
