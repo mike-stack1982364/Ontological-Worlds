@@ -1,0 +1,103 @@
+name: Harden Matching Tutorial keyboard isolation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/harden-matching-tutorial-keyboard.yml
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preserve dialog keyboard controls while blocking game keys
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('matching-tutorial.js')
+          text = path.read_text(encoding='utf-8')
+          old = """    documentObject.addEventListener('keydown', event => {
+              if (dialog.hidden) return;
+              event.stopImmediatePropagation();
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                closeTutorial();
+                return;
+              }
+              if (event.key !== 'Tab') return;
+              const elements = focusable();
+              if (!elements.length) return;
+              const first = elements[0];
+              const last = elements[elements.length - 1];
+              if (event.shiftKey && documentObject.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+              } else if (!event.shiftKey && documentObject.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+              }
+            }, true);
+          """
+          new = """    documentObject.addEventListener('keydown', event => {
+              if (dialog.hidden) return;
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                closeTutorial();
+                return;
+              }
+              if (event.key === 'Tab') {
+                event.stopImmediatePropagation();
+                const elements = focusable();
+                if (!elements.length) return;
+                const first = elements[0];
+                const last = elements[elements.length - 1];
+                if (event.shiftKey && documentObject.activeElement === first) {
+                  event.preventDefault();
+                  last.focus();
+                } else if (!event.shiftKey && documentObject.activeElement === last) {
+                  event.preventDefault();
+                  first.focus();
+                }
+                return;
+              }
+              if ((event.key === ' ' || event.key === 'Enter') && dialog.contains(event.target)) {
+                const interactive = event.target.closest?.('button,summary');
+                if (interactive) {
+                  event.preventDefault();
+                  event.stopImmediatePropagation();
+                  interactive.click();
+                  return;
+                }
+              }
+              const gameKeys = new Set(['a','s','d','f','h','j','k','l','n','p',' ']);
+              if (gameKeys.has(event.key.toLowerCase())) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+              }
+            }, true);
+          """
+          if old not in text:
+              raise SystemExit('Keyboard isolation block not found')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          node --check matching-tutorial.js
+      - name: Remove one-time hardening workflow
+        run: rm .github/workflows/harden-matching-tutorial-keyboard.yml
+      - name: Commit hardening
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add matching-tutorial.js .github/workflows/harden-matching-tutorial-keyboard.yml
+          git commit -m "Preserve tutorial keyboard controls without triggering gameplay"
+          git push origin HEAD:main
