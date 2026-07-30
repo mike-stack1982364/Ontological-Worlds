@@ -1,0 +1,33 @@
+name: Matching Tutorial validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - matching-tutorial.js
+      - index.html
+      - tests/matching-tutorial-logic.test.js
+      - .github/workflows/matching-tutorial-validation.yml
+  pull_request:
+    paths:
+      - matching-tutorial.js
+      - index.html
+      - tests/matching-tutorial-logic.test.js
+      - .github/workflows/matching-tutorial-validation.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check tutorial JavaScript syntax
+        run: node --check matching-tutorial.js
+      - name: Audit tutorial examples against game logic
+        run: node tests/matching-tutorial-logic.test.js
