@@ -242,14 +242,15 @@
     });
 
     documentObject.addEventListener('keydown', event => {
-      if (dialog.hidden) return;
+    if (dialog.hidden) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
       event.stopImmediatePropagation();
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        closeTutorial();
-        return;
-      }
-      if (event.key !== 'Tab') return;
+      closeTutorial();
+      return;
+    }
+    if (event.key === 'Tab') {
+      event.stopImmediatePropagation();
       const elements = focusable();
       if (!elements.length) return;
       const first = elements[0];
@@ -261,9 +262,25 @@
         event.preventDefault();
         first.focus();
       }
-    }, true);
+      return;
+    }
+    if ((event.key === ' ' || event.key === 'Enter') && dialog.contains(event.target)) {
+      const interactive = event.target.closest?.('button,summary');
+      if (interactive) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        interactive.click();
+        return;
+      }
+    }
+    const gameKeys = new Set(['a','s','d','f','h','j','k','l','n','p',' ']);
+    if (gameKeys.has(event.key.toLowerCase())) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }, true);
 
-    root.openMatchingTutorial = openTutorial;
+  root.openMatchingTutorial = openTutorial;
     root.closeMatchingTutorial = closeTutorial;
     root.__matchingTutorialInstalled = true;
   };
