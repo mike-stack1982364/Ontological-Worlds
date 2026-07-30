@@ -26,29 +26,13 @@ jobs:
           from pathlib import Path
           path = Path('matching-tutorial.js')
           text = path.read_text(encoding='utf-8')
-          old = """    documentObject.addEventListener('keydown', event => {
-              if (dialog.hidden) return;
-              event.stopImmediatePropagation();
-              if (event.key === 'Escape') {
-                event.preventDefault();
-                closeTutorial();
-                return;
-              }
-              if (event.key !== 'Tab') return;
-              const elements = focusable();
-              if (!elements.length) return;
-              const first = elements[0];
-              const last = elements[elements.length - 1];
-              if (event.shiftKey && documentObject.activeElement === first) {
-                event.preventDefault();
-                last.focus();
-              } else if (!event.shiftKey && documentObject.activeElement === last) {
-                event.preventDefault();
-                first.focus();
-              }
-            }, true);
-          """
-          new = """    documentObject.addEventListener('keydown', event => {
+          start = "    documentObject.addEventListener('keydown', event => {\n"
+          end = "    root.openMatchingTutorial = openTutorial;\n"
+          if start not in text or end not in text:
+              raise SystemExit('Keyboard listener boundaries not found')
+          before, remainder = text.split(start, 1)
+          _, after = remainder.split(end, 1)
+          replacement = """    documentObject.addEventListener('keydown', event => {
               if (dialog.hidden) return;
               if (event.key === 'Escape') {
                 event.preventDefault();
@@ -86,12 +70,13 @@ jobs:
                 event.stopImmediatePropagation();
               }
             }, true);
+
+            root.openMatchingTutorial = openTutorial;
           """
-          if old not in text:
-              raise SystemExit('Keyboard isolation block not found')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          path.write_text(before + replacement + after, encoding='utf-8')
           PY
           node --check matching-tutorial.js
+          grep -q "const gameKeys = new Set" matching-tutorial.js
       - name: Remove one-time hardening workflow
         run: rm .github/workflows/harden-matching-tutorial-keyboard.yml
       - name: Commit hardening
