@@ -4,45 +4,42 @@
 
 ### Mode 1 — Relational Conflict Matrix
 
-Mode 1 is a three-statement, exact 16-direction relational N-back system.
+Mode 1 is a three-statement relational N-back system with selectable 4-, 8- or 16-direction compass resolution and N-back levels 1 through 8.
 
-Each visible and spoken trial contains exactly two premises and one conclusion using three arbitrary letter-nodes. Statements 1 and 2 define the current spatial model. Statement 3 is separately evaluated for whether it is logically entailed by those premises.
+Each visible and spoken trial contains exactly two premises and one conclusion using three letter-nodes. Statements 1 and 2 define the current spatial model. Statement 3 is separately evaluated for whether it is logically entailed by those premises.
 
 After the initial N memory-fill trials, every scored trial requires five binary decisions:
 
 1. whether current Statement 1 matches one statement in the trial exactly N positions earlier;
 2. whether current Statement 2 matches one historical statement;
 3. whether current Statement 3 matches one historical statement;
-4. whether current Statement 3 is entailed by current Statements 1 and 2;
+4. whether Statement 3 is logically entailed by current Statements 1 and 2;
 5. whether the complete current triad matches the historical triad.
 
-Statement-level matching is not calculated through three independent resemblance checks. The engine requires one globally consistent bijection between the historical and current letters and a one-to-one assignment between statements. A statement counts as a match only when it participates in the best coherent alignment. Equivalent reversed wording is accepted only when subject/object reversal is accompanied by the opposite compass direction. Arbitrary letter renaming and statement reordering do not by themselves break structural equivalence.
+Statement-level matching is not calculated through three independent resemblance checks. The engine requires one globally consistent bijection between historical and current letters and a one-to-one assignment between statements. Equivalent reversed wording is accepted only when subject/object reversal is accompanied by the opposite compass direction.
 
-Mode 1 alternates between two explicit comparison regimes:
+A whole-triad MATCH requires all three statements to align under the same mapping and the active role-sensitive policy. Partial correspondence remains interference and never becomes a complete-triad match.
 
-- role-flexible comparison, where any current statement may align with any historical statement;
-- role-sensitive comparison, where the historical and current conclusions must remain conclusions while the two premises may exchange order.
+#### Fixed maximum logical interference
 
-A whole-triad MATCH requires all three statements to align under the same mapping and active role regime. One-statement and two-statement correspondences remain partial matches and are scored as interference rather than being collapsed into a single whole-trial answer.
+Mode 1 is permanently fixed at **100% logical interference**. The former interference slider is locked at 100% and is no longer a variable difficulty control.
 
-The cognitive-interference generator uses controlled profiles rather than generic random errors. Depending on the interference setting, it creates:
+Every scored trial is generated from the trial exactly N positions back and must satisfy all of these invariants:
 
-- zero-, one- and two-of-three statement matches;
-- adjacent 16-direction substitutions;
-- near, orthogonal and opposite-direction substitutions;
-- changed surface letters with preserved structure;
-- preserved surface letters with changed relational roles;
-- valid inverse wording;
-- conflicts between historical familiarity and current entailment;
-- globally coherent alignment requirements that suppress incompatible local interpretations.
+- exactly two N-back-target letter identities remain in their corresponding logical roles;
+- exactly one target identity is inhibited and replaced;
+- at least one letter also remains active from the immediately preceding trial;
+- at N=1, every consecutive pair therefore shares exactly two letters and introduces exactly one new letter;
+- MATCH and NO MATCH trials use the same two-retained/one-replaced identity rule, so letter repetition is not an answer cue;
+- every NO MATCH is an exact two-of-three statement lure with one controlled relational conflict;
+- all five correct response values are independently recomputed after relettering and must remain unchanged;
+- a trial that violates any invariant is rejected before it can be rendered.
 
-At the highest interference setting, non-match trials preferentially preserve exactly two globally coherent statements while changing one precise relation. The player must therefore discriminate a near-complete historical structure while independently determining whether the current conclusion is logically valid.
+The first trial is an unconstrained seed. Further memory-fill trials preserve exactly two letters from the preceding trial while their unavailable historical-match decisions remain false.
 
-Mode 1 supports N-back levels 1 through 8. The browser interface displays ten response buttons: Match/No Match for each historical statement decision, Entailed/Not Entailed for current conclusion validity, and Match/No Match for complete-triad identity. All five decisions must be entered before submission.
+Mode 1 records each decision separately, including correctness and first-response latency. A trial counts as completely correct only when all five responses are correct.
 
-Each of the five decisions is recorded separately, including correctness and first-response time. The trial itself is counted as correct only when all five responses are correct, preserving compatibility with the existing session progression while retaining native multidimensional diagnostic statistics.
-
-Keyboard pairs are A/S, D/F, G/H, J/K and L/;.
+Keyboard pairs are A/S, D/F, H/J, K/L and Spacebar/N. In each pair, the first key is the positive response and the second is the negative response.
 
 ### Mode 2 — Ontological Integration
 
@@ -50,9 +47,11 @@ Mode 2 displays the ontology categories All, Difference, Action, Division, Conne
 
 Its N-back answer is determined by the complete three-statement compass structure of the current and historical trials. Ontology categories and Inner/Outer labels are presentation-level cognitive transformations and are excluded from MATCH/NO MATCH scoring. Consistent letter renaming, premise reordering and logically equivalent reversed wording preserve structural identity.
 
+The Mode 1 maximum-interference override explicitly delegates Mode 2 generation back through the preserved Mode 2 router. Switching to Mode 2 hides the five-decision conflict matrix and restores its original response controls.
+
 ### Exact relational core
 
-Both modes use the same exact 16-direction compass algebra. The core rejects:
+Both modes use the same exact compass algebra. The core rejects:
 
 - adjacent but non-identical directions;
 - subject/object reversal without direction inversion;
@@ -62,23 +61,23 @@ Both modes use the same exact 16-direction compass algebra. The core rejects:
 
 ## Validation
 
-The repository includes independent tests for:
+GitHub Actions independently validate:
 
-- all N-back levels from 1 through 8;
-- five mandatory Mode 1 decisions per scored trial;
-- globally consistent letter mapping;
-- one-to-one statement assignment;
+- every N-back level from 1 through 8;
+- 4-, 8- and 16-direction sessions;
+- exact two-retained/one-replaced N-back identity updates;
+- mandatory immediate-predecessor continuity;
+- the direct N=1 zero-overlap regression;
+- exact two-of-three NO MATCH lures;
+- five mandatory decisions per scored trial;
+- globally consistent letter mapping and one-to-one statement assignment;
 - role-sensitive and role-flexible alignment;
 - inverse-wording equivalence;
-- exact 16-direction discrimination;
-- all zero-, one- and two-of-three non-match masks;
-- controlled maximum-interference two-of-three lures;
-- current-trial entailment separated from historical matching;
-- complete-triad matching;
-- native per-decision scoring metadata;
-- Mode 2 structural comparison;
-- ontology and form-label scoring neutrality.
-
-GitHub Actions runs separate Mode 1 conflict-matrix, canonical Mode 2 and deep Mode 2 validation jobs.
+- current-trial entailment independently from historical matching;
+- logical-response-vector invariance after relettering;
+- browser script order, fail-closed installation and cache-key deployment;
+- a real Chromium session that starts Mode 1, answers all five controls, advances through live trials and verifies the displayed premises;
+- preservation of Mode 2 generation and controls;
+- the deployed GitHub Pages application after changes reach `main`.
 
 This is a theoretically motivated cognitive-training design. It is not validated evidence that training increases general fluid intelligence or GAMSAT performance.

@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -11,11 +12,12 @@ permissions:
 jobs:
   validate-max-interference:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
       - name: Check maximum-interference runtime syntax
         run: node --check mode-one-letter-continuity-v1.js
       - name: Validate N=1–8 partial identity updates and exact logical lures

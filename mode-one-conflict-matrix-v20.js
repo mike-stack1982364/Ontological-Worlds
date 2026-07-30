@@ -118,14 +118,24 @@
     const matrix = d.getElementById('conflict-matrix');
     if (!matrix) return;
     const ui = ensureResolutionUI(d, app), input = installMatrixInput(rootObject, app, matrix);
-    const originalSettings = app.settings.bind(app), originalStart = app.start.bind(app), originalNextTrial = app.nextTrial.bind(app), originalStop = app.stop.bind(app), originalTogglePause = app.togglePause?.bind(app);
+    const syncMatrixVisibility = () => {
+      const isModeOne = Number(d.getElementById('logic-mode')?.value || 0) === 0;
+      d.body.classList.toggle('mode-one-conflict-active', isModeOne);
+      matrix.hidden = !isModeOne;
+      matrix.setAttribute('aria-hidden', String(!isModeOne));
+      matrix.style.setProperty('display', isModeOne ? 'block' : 'none', 'important');
+      return isModeOne;
+    };
+    d.getElementById('logic-mode')?.addEventListener('change', syncMatrixVisibility);
+    syncMatrixVisibility();
+    const originalSettings = app.settings.bind(app), originalMakeTrial = app.makeTrial.bind(app), originalStart = app.start.bind(app), originalNextTrial = app.nextTrial.bind(app), originalStop = app.stop.bind(app), originalTogglePause = app.togglePause?.bind(app);
     const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation');
     let advanceTimerId = null;
     app.settings = function() { const settings = originalSettings(); return { ...settings, directionResolution: this.running ? this.directionResolution : ui.getSelected() }; };
     app.getSelectedDirectionResolution = ui.getSelected;
     app.validateDirectionResolutionBeforeStart = ui.validate;
     app.makeTrial = function() {
-      if (Number(originalSettings().mode) !== 0) return null;
+      if (Number(originalSettings().mode) !== 0) return originalMakeTrial();
       const resolution = requireSpatial().normaliseResolution(this.directionResolution, null);
       if (!resolution) throw new Error('Mode 1 cannot generate a trial without a frozen compass resolution.');
       const settings = originalSettings(), level = Math.max(1, Math.min(8, Math.round(Number(this.n || settings.n) || 1))), interferenceLevel = Number(d.getElementById('interference-slider')?.value) || 0;
@@ -145,6 +155,21 @@
         try {
           const candidate = clearPresentationState(this.makeTrial());
           if (!candidate || !ensureResolutionClosed(candidate, resolution)) throw new Error('Generated trial failed resolution validation.');
+          if (this.__modeOneAuthoritativeMaxInterferenceInstalled) {
+            const history = Array.isArray(this.trials) ? this.trials : [];
+            const level = Math.max(1, Math.min(8, Math.round(Number(this.n || d.getElementById('n-slider')?.value) || 1)));
+            const previous = history[history.length - 1] || null;
+            const target = history[history.length - level] || null;
+            if (candidate.interferenceLevel !== 100 || candidate.maxLogicalInterference !== true) throw new Error('Mode 1 candidate escaped fixed 100% logical interference.');
+            if (target) {
+              if (typeof this.assertModeOneMaximumInterference !== 'function') throw new Error('Maximum-interference validator is unavailable.');
+              this.assertModeOneMaximumInterference(target, previous, candidate);
+            } else if (previous) {
+              const previousLetters = trialLetters(previous), currentLetters = trialLetters(candidate);
+              const overlap = currentLetters.filter(letter => previousLetters.includes(letter)).length;
+              if (!candidate.nBackWarmup || overlap !== 2) throw new Error('Mode 1 warm-up candidate violated two-retained/one-replaced continuity.');
+            }
+          }
           candidate.submitted = false;
           const candidateRendered = requireSpatial().renderTrial(candidate);
           if (typeof candidateRendered !== 'string' || !candidateRendered.trim()) throw new Error('Mode 1 rendered an empty premise.');

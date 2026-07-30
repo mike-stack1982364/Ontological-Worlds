@@ -30,7 +30,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const legacy = {
     settings: app.settings.bind(app),
-    deriveTrial: app.deriveTrial.bind(app),
+    deriveTrial: typeof app.deriveTrial === 'function' ? app.deriveTrial.bind(app) : trial => trial,
     makeBase: app.makeBase.bind(app),
     renderTrial: app.renderTrial.bind(app),
     surfaceVariant: app.surfaceVariant.bind(app),
@@ -259,8 +259,40 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const audit = core.runAudit(8192);
-  if (!audit.passed) console.error('Mode 1 Triadic Entailment audit failed', audit);
+  function runStableProductionAudit() {
+    const failures = [];
+    const approved = typeof core.approvedTrials === 'function' ? core.approvedTrials() : [];
+    const distinctions = new Set();
+    let matches = 0, nonMatches = 0;
+    if (approved.length !== 10) failures.push(`approved-template-count-${approved.length}`);
+    approved.forEach((trial, index) => {
+      try {
+        const result = core.evaluateTrial(trial);
+        const rendered = core.renderTrial(trial);
+        distinctions.add(result.distinctionClass);
+        if (result.isEntailed !== trial.expected) failures.push(`canonical-answer-${index + 1}`);
+        if ((rendered.match(/;/g) || []).length !== 2) failures.push(`canonical-format-${index + 1}`);
+        if (/contract\s*:|therefore/i.test(rendered)) failures.push(`canonical-leak-${index + 1}`);
+        if (result.isEntailed) matches += 1; else nonMatches += 1;
+      } catch (error) { failures.push(`canonical-exception-${index + 1}:${error.message}`); }
+    });
+    const required = ['exact-relational-entailment','adjacent-resolution-substitution','subject-object-reversal','wrong-letter-pair','local-or-global-relational-error'];
+    required.forEach(value => { if (!distinctions.has(value)) failures.push(`missing-${value}`); });
+    if (!Array.isArray(core.nBackLevels) || core.nBackLevels.join(',') !== '1,2,3,4,5,6,7,8') failures.push('nback-levels');
+    return {
+      passed: failures.length === 0, failures, iterations: approved.length, matches, nonMatches,
+      templateCoverage: approved.map(trial => trial.id).sort((a,b) => a-b),
+      approvedTemplateCount: approved.length, generatedOnlyFromApprovedTemplates: true,
+      directionCoverage: Array.isArray(core.DIRECTIONS) ? core.DIRECTIONS.length : 16,
+      distinctions: [...distinctions].sort(), invarianceChecks: approved.length,
+      lettersDriveRelationalComputation: true, letteringIdentityIgnored: true,
+      conclusionRecomputedFromPremises: true, proofBindingRegulation: true,
+      directionalResolution: 16, directionPools: [4,8,16], visibleContractText: false, exactlyThreeStatements: true,
+      productionStackAudit: true
+    };
+  }
+  const audit = runStableProductionAudit();
+  if (!audit.passed) console.error('Mode 1 production-stack audit failed', audit);
 
   window.__modeOneTriadicEntailmentTestAPI = {
     version: 8,

@@ -29,7 +29,7 @@
     body.extra-training-open{overflow:hidden}
     .game-area{overflow:visible!important}
     .response-stage{position:relative;width:100%;height:214px;flex:0 0 214px;margin:0;overflow:visible}
-    .response-buttons{display:none!important}
+    body.mode-one-conflict-active .response-buttons{display:none!important}
     .timer-container{display:none!important}
     #conflict-matrix{display:block!important;position:absolute;z-index:5;top:0;left:50%;transform:translateX(-50%);width:100vw;max-width:none;margin:0;padding:8px clamp(8px,1.4vw,22px);background:rgba(255,255,255,.98);border-top:1px solid #c8d3df;border-bottom:1px solid #c8d3df;box-sizing:border-box}
     .conflict-heading{font-weight:900;letter-spacing:.055em;text-transform:uppercase;margin:0 auto 7px;color:#173f67;text-align:center;font-size:clamp(.72rem,1vw,.95rem)}
@@ -45,7 +45,7 @@
     .conflict-feedback-icon.correct{color:#087a3f!important}.conflict-feedback-icon.incorrect{color:#b42318!important}
     .conflict-row[data-decision="4"] .conflict-choice[data-value="1"]{font-size:clamp(.72rem,1.05vw,1.18rem);letter-spacing:.015em;white-space:nowrap;padding-left:2px;padding-right:2px}
     .conflict-choice[data-value="1"]{background:#e9f8ef;color:#086b3a;border:2px solid #55a879}
-    .conflict-choice[data-value="0"]{background:#fff0ef;color:#a61f17;border:2px solid #d78b86}
+    .conflict-choice[data-value="0"]{background:#F3E8FF;color:#6B21A8;border:2px solid #C084FC}
     .conflict-row[data-decision="3"] .conflict-choice{background:#eef4fb;color:#123f6b;border-color:#8fa3b9}
     .conflict-choice.selected{outline:4px solid #183f67;outline-offset:2px}.conflict-choice[disabled]{opacity:.64}
     #conflict-submit{display:block;width:min(100%,620px);min-height:38px;margin:8px auto 0;padding:8px 12px;border-radius:10px;font-size:.72rem;font-weight:900;text-transform:uppercase}
@@ -66,7 +66,7 @@
       <div id="direction-resolution-group" class="control-group"><label for="direction-resolution">Compass directions</label><select id="direction-resolution" aria-describedby="direction-resolution-help direction-resolution-error" aria-invalid="false"><option value="">Choose direction count…</option><option value="4">4 directions</option><option value="8">8 directions</option><option value="16">16 directions — full resolution</option></select><p id="direction-resolution-help">4 uses north, east, south and west. 8 adds northeast, southeast, southwest and northwest. 16 adds the intermediate directions. Cognitive interference changes lure difficulty, not compass resolution.</p><p id="direction-resolution-error" role="alert" hidden>Select 4, 8 or 16 compass directions before starting Mode 1.</p><div id="direction-resolution-status" aria-live="polite">COMPASS RESOLUTION: NOT SELECTED</div></div>
       <div class="control-group"><label for="session-slider">Session: <span id="session-val">15 MIN</span></label><input id="session-slider" type="range" min="1" max="120" step="1" value="15"></div>
       <div class="control-group"><label for="prob-slider">Whole-triad match probability: <span id="prob-val">35%</span></label><input id="prob-slider" type="range" min="15" max="60" step="1" value="35"></div>
-      <div class="control-group"><label for="interference-slider">Cognitive interference: <span id="interference-val">60%</span></label><input id="interference-slider" type="range" min="0" max="100" step="5" value="60" aria-describedby="interference-help"><p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Controls partial statement matches, resolution-aware near-misses, relational reversals, surface-letter remapping and near-complete triads. At maximum, non-match trials strongly favour two-of-three statement matches with one exact relational conflict.</p></div>
+      <div class="control-group"><label for="interference-slider">Cognitive interference: <span id="interference-val">100% — FIXED</span></label><input id="interference-slider" type="range" min="100" max="100" step="1" value="100" disabled aria-disabled="true" aria-valuemin="100" aria-valuemax="100" aria-valuenow="100" aria-valuetext="Maximum logical interference, fixed at 100 percent" aria-describedby="interference-help"><p id="interference-help" style="font-size:.75rem;color:#43566d;line-height:1.45;margin-top:8px">Mode 1 is fixed at maximum logical interference. Every scored trial retains exactly two letter identities from its N-back target, replaces exactly one, preserves a bridge to the immediately preceding trial, and makes every NO MATCH an exact two-of-three logical lure.</p></div>
       <div class="control-group" aria-labelledby="accessibility-label"><label id="accessibility-label">Premise accessibility</label><p style="font-size:.75rem;color:#43566d;line-height:1.45;margin-bottom:10px">Every generated premise is supplied through visible text and optional speech using the same canonical content.</p><div class="toggle-row"><label><input id="audio-only" type="checkbox"> Audio-only display</label><label><input id="keyboard" type="checkbox" checked> Keyboard controls</label><label><input id="haptic" type="checkbox" checked> Haptics</label><label><input id="adaptive" type="checkbox"> Adaptive N</label></div><input id="hide-text" type="checkbox" hidden aria-hidden="true" tabindex="-1"></div>
       <div class="control-group"><label for="rate-slider">Spoken-premise rate: <span id="rate-val">0.85x</span></label><input id="rate-slider" type="range" min="0.4" max="1.6" step="0.05" value="0.85"></div>
       <div class="control-group"><label for="premise-vol">Spoken-premise volume: <span id="premise-vol-val">70%</span></label><input id="premise-vol" type="range" min="0" max="100" step="1" value="70"><div class="vol-meter" aria-hidden="true"><div id="premise-vol-meter"></div></div><button id="premise-test-btn" class="small-btn" type="button" style="margin-top:10px">🔊 Test premise volume</button></div>
@@ -92,10 +92,10 @@
   <script src="mode-router-v2.js"></script>
   <script src="mode-two-ontology-nback-v14.js"></script>
   <script src="mode-one-completion-v10.js"></script>
-  <script src="mode-one-completion-v11.js"></script>
+  <script src="mode-one-completion-v11.js?v=20260727-max-generator-owner-1"></script>
   <script src="audio-accessibility.js"></script>
   <script src="extra-training.js"></script>
-  <script src="mode-one-conflict-matrix-v20.js?v=20260726-submission-state-fix-1"></script>
-  <script src="mode-one-letter-continuity-v1.js?v=20260726-authoritative-max-logic-2"></script>
+  <script src="mode-one-conflict-matrix-v20.js?v=20260727-max-interference-3"></script>
+  <script src="mode-one-letter-continuity-v1.js?v=20260727-authoritative-max-logic-3"></script>
 </body>
 </html>

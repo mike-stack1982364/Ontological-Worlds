@@ -1,0 +1,64 @@
+name: Comprehensive relational validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-complete-stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install DOM test runtime
+        run: npm install --no-save jsdom@26
+      - name: Run complete relational validation suite
+        shell: bash
+        run: |
+          mkdir -p diagnostic-logs
+          : > diagnostic-logs/summary.txt
+          failures=0
+          run_test() {
+            local name="$1"
+            shift
+            echo "===== $name =====" | tee -a diagnostic-logs/summary.txt
+            set +e
+            "$@" >"diagnostic-logs/${name}.log" 2>&1
+            local code=$?
+            set -e
+            echo "exit=$code" | tee -a diagnostic-logs/summary.txt
+            echo >> diagnostic-logs/summary.txt
+            if [ "$code" -ne 0 ]; then failures=$((failures + 1)); fi
+          }
+          run_test spatial-entailment node tests/mode-one-spatial-entailment.test.js
+          run_test approved-v7 node tests/mode-one-approved-trials-v7.test.js
+          run_test nback-v8 node tests/mode-one-nback-v8.test.js
+          run_test nback-v9 node tests/mode-one-nback-v9.test.js
+          run_test nback-v10 node tests/mode-one-nback-v10.test.js
+          run_test nback-v11 node tests/mode-one-nback-v11.test.js
+          run_test mode-one-match-logic node tests/mode-one-match-logic.test.js
+          run_test mode-two-v14 node tests/mode-two-ontology-nback-v14.test.js
+          run_test mode-two-v15 node tests/mode-two-ontology-nback-deep-v15.test.js
+          run_test conflict-matrix node tests/mode-one-conflict-matrix-v20.test.js
+          run_test browser-contract node tests/mode-one-browser-contract-v21.test.js
+          run_test interference-smoke node tests/interference-smoke.mjs
+          run_test profile-browser node tests/profile-nback-browser-smoke.mjs
+          run_test level-browser node tests/level-curriculum-browser-smoke.mjs
+          run_test meta-browser node tests/meta-curriculum-browser-smoke.mjs
+          run_test max-interference node tests/mode-one-max-interference-v2.test.js
+          cat diagnostic-logs/summary.txt
+          test "$failures" -eq 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: comprehensive-relational-diagnostics
+          path: diagnostic-logs
+          if-no-files-found: error

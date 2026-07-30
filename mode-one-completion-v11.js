@@ -91,9 +91,9 @@ window.addEventListener('DOMContentLoaded', () => {
     modeTwoPreserved: true
   };
 
-  // Run after every DOMContentLoaded installer has finished. The conflict-matrix
-  // runtime is loaded later in index.html and must own nextTrial, while this
-  // final patch supplies one deterministic, resolution-closed makeTrial.
+  // This callback runs after every DOMContentLoaded installer. It retains the
+  // old resolution-safe fallback for installations without the authoritative
+  // runtime, and adds a narrow seed guard when maximum interference is active.
   window.setTimeout(() => {
     const runtime = window.__modeOneConflictMatrixV20;
     const liveApp = window.__ontologicalWorlds;
@@ -117,8 +117,6 @@ window.addEventListener('DOMContentLoaded', () => {
         { subject: first, relation, object: bridge },
         { subject: bridge, relation, object: last }
       ];
-      // Inversion preserves each relation semantically and therefore preserves
-      // the endpoint result, while retaining surface-form variation.
       premises = premises.map(statement => random(rng) < 0.5 ? spatial.invert(statement) : statement);
       if (random(rng) < 0.5) premises.reverse();
 
@@ -146,6 +144,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
       Object.assign(trial, {
         expectedRelation: evaluation.expectedRelation,
+        distinctionClass: evaluation.distinctionClass,
         isEntailed: evaluation.isEntailed,
         conclusionEntailed: evaluation.isEntailed,
         isMatch: false,
@@ -155,10 +154,42 @@ window.addEventListener('DOMContentLoaded', () => {
         conflictResponseVector: [false, false, false, evaluation.isEntailed, false],
         mappingConflict: false,
         localStatementCompatibility: [false, false, false],
-        roleSensitive: false,
+        roleSensitive: true,
         interferenceProfile: `R${resolution}:000:${Number(evaluation.isEntailed)}:0`
       });
       return trial;
+    }
+
+    if (liveApp.__modeOneAuthoritativeMaxInterferenceInstalled) {
+      // The authoritative runtime reasserts ownership at 0 ms and 50 ms. Install
+      // this guard after that point and alter only the first, unscored seed.
+      window.setTimeout(() => {
+        if (!liveApp.__modeOneAuthoritativeMaxInterferenceInstalled || liveApp.__modeOneResolutionClosedSeedGuardInstalled) return;
+        const authoritativeMakeTrial = liveApp.makeTrial.bind(liveApp);
+        liveApp.makeTrial = function maximumInterferenceSeedGuard_generateMaximalWarmupTrial(...args) {
+          const settings = this.settings();
+          if (Number(settings.mode) !== 0) return authoritativeMakeTrial(...args);
+          const history = Array.isArray(this.trials) ? this.trials : [];
+          if (history.length) return authoritativeMakeTrial(...args);
+          const resolution = spatial.normaliseResolution(this.directionResolution ?? settings.directionResolution, null);
+          if (!resolution) throw new Error('Maximum-interference seed guard requires a frozen compass resolution.');
+          const seed = safeWarmup(this.rng, resolution, 100);
+          seed.maxLogicalInterference = true;
+          seed.logicalInterference = Object.freeze({
+            level: 100,
+            source: 'initial-resolution-closed-seed',
+            initialTrial: true,
+            directionResolution: resolution,
+            valid: true
+          });
+          if (!runtime.ensureResolutionClosed(seed, resolution)) {
+            throw new Error('Maximum-interference seed guard produced a non-closed trial.');
+          }
+          return seed;
+        };
+        liveApp.__modeOneResolutionClosedSeedGuardInstalled = true;
+      }, 75);
+      return;
     }
 
     liveApp.makeTrial = function resolutionClosedModeOneTrial() {
