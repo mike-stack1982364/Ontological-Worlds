@@ -66,13 +66,17 @@ assert.match(tutorialSource, /A, D, H, K and SPACEBAR/);
 assert.match(tutorialSource, /single best valid shared alignment/);
 assert.match(tutorialSource, /exact end-to-end conclusion/);
 assert.match(tutorialSource, /matching-tutorial-key green/);
+assert.match(tutorialSource, /matching-tutorial-key statement-purple/);
 assert.match(tutorialSource, /matching-tutorial-key light-purple/);
 assert.match(tutorialSource, /matching-tutorial-key icy-blue/);
 assert.match(tutorialSource, /matching-tutorial-key ocean-blue/);
 assert.match(tutorialSource, /matching-tutorial-key dark-purple/);
+assert.match(tutorialSource, /background:#5B21B6;color:#FFFFFF;border-color:#3B0764/);
 assert.match(tutorialSource, /background:#D7F2FF;color:#08385F;border-color:#58B8E8/);
 assert.match(tutorialSource, /background:#174A8B;color:#FFFFFF;border-color:#0A2E5C/);
 assert.match(tutorialSource, /background:#4C1D95;color:#FFFFFF;border-color:#2E1065/);
+assert.match(tutorialSource, /DARK PURPLE = THIS STATEMENT DOES NOT MATCH/);
+assert.match(tutorialSource, /LIGHT PURPLE = THE WHOLE TRIAD DOES NOT MATCH/);
 assert.match(tutorialSource, /DARK PURPLE = THE WHOLE TRIAD MATCHES/);
 assert.doesNotMatch(tutorialSource, /GREEN = YES<br>A · D · H · SPACEBAR/);
 assert.doesNotMatch(tutorialSource, /BLUE = EXACT END-TO-END CONCLUSION/);
@@ -83,5 +87,5 @@ console.log(JSON.stringify({
   buttonDesktopMinHeight: 68,
   buttonMobileMinHeight: 62,
   buttonWidthUnchanged: 'min(100%,620px)',
-  colourMappingsAudited: 5
+  colourMappingsAudited: 6
 }, null, 2));

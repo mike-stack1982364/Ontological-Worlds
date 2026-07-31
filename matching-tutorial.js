@@ -38,6 +38,7 @@
       .matching-tutorial-keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:14px 0}
       .matching-tutorial-key{padding:12px;border-radius:12px;text-align:center;font-weight:850;border:2px solid transparent}
       .matching-tutorial-key.green{background:#E9F8EF;color:#086B3A;border-color:#55A879}
+      .matching-tutorial-key.statement-purple{background:#5B21B6;color:#FFFFFF;border-color:#3B0764}
       .matching-tutorial-key.light-purple{background:#F1E4FF;color:#6818A5;border-color:#B96AF4}
       .matching-tutorial-key.icy-blue{background:#D7F2FF;color:#08385F;border-color:#58B8E8}
       .matching-tutorial-key.ocean-blue{background:#174A8B;color:#FFFFFF;border-color:#0A2E5C}
@@ -88,17 +89,18 @@
             <li><strong>2-back:</strong> skip one card and compare with the card before that.</li>
             <li><strong>3-back:</strong> compare with the card three places earlier.</li>
           </ul>
-          <p>During the first N setup cards there is no target card yet. On those setup cards, all four N-back answers are NO: use the light-purple S, F, J and N buttons. You still solve the current-card logic question with icy-blue K for YES or dark-ocean-blue L for NO.</p>
+          <p>During the first N setup cards there is no target card yet. On those setup cards, all four N-back answers are NO: use the dark-purple S, F and J buttons, plus the light-purple N button. You still solve the current-card logic question with icy-blue K for YES or dark-ocean-blue L for NO.</p>
 
           <h3>What the colours and keys mean</h3>
           <div class="matching-tutorial-keys">
             <div class="matching-tutorial-key green"><strong>A · D · H</strong><br>GREEN = THIS STATEMENT MATCHES</div>
-            <div class="matching-tutorial-key light-purple"><strong>S · F · J · N</strong><br>LIGHT PURPLE = NO MATCH</div>
+            <div class="matching-tutorial-key statement-purple"><strong>S · F · J</strong><br>DARK PURPLE = THIS STATEMENT DOES NOT MATCH</div>
+            <div class="matching-tutorial-key light-purple"><strong>N</strong><br>LIGHT PURPLE = THE WHOLE TRIAD DOES NOT MATCH</div>
             <div class="matching-tutorial-key icy-blue"><strong>K</strong><br>ICY BLUE = STATEMENT 3 IS EXACTLY ENTAILED</div>
             <div class="matching-tutorial-key ocean-blue"><strong>L</strong><br>DARK OCEAN BLUE = STATEMENT 3 IS NOT ENTAILED</div>
             <div class="matching-tutorial-key dark-purple"><strong>SPACEBAR</strong><br>DARK PURPLE = THE WHOLE TRIAD MATCHES</div>
           </div>
-          <p><strong>Each colour has one fixed job.</strong> Green A/D/H and light-purple S/F/J answer the three statement-match questions. Icy-blue K and dark-ocean-blue L answer the current-card entailment question. Dark-purple SPACEBAR and light-purple N answer the complete-triad question.</p>
+          <p><strong>Each colour has one fixed job.</strong> Green A/D/H and dark-purple S/F/J answer the three statement-match questions. Icy-blue K and dark-ocean-blue L answer the current-card entailment question. Deep-purple SPACEBAR and light-purple N answer the complete-triad question.</p>
           <div class="matching-tutorial-callout"><strong>Do not use colour alone as a shortcut.</strong> YES has different colours for different questions: green for a statement match, icy blue for correct entailment, and dark purple for a complete-triad match.</div>
 
           <h3>The five exact questions</h3>
@@ -153,7 +155,7 @@
             <li>Choose one pairing for the two premises: same order or swapped order.</li>
             <li>Keep Statement 3 paired only with old Statement 3.</li>
             <li>Count reversed wording only when the letters swap and the compass direction becomes its exact opposite.</li>
-            <li>Use the green A, D or H button when that current statement matches under the shared alignment; use the light-purple S, F or J button when it does not.</li>
+            <li>Use the green A, D or H button when that current statement matches under the shared alignment; use the dark-purple S, F or J button when it does not.</li>
           </ol>
           <p>The game checks all valid one-to-one mappings and the two allowed premise orders, then scores the alignment with the greatest number of matching statements.</p>
 
