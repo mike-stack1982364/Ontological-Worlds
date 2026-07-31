@@ -89,3 +89,5 @@ console.log(JSON.stringify({
   buttonWidthUnchanged: 'min(100%,620px)',
   colourMappingsAudited: 6
 }, null, 2));
+
+// This branch-only marker triggers the main-branch tutorial palette synchronisation workflow.
