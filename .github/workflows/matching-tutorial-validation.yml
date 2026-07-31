@@ -16,7 +16,7 @@ on:
       - .github/workflows/matching-tutorial-validation.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
@@ -24,10 +24,111 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Synchronise tutorial with current response palette
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once_or_confirm(path, old, new):
+              source = path.read_text(encoding='utf-8')
+              old_count = source.count(old)
+              new_count = source.count(new)
+              if old_count == 1 and new_count == 0:
+                  path.write_text(source.replace(old, new, 1), encoding='utf-8')
+                  return
+              if old_count == 0 and new_count == 1:
+                  return
+              raise SystemExit(f'{path}: unexpected old/new counts {old_count}/{new_count}')
+
+          tutorial = Path('matching-tutorial.js')
+          pairs = [
+              ('      .matching-tutorial-key.green{background:#E9F8EF;color:#086B3A;border-color:#55A879}',
+               '      .matching-tutorial-key.green{background:#D9F0FF;color:#08385F;border-color:#5AB5E6}'),
+              ('      .matching-tutorial-key.statement-purple{background:#5B21B6;color:#FFFFFF;border-color:#3B0764}',
+               '      .matching-tutorial-key.statement-purple{background:#123A6D;color:#FFFFFF;border-color:#082A52}'),
+              ('      .matching-tutorial-key.icy-blue{background:#D7F2FF;color:#08385F;border-color:#58B8E8}',
+               '      .matching-tutorial-key.icy-blue{background:#DDF7E8;color:#075A37;border-color:#58B883}'),
+              ('      .matching-tutorial-key.ocean-blue{background:#174A8B;color:#FFFFFF;border-color:#0A2E5C}',
+               '      .matching-tutorial-key.ocean-blue{background:#0B5D3B;color:#FFFFFF;border-color:#063B27}'),
+              ('          <p>During the first N setup cards there is no target card yet. On those setup cards, all four N-back answers are NO: use the dark-purple S, F and J buttons, plus the light-purple N button. You still solve the current-card logic question with icy-blue K for YES or dark-ocean-blue L for NO.</p>',
+               '          <p>During the first N setup cards there is no target card yet. On those setup cards, all four N-back answers are NO: use the dark-blue S, F and J buttons, plus the light-purple N button. You still solve the current-card logic question with light-green K for YES or dark-green L for NO.</p>'),
+              ('            <div class="matching-tutorial-key green"><strong>A · D · H</strong><br>GREEN = THIS STATEMENT MATCHES</div>',
+               '            <div class="matching-tutorial-key green"><strong>A · D · H</strong><br>LIGHT BLUE = THIS STATEMENT MATCHES</div>'),
+              ('            <div class="matching-tutorial-key statement-purple"><strong>S · F · J</strong><br>DARK PURPLE = THIS STATEMENT DOES NOT MATCH</div>',
+               '            <div class="matching-tutorial-key statement-purple"><strong>S · F · J</strong><br>DARK BLUE = THIS STATEMENT DOES NOT MATCH</div>'),
+              ('            <div class="matching-tutorial-key icy-blue"><strong>K</strong><br>ICY BLUE = STATEMENT 3 IS EXACTLY ENTAILED</div>',
+               '            <div class="matching-tutorial-key icy-blue"><strong>K</strong><br>LIGHT GREEN = STATEMENT 3 IS EXACTLY ENTAILED</div>'),
+              ('            <div class="matching-tutorial-key ocean-blue"><strong>L</strong><br>DARK OCEAN BLUE = STATEMENT 3 IS NOT ENTAILED</div>',
+               '            <div class="matching-tutorial-key ocean-blue"><strong>L</strong><br>DARK GREEN = STATEMENT 3 IS NOT ENTAILED</div>'),
+              ('          <p><strong>Each colour has one fixed job.</strong> Green A/D/H and dark-purple S/F/J answer the three statement-match questions. Icy-blue K and dark-ocean-blue L answer the current-card entailment question. Deep-purple SPACEBAR and light-purple N answer the complete-triad question.</p>',
+               '          <p><strong>Each colour has one fixed job.</strong> Light-blue A/D/H and dark-blue S/F/J answer the three statement-match questions. Light-green K and dark-green L answer the current-card entailment question. Deep-purple SPACEBAR and light-purple N answer the complete-triad question.</p>'),
+              ('          <div class="matching-tutorial-callout"><strong>Do not use colour alone as a shortcut.</strong> YES has different colours for different questions: green for a statement match, icy blue for correct entailment, and dark purple for a complete-triad match.</div>',
+               '          <div class="matching-tutorial-callout"><strong>Do not use colour alone as a shortcut.</strong> YES has different colours for different questions: light blue for a statement match, light green for correct entailment, and dark purple for a complete-triad match.</div>'),
+              ('            <li>Use the green A, D or H button when that current statement matches under the shared alignment; use the dark-purple S, F or J button when it does not.</li>',
+               '            <li>Use the light-blue A, D or H button when that current statement matches under the shared alignment; use the dark-blue S, F or J button when it does not.</li>'),
+              ('          <h3>The icy-blue K / dark-ocean-blue L question: is Statement 3 the exact end-to-end conclusion?</h3>',
+               '          <h3>The light-green K / dark-green L question: is Statement 3 the exact end-to-end conclusion?</h3>'),
+              ('          <p>The icy-blue K / dark-ocean-blue L pair does not decide the complete-triad answer. It checks the current card’s end-to-end logic. The dark-purple SPACEBAR / light-purple N pair checks whether the current three-statement structure matches the N-back card.</p>',
+               '          <p>The light-green K / dark-green L pair does not decide the complete-triad answer. It checks the current card’s end-to-end logic. The dark-purple SPACEBAR / light-purple N pair checks whether the current three-statement structure matches the N-back card.</p>')
+          ]
+          for old, new in pairs:
+              replace_once_or_confirm(tutorial, old, new)
+
+          tests = Path('tests/matching-tutorial-logic.test.js')
+          old = """assert.match(tutorialSource, /background:#5B21B6;color:#FFFFFF;border-color:#3B0764/);
+assert.match(tutorialSource, /background:#D7F2FF;color:#08385F;border-color:#58B8E8/);
+assert.match(tutorialSource, /background:#174A8B;color:#FFFFFF;border-color:#0A2E5C/);
+assert.match(tutorialSource, /background:#4C1D95;color:#FFFFFF;border-color:#2E1065/);
+assert.match(tutorialSource, /DARK PURPLE = THIS STATEMENT DOES NOT MATCH/);
+assert.match(tutorialSource, /LIGHT PURPLE = THE WHOLE TRIAD DOES NOT MATCH/);
+assert.match(tutorialSource, /DEEP PURPLE = THE WHOLE TRIAD MATCHES/);"""
+          new = """assert.match(tutorialSource, /background:#D9F0FF;color:#08385F;border-color:#5AB5E6/);
+assert.match(tutorialSource, /background:#123A6D;color:#FFFFFF;border-color:#082A52/);
+assert.match(tutorialSource, /background:#DDF7E8;color:#075A37;border-color:#58B883/);
+assert.match(tutorialSource, /background:#0B5D3B;color:#FFFFFF;border-color:#063B27/);
+assert.match(tutorialSource, /background:#4C1D95;color:#FFFFFF;border-color:#2E1065/);
+assert.match(tutorialSource, /LIGHT BLUE = THIS STATEMENT MATCHES/);
+assert.match(tutorialSource, /DARK BLUE = THIS STATEMENT DOES NOT MATCH/);
+assert.match(tutorialSource, /LIGHT GREEN = STATEMENT 3 IS EXACTLY ENTAILED/);
+assert.match(tutorialSource, /DARK GREEN = STATEMENT 3 IS NOT ENTAILED/);
+assert.match(tutorialSource, /LIGHT PURPLE = THE WHOLE TRIAD DOES NOT MATCH/);
+assert.match(tutorialSource, /DEEP PURPLE = THE WHOLE TRIAD MATCHES/);
+assert.doesNotMatch(tutorialSource, /GREEN = THIS STATEMENT MATCHES/);
+assert.doesNotMatch(tutorialSource, /DARK PURPLE = THIS STATEMENT DOES NOT MATCH/);
+assert.doesNotMatch(tutorialSource, /ICY BLUE = STATEMENT 3 IS EXACTLY ENTAILED/);
+assert.doesNotMatch(tutorialSource, /DARK OCEAN BLUE = STATEMENT 3 IS NOT ENTAILED/);"""
+          replace_once_or_confirm(tests, old, new)
+
+          index = Path('index.html')
+          replace_once_or_confirm(index,
+              '  <script src="matching-tutorial.js?v=20260731-4"></script>',
+              '  <script src="matching-tutorial.js?v=20260731-5"></script>')
+          PY
+
       - name: Check tutorial JavaScript syntax
-        run: node --check matching-tutorial.js
-      - name: Audit tutorial examples against game logic
+        run: |
+          node --check matching-tutorial.js
+          node --check response-palette-v2.js
+
+      - name: Audit tutorial examples and current palette
         run: node tests/matching-tutorial-logic.test.js
+
+      - name: Commit palette synchronisation when needed
+        if: github.event_name == 'push'
+        run: |
+          if git diff --quiet; then
+            echo 'Tutorial palette is already synchronised.'
+            exit 0
+          fi
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add matching-tutorial.js tests/matching-tutorial-logic.test.js index.html
+          git commit -m 'Synchronise Matching Tutorial with current response palette'
+          git push origin HEAD:main
