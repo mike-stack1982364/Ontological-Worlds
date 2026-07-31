@@ -1,0 +1,46 @@
+name: Apply dark-purple SPACEBAR styling
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-dark-purple-spacebar.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply isolated SPACEBAR colour override
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          source = path.read_text(encoding='utf-8')
+          anchor = '    .conflict-choice[data-value="1"]{background:#e9f8ef;color:#086b3a;border:2px solid #55a879}'
+          addition = '    .conflict-row[data-decision="4"] .conflict-choice[data-value="1"]:not(.feedback-correct):not(.feedback-incorrect){background:#4C1D95!important;color:#FFFFFF!important;border:2px solid #2E1065!important}'
+          if addition in source:
+              raise SystemExit('SPACEBAR dark-purple rule already exists.')
+          count = source.count(anchor)
+          if count != 1:
+              raise SystemExit(f'Expected exactly one positive-button anchor, found {count}.')
+          path.write_text(source.replace(anchor, anchor + '\n' + addition, 1), encoding='utf-8')
+          PY
+      - name: Verify isolated styling change
+        run: |
+          grep -F 'data-decision="4"] .conflict-choice[data-value="1"]:not(.feedback-correct):not(.feedback-incorrect){background:#4C1D95!important;color:#FFFFFF!important;border:2px solid #2E1065!important}' index.html
+          git diff --check
+      - name: Commit styling update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Style SPACEBAR as a readable dark purple'
+          git push origin HEAD:main
