@@ -1,0 +1,64 @@
+name: Finalize dark-purple S F J styling
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/finalize-dark-purple-statement-buttons.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Finalize tutorial shade naming and cache version
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new, label):
+              source = path.read_text(encoding='utf-8')
+              count = source.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected one occurrence, found {count}.')
+              path.write_text(source.replace(old, new, 1), encoding='utf-8')
+
+          replace_once(
+              Path('matching-tutorial.js'),
+              '<div class="matching-tutorial-key dark-purple"><strong>SPACEBAR</strong><br>DARK PURPLE = THE WHOLE TRIAD MATCHES</div>',
+              '<div class="matching-tutorial-key dark-purple"><strong>SPACEBAR</strong><br>DEEP PURPLE = THE WHOLE TRIAD MATCHES</div>',
+              'SPACEBAR tutorial shade label'
+          )
+          replace_once(
+              Path('tests/matching-tutorial-logic.test.js'),
+              'assert.match(tutorialSource, /DARK PURPLE = THE WHOLE TRIAD MATCHES/);',
+              'assert.match(tutorialSource, /DEEP PURPLE = THE WHOLE TRIAD MATCHES/);',
+              'SPACEBAR tutorial test label'
+          )
+          replace_once(
+              Path('index.html'),
+              '<script src="matching-tutorial.js?v=20260731-3"></script>',
+              '<script src="matching-tutorial.js?v=20260731-4"></script>',
+              'Matching Tutorial cache version'
+          )
+          PY
+      - name: Verify final isolated state
+        run: |
+          grep -F 'DEEP PURPLE = THE WHOLE TRIAD MATCHES' matching-tutorial.js
+          grep -F 'matching-tutorial.js?v=20260731-4' index.html
+          node --check matching-tutorial.js
+          node tests/matching-tutorial-logic.test.js
+          git diff --check
+      - name: Commit final synchronization
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html matching-tutorial.js tests/matching-tutorial-logic.test.js
+          git commit -m 'Finalize S F J dark-purple palette synchronization'
+          git push origin HEAD:main
