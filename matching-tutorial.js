@@ -35,11 +35,13 @@
       .matching-tutorial-callout{margin:14px 0;padding:14px 16px;border-left:6px solid #ffb703;border-radius:12px;background:#fff8d8}
       .matching-tutorial-rule{margin:14px 0;padding:14px 16px;border:2px solid #8eb5df;border-radius:14px;background:#eef6ff}
       .matching-tutorial-warning{margin:14px 0;padding:14px 16px;border:2px solid #c084fc;border-radius:14px;background:#f6edff}
-      .matching-tutorial-keys{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+      .matching-tutorial-keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:14px 0}
       .matching-tutorial-key{padding:12px;border-radius:12px;text-align:center;font-weight:850;border:2px solid transparent}
-      .matching-tutorial-key.green{background:#e9f8ef;color:#086b3a;border-color:#55a879}
-      .matching-tutorial-key.purple{background:#f1e4ff;color:#6818a5;border-color:#b96af4}
-      .matching-tutorial-key.blue{background:#174a8b;color:#fff;border-color:#0a2e5c}
+      .matching-tutorial-key.green{background:#E9F8EF;color:#086B3A;border-color:#55A879}
+      .matching-tutorial-key.light-purple{background:#F1E4FF;color:#6818A5;border-color:#B96AF4}
+      .matching-tutorial-key.icy-blue{background:#D7F2FF;color:#08385F;border-color:#58B8E8}
+      .matching-tutorial-key.ocean-blue{background:#174A8B;color:#FFFFFF;border-color:#0A2E5C}
+      .matching-tutorial-key.dark-purple{background:#4C1D95;color:#FFFFFF;border-color:#2E1065}
       .matching-tutorial-example{margin:14px 0;padding:16px;border:1px solid #b7c6d8;border-radius:14px;background:#f7fafc}
       .matching-tutorial-example strong{color:#0a2e5c}
       .matching-tutorial-example code{display:block;margin:7px 0;padding:10px 12px;border-radius:9px;background:#e7eef6;color:#102f52;font:700 .95em/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:normal}
@@ -86,15 +88,18 @@
             <li><strong>2-back:</strong> skip one card and compare with the card before that.</li>
             <li><strong>3-back:</strong> compare with the card three places earlier.</li>
           </ul>
-          <p>During the first N setup cards there is no target card yet. On those setup cards, all four N-back answers are NO: use S, F, J and N. You still solve the blue K/L question from the current card.</p>
+          <p>During the first N setup cards there is no target card yet. On those setup cards, all four N-back answers are NO: use the light-purple S, F, J and N buttons. You still solve the current-card logic question with icy-blue K for YES or dark-ocean-blue L for NO.</p>
 
           <h3>What the colours and keys mean</h3>
           <div class="matching-tutorial-keys">
-            <div class="matching-tutorial-key green">GREEN = YES<br>A · D · H · SPACEBAR</div>
-            <div class="matching-tutorial-key purple">PURPLE = NO<br>S · F · J · N</div>
-            <div class="matching-tutorial-key blue">BLUE = EXACT END-TO-END CONCLUSION?<br>K = YES · L = NO</div>
+            <div class="matching-tutorial-key green"><strong>A · D · H</strong><br>GREEN = THIS STATEMENT MATCHES</div>
+            <div class="matching-tutorial-key light-purple"><strong>S · F · J · N</strong><br>LIGHT PURPLE = NO MATCH</div>
+            <div class="matching-tutorial-key icy-blue"><strong>K</strong><br>ICY BLUE = STATEMENT 3 IS EXACTLY ENTAILED</div>
+            <div class="matching-tutorial-key ocean-blue"><strong>L</strong><br>DARK OCEAN BLUE = STATEMENT 3 IS NOT ENTAILED</div>
+            <div class="matching-tutorial-key dark-purple"><strong>SPACEBAR</strong><br>DARK PURPLE = THE WHOLE TRIAD MATCHES</div>
           </div>
-          <p>The green and purple buttons compare the current card with the N-back card. The blue buttons ignore the old card and test Statement 3 using only the current card’s two clues.</p>
+          <p><strong>Each colour has one fixed job.</strong> Green A/D/H and light-purple S/F/J answer the three statement-match questions. Icy-blue K and dark-ocean-blue L answer the current-card entailment question. Dark-purple SPACEBAR and light-purple N answer the complete-triad question.</p>
+          <div class="matching-tutorial-callout"><strong>Do not use colour alone as a shortcut.</strong> YES has different colours for different questions: green for a statement match, icy blue for correct entailment, and dark purple for a complete-triad match.</div>
 
           <h3>The five exact questions</h3>
           <ol>
@@ -148,11 +153,11 @@
             <li>Choose one pairing for the two premises: same order or swapped order.</li>
             <li>Keep Statement 3 paired only with old Statement 3.</li>
             <li>Count reversed wording only when the letters swap and the compass direction becomes its exact opposite.</li>
-            <li>Use green for each current statement that matches under this shared alignment; use purple for each one that does not.</li>
+            <li>Use the green A, D or H button when that current statement matches under the shared alignment; use the light-purple S, F or J button when it does not.</li>
           </ol>
           <p>The game checks all valid one-to-one mappings and the two allowed premise orders, then scores the alignment with the greatest number of matching statements.</p>
 
-          <h3>The blue K/L question: is Statement 3 the exact end-to-end conclusion?</h3>
+          <h3>The icy-blue K / dark-ocean-blue L question: is Statement 3 the exact end-to-end conclusion?</h3>
           <p>For K/L, forget the old N-back card. Use only the current card. Statements 1 and 2 must form one connected three-letter chain. Find the two end letters, combine the two equal-sized direction steps, and ask whether Statement 3 gives the exact direction from its object to its subject.</p>
           <div class="matching-tutorial-example">
             <code>P is east of Q; R is north of P; R is northeast of Q.</code>
@@ -176,9 +181,9 @@
           <p>H and L can both be correct: the current third statement may match an old third statement even though it is not the correct end-to-end conclusion. J and K can both be correct: the current conclusion may be logically correct but structurally different from the old conclusion.</p>
 
           <h3>The complete-triad decision</h3>
-          <p>Press <strong>SPACEBAR</strong> only when all three statement matches are YES under one consistent mapping and one allowed premise pairing. Press <strong>N</strong> when even one statement fails.</p>
+          <p>Press the <strong>dark-purple SPACEBAR</strong> only when all three statement matches are YES under one consistent mapping and one allowed premise pairing. Press the <strong>light-purple N</strong> when even one statement fails.</p>
           <div class="matching-tutorial-rule"><strong>Two out of three is still NO for the whole triad.</strong> The game deliberately creates close near-misses where exactly one relation changes.</div>
-          <p>K/L does not decide the complete-triad answer. K/L checks the current card’s end-to-end logic; SPACEBAR/N checks whether the current three-statement structure matches the N-back card.</p>
+          <p>The icy-blue K / dark-ocean-blue L pair does not decide the complete-triad answer. It checks the current card’s end-to-end logic. The dark-purple SPACEBAR / light-purple N pair checks whether the current three-statement structure matches the N-back card.</p>
 
           <h3>Do not use repeated letters as a shortcut</h3>
           <p>The game may keep letters from recent cards to create interference. A repeated letter does not prove a match, and a new letter does not prove a non-match. Always test the complete directional pattern using one shared alignment.</p>
