@@ -98,7 +98,7 @@
             <div class="matching-tutorial-key light-purple"><strong>N</strong><br>LIGHT PURPLE = THE WHOLE TRIAD DOES NOT MATCH</div>
             <div class="matching-tutorial-key icy-blue"><strong>K</strong><br>ICY BLUE = STATEMENT 3 IS EXACTLY ENTAILED</div>
             <div class="matching-tutorial-key ocean-blue"><strong>L</strong><br>DARK OCEAN BLUE = STATEMENT 3 IS NOT ENTAILED</div>
-            <div class="matching-tutorial-key dark-purple"><strong>SPACEBAR</strong><br>DARK PURPLE = THE WHOLE TRIAD MATCHES</div>
+            <div class="matching-tutorial-key dark-purple"><strong>SPACEBAR</strong><br>DEEP PURPLE = THE WHOLE TRIAD MATCHES</div>
           </div>
           <p><strong>Each colour has one fixed job.</strong> Green A/D/H and dark-purple S/F/J answer the three statement-match questions. Icy-blue K and dark-ocean-blue L answer the current-card entailment question. Deep-purple SPACEBAR and light-purple N answer the complete-triad question.</p>
           <div class="matching-tutorial-callout"><strong>Do not use colour alone as a shortcut.</strong> YES has different colours for different questions: green for a statement match, icy blue for correct entailment, and dark purple for a complete-triad match.</div>

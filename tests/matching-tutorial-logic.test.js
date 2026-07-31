@@ -77,7 +77,7 @@ assert.match(tutorialSource, /background:#174A8B;color:#FFFFFF;border-color:#0A2
 assert.match(tutorialSource, /background:#4C1D95;color:#FFFFFF;border-color:#2E1065/);
 assert.match(tutorialSource, /DARK PURPLE = THIS STATEMENT DOES NOT MATCH/);
 assert.match(tutorialSource, /LIGHT PURPLE = THE WHOLE TRIAD DOES NOT MATCH/);
-assert.match(tutorialSource, /DARK PURPLE = THE WHOLE TRIAD MATCHES/);
+assert.match(tutorialSource, /DEEP PURPLE = THE WHOLE TRIAD MATCHES/);
 assert.doesNotMatch(tutorialSource, /GREEN = YES<br>A · D · H · SPACEBAR/);
 assert.doesNotMatch(tutorialSource, /BLUE = EXACT END-TO-END CONCLUSION/);
 
