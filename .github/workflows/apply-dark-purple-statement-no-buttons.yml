@@ -1,0 +1,115 @@
+name: Apply dark-purple S F J styling
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-dark-purple-statement-no-buttons.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply isolated S F J colours and tutorial synchronisation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(source, old, new, label):
+              count = source.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected exactly one occurrence, found {count}.')
+              return source.replace(old, new, 1)
+
+          index_path = Path('index.html')
+          index = index_path.read_text(encoding='utf-8')
+          old_index = '    .conflict-row:not([data-decision="3"]) .conflict-choice[data-value="0"]:not(.feedback-correct):not(.feedback-incorrect){background:#F1E4FF!important;color:#6818A5!important;border:2px solid #B96AF4!important}'
+          new_index = '\n'.join([
+              '    .conflict-row[data-decision="0"] .conflict-choice[data-value="0"]:not(.feedback-correct):not(.feedback-incorrect),',
+              '    .conflict-row[data-decision="1"] .conflict-choice[data-value="0"]:not(.feedback-correct):not(.feedback-incorrect),',
+              '    .conflict-row[data-decision="2"] .conflict-choice[data-value="0"]:not(.feedback-correct):not(.feedback-incorrect){background:#5B21B6!important;color:#FFFFFF!important;border:2px solid #3B0764!important}',
+              '    .conflict-row[data-decision="4"] .conflict-choice[data-value="0"]:not(.feedback-correct):not(.feedback-incorrect){background:#F1E4FF!important;color:#6818A5!important;border:2px solid #B96AF4!important}'
+          ])
+          index = replace_once(index, old_index, new_index, 'index negative-button rule')
+          index_path.write_text(index, encoding='utf-8')
+
+          tutorial_path = Path('matching-tutorial.js')
+          tutorial = tutorial_path.read_text(encoding='utf-8')
+          tutorial = replace_once(
+              tutorial,
+              '      .matching-tutorial-key.light-purple{background:#F1E4FF;color:#6818A5;border-color:#B96AF4}',
+              '      .matching-tutorial-key.statement-purple{background:#5B21B6;color:#FFFFFF;border-color:#3B0764}\n      .matching-tutorial-key.light-purple{background:#F1E4FF;color:#6818A5;border-color:#B96AF4}',
+              'tutorial statement-purple CSS'
+          )
+          tutorial = replace_once(
+              tutorial,
+              '          <p>During the first N setup cards there is no target card yet. On those setup cards, all four N-back answers are NO: use the light-purple S, F, J and N buttons. You still solve the current-card logic question with icy-blue K for YES or dark-ocean-blue L for NO.</p>',
+              '          <p>During the first N setup cards there is no target card yet. On those setup cards, all four N-back answers are NO: use the dark-purple S, F and J buttons, plus the light-purple N button. You still solve the current-card logic question with icy-blue K for YES or dark-ocean-blue L for NO.</p>',
+              'tutorial setup colours'
+          )
+          tutorial = replace_once(
+              tutorial,
+              '            <div class="matching-tutorial-key light-purple"><strong>S · F · J · N</strong><br>LIGHT PURPLE = NO MATCH</div>',
+              '            <div class="matching-tutorial-key statement-purple"><strong>S · F · J</strong><br>DARK PURPLE = THIS STATEMENT DOES NOT MATCH</div>\n            <div class="matching-tutorial-key light-purple"><strong>N</strong><br>LIGHT PURPLE = THE WHOLE TRIAD DOES NOT MATCH</div>',
+              'tutorial negative-key tiles'
+          )
+          tutorial = replace_once(
+              tutorial,
+              '          <p><strong>Each colour has one fixed job.</strong> Green A/D/H and light-purple S/F/J answer the three statement-match questions. Icy-blue K and dark-ocean-blue L answer the current-card entailment question. Dark-purple SPACEBAR and light-purple N answer the complete-triad question.</p>',
+              '          <p><strong>Each colour has one fixed job.</strong> Green A/D/H and dark-purple S/F/J answer the three statement-match questions. Icy-blue K and dark-ocean-blue L answer the current-card entailment question. Deep-purple SPACEBAR and light-purple N answer the complete-triad question.</p>',
+              'tutorial colour-job explanation'
+          )
+          tutorial = replace_once(
+              tutorial,
+              '            <li>Use the green A, D or H button when that current statement matches under the shared alignment; use the light-purple S, F or J button when it does not.</li>',
+              '            <li>Use the green A, D or H button when that current statement matches under the shared alignment; use the dark-purple S, F or J button when it does not.</li>',
+              'tutorial statement-answer instruction'
+          )
+          tutorial_path.write_text(tutorial, encoding='utf-8')
+
+          test_path = Path('tests/matching-tutorial-logic.test.js')
+          test = test_path.read_text(encoding='utf-8')
+          test = replace_once(
+              test,
+              "assert.match(tutorialSource, /matching-tutorial-key light-purple/);",
+              "assert.match(tutorialSource, /matching-tutorial-key statement-purple/);\nassert.match(tutorialSource, /matching-tutorial-key light-purple/);",
+              'tutorial colour-class assertion'
+          )
+          test = replace_once(
+              test,
+              "assert.match(tutorialSource, /background:#D7F2FF;color:#08385F;border-color:#58B8E8/);",
+              "assert.match(tutorialSource, /background:#5B21B6;color:#FFFFFF;border-color:#3B0764/);\nassert.match(tutorialSource, /background:#D7F2FF;color:#08385F;border-color:#58B8E8/);",
+              'tutorial dark-purple palette assertion'
+          )
+          test = replace_once(
+              test,
+              "assert.match(tutorialSource, /DARK PURPLE = THE WHOLE TRIAD MATCHES/);",
+              "assert.match(tutorialSource, /DARK PURPLE = THIS STATEMENT DOES NOT MATCH/);\nassert.match(tutorialSource, /LIGHT PURPLE = THE WHOLE TRIAD DOES NOT MATCH/);\nassert.match(tutorialSource, /DARK PURPLE = THE WHOLE TRIAD MATCHES/);",
+              'tutorial key-label assertions'
+          )
+          test = replace_once(test, '  colourMappingsAudited: 5', '  colourMappingsAudited: 6', 'tutorial audit count')
+          test_path.write_text(test, encoding='utf-8')
+          PY
+      - name: Verify isolated styling and tutorial mapping
+        run: |
+          grep -F 'data-decision="0"] .conflict-choice[data-value="0"]:not(.feedback-correct):not(.feedback-incorrect),' index.html
+          grep -F 'data-decision="2"] .conflict-choice[data-value="0"]:not(.feedback-correct):not(.feedback-incorrect){background:#5B21B6!important;color:#FFFFFF!important;border:2px solid #3B0764!important}' index.html
+          grep -F 'data-decision="4"] .conflict-choice[data-value="0"]:not(.feedback-correct):not(.feedback-incorrect){background:#F1E4FF!important;color:#6818A5!important;border:2px solid #B96AF4!important}' index.html
+          grep -F 'matching-tutorial-key statement-purple' matching-tutorial.js
+          node --check matching-tutorial.js
+          node tests/matching-tutorial-logic.test.js
+          git diff --check
+      - name: Commit styling update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html matching-tutorial.js tests/matching-tutorial-logic.test.js
+          git commit -m 'Style S F J as readable dark purple'
+          git push origin HEAD:main
