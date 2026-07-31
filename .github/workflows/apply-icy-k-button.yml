@@ -1,0 +1,48 @@
+name: Apply icy K button styling
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-icy-k-button.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply isolated K-button colour override
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          source = path.read_text(encoding='utf-8')
+          old = '    .conflict-row[data-decision="3"] .conflict-choice:not(.feedback-correct):not(.feedback-incorrect){background:#174A8B!important;color:#FFFFFF!important;border:2px solid #0A2E5C!important}'
+          new = '\n'.join([
+              '    .conflict-row[data-decision="3"] .conflict-choice[data-value="1"]:not(.feedback-correct):not(.feedback-incorrect){background:#D7F2FF!important;color:#08385F!important;border:2px solid #58B8E8!important}',
+              '    .conflict-row[data-decision="3"] .conflict-choice[data-value="0"]:not(.feedback-correct):not(.feedback-incorrect){background:#174A8B!important;color:#FFFFFF!important;border:2px solid #0A2E5C!important}'
+          ])
+          count = source.count(old)
+          if count != 1:
+              raise SystemExit(f'Expected exactly one shared K/L rule, found {count}.')
+          path.write_text(source.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: Verify isolated styling change
+        run: |
+          grep -F 'data-value="1"]:not(.feedback-correct):not(.feedback-incorrect){background:#D7F2FF!important;color:#08385F!important;border:2px solid #58B8E8!important}' index.html
+          grep -F 'data-value="0"]:not(.feedback-correct):not(.feedback-incorrect){background:#174A8B!important;color:#FFFFFF!important;border:2px solid #0A2E5C!important}' index.html
+          git diff --check
+      - name: Commit styling update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Give K an icy-blue contrast treatment'
+          git push origin HEAD:main
