@@ -89,13 +89,7 @@
         if (modeTwoAdvanceTimer !== null) rootObject.clearTimeout(modeTwoAdvanceTimer);
         modeTwoAdvanceTimer = null;
       };
-      const modeTwoInterference = () => Math.max(0, Math.min(100, Number(interferenceSlider?.value) || 0));
-
-      if (interferenceSlider && !interferenceSlider.dataset.modeTwoValue) {
-        interferenceSlider.dataset.modeTwoValue = interferenceSlider.value !== '100'
-          ? interferenceSlider.value
-          : '60';
-      }
+      const modeTwoInterference = () => 100;
 
       function syncInterface() {
         const mode = selectedMode();
@@ -120,40 +114,22 @@
         if (resolution) setDirectionError(false);
 
         if (interferenceSlider) {
-          if (mode === 0) {
-            if (!interferenceSlider.disabled && interferenceSlider.value !== '100') {
-              interferenceSlider.dataset.modeTwoValue = interferenceSlider.value;
-            }
-            interferenceSlider.min = '100';
-            interferenceSlider.max = '100';
-            interferenceSlider.step = '1';
-            interferenceSlider.value = '100';
-            interferenceSlider.disabled = true;
-            if (interferenceValue) interferenceValue.textContent = '100% — FIXED';
-            if (interferenceHelp) {
-              interferenceHelp.textContent = 'Mode 1 is fixed at maximum logical interference: every scored NO MATCH is an exact two-of-three lure with controlled letter continuity.';
-            }
-          } else {
-            interferenceSlider.min = '0';
-            interferenceSlider.max = '100';
-            interferenceSlider.step = '5';
-            interferenceSlider.disabled = false;
-            interferenceSlider.value = interferenceSlider.dataset.modeTwoValue || '60';
-            if (interferenceValue) interferenceValue.textContent = `${interferenceSlider.value}%`;
-            if (interferenceHelp) {
-              interferenceHelp.textContent = 'Mode 2 interference controls how close the one-relation structural lure is. Higher values use adjacent directions within the selected 4-, 8- or 16-direction compass.';
-            }
+          interferenceSlider.min = '100';
+          interferenceSlider.max = '100';
+          interferenceSlider.step = '1';
+          interferenceSlider.value = '100';
+          interferenceSlider.disabled = true;
+          if (interferenceValue) interferenceValue.textContent = '100% — FIXED';
+          if (interferenceHelp) {
+            interferenceHelp.textContent = mode === 0
+              ? 'Mode 1 is fixed at maximum logical interference: every scored NO MATCH is an exact two-of-three lure with controlled letter continuity.'
+              : 'Mode 2 is fixed at maximum logical interference: every scored NO MATCH preserves exactly two globally coherent statements and changes one relation within the selected compass resolution.';
           }
         }
         if (!app.running && mode === 1) setBinaryButtons(false);
         return { mode, resolution };
       }
 
-      interferenceSlider?.addEventListener('input', () => {
-        if (selectedMode() !== 1) return;
-        interferenceSlider.dataset.modeTwoValue = interferenceSlider.value;
-        if (interferenceValue) interferenceValue.textContent = `${interferenceSlider.value}%`;
-      });
       modeSelect.addEventListener('change', syncInterface);
       directionSelect.addEventListener('input', syncInterface);
       directionSelect.addEventListener('change', syncInterface);
@@ -336,7 +312,8 @@
         selectableResolutions: RESOLUTIONS,
         modeTwoBinaryResponsesRestored: true,
         modeTwoGeneratorRoutedAfterModeOneOverrides: true,
-        modeTwoInterferenceCustomisable: true,
+        modeTwoInterferenceCustomisable: false,
+        modeTwoInterferenceFixedAtMaximum: true,
         modeTwoDirectionResolutionCustomisable: true,
         audit: runExhaustiveAudit
       });
