@@ -1,0 +1,32 @@
+name: Mode 2 restoration proof
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-mode-two:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check restored Mode 2 syntax
+        run: |
+          node --check mode-two-ontology-nback-v14.js
+          node --check mode-two-engine-v21.js
+          node --check mode-two-runtime-v21.js
+          node --check tests/mode-two-restoration-v21.test.js
+          node --check tests/mode-two-browser-restoration-v21.mjs
+      - name: Run 24,000 deterministic Mode 2 simulations
+        run: node tests/mode-two-restoration-v21.test.js
+      - name: Install browser test runtime
+        run: npm install --no-save jsdom@26
+      - name: Prove final browser routing and controls
+        run: node tests/mode-two-browser-restoration-v21.mjs
