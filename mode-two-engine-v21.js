@@ -350,6 +350,7 @@
         });
     const result = compare(target, trial);
     trial.nBackLevel = Math.max(1, Math.min(8, Math.round(Number(options.nBackLevel) || 1)));
+    trial.nBackWarmup = false;
     trial.nBackRequestedMatch = requestedMatch;
     trial.nBackMatch = result.isMatch;
     trial.isMatch = result.isMatch;
