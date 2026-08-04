@@ -63,7 +63,9 @@ for (const file of [
   'mode-one-letter-continuity-v1.js'
 ]) window.eval(fs.readFileSync(file, 'utf8'));
 
-window.document.dispatchEvent(new window.Event('DOMContentLoaded', { bubbles: true }));
+// JSDOM emits DOMContentLoaded once after synchronous script registration.
+// Do not dispatch it manually: duplicate dispatches re-run legacy installers and
+// can overwrite the final runtime during an awaited speech turn.
 await new Promise(resolve => setTimeout(resolve, 80));
 
 // Production loads Mode 2 v21 dynamically after the legacy/Mode 1 script chain.
@@ -134,6 +136,9 @@ app.awaiting = false;
 app.sessionToken = 777;
 app.score = { hits: 0, misses: 0, falseAlarms: 0, correctRejects: 0, timeouts: 0, shown: 0, scored: 0 };
 app.rts = [];
+modeSelect.value = '1';
+modeSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
+assert.equal(modeSelect.value, '1');
 await app.nextTrial(777);
 assert.ok(app.current);
 assert.equal(app.current.mode, 1);
