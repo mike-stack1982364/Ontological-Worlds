@@ -50,7 +50,7 @@ Mode 2 now uses the same customisable 4-, 8- or 16-direction selector as Mode 1.
 
 Its N-back answer is determined by the complete three-statement compass structure of the current and historical trials. Ontology categories and Inner/Outer labels are presentation-level cognitive transformations and are excluded from MATCH/NO MATCH scoring. Consistent letter renaming, premise reordering and logically equivalent reversed wording preserve structural identity.
 
-Mode 2 uses a dedicated binary MATCH/NO MATCH response interface. Its interference control is customisable: higher settings construct adjacent one-relation lures while preserving exactly two globally coherent statements under one consistent letter mapping.
+Mode 2 uses a dedicated binary MATCH/NO MATCH response interface and remains fixed at 100% logical interference. Every scored NO MATCH preserves exactly two globally coherent statements under one consistent letter mapping and changes one relation within the selected compass resolution.
 
 ### Exact relational core
 
