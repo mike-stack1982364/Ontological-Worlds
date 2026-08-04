@@ -143,7 +143,7 @@ await app.nextTrial(777);
 assert.ok(app.current);
 assert.equal(app.current.mode, 1);
 assert.equal(app.current.scored, true);
-assert.equal(app.awaiting, true);
+assert.equal(app.awaiting, true, JSON.stringify({ running: app.running, paused: app.paused, sessionToken: app.sessionToken, requestedToken: 777, currentMode: app.current?.mode, currentScored: app.current?.scored, currentWarmup: app.current?.nBackWarmup, selectedMode: modeSelect.value, currentUnchanged: Boolean(app.current) }));
 assert.equal(matchButton.disabled, false);
 assert.equal(noMatchButton.disabled, false);
 const expected = app.current.nBackMatch;
