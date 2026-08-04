@@ -219,11 +219,51 @@
       order: pick(rng, FORM_ORDERS)
     };
   }
-  function generateTrial(rng, options = {}) {
+  function generateResolutionClosedSeed(rng, options = {}) {
+    const c = requireCore();
     const resolution = normaliseResolution(options.directionResolution, 16);
+    const ring = c.allowedCodes(resolution);
+    const letters = shuffled(rng, c.LETTERS || 'ABCDEFGHJKLMNPQRSTUVWXYZ'.split('')).slice(0, 3);
+    const [first, bridge, last] = letters;
+    const relation = pick(rng, ring);
+    let premises = [
+      { subject: first, relation, object: bridge },
+      { subject: bridge, relation, object: last }
+    ];
+    premises = premises.map(statement => random(rng) < 0.5 ? c.invert(statement) : statement);
+    if (random(rng) < 0.5) premises.reverse();
+
+    const matchProbability = Math.max(0, Math.min(1, Number(options.matchProbability ?? 0.5)));
+    const requestedEntailment = random(rng) < matchProbability;
+    const alternatives = ring.filter(code => code !== relation);
+    const conclusion = {
+      subject: first,
+      relation: requestedEntailment ? relation : pick(rng, alternatives),
+      object: last
+    };
+    const trial = {
+      mode: 1,
+      publicMode: 2,
+      letters,
+      symbols: letters.slice(),
+      premises,
+      conclusion,
+      requestedMatch: requestedEntailment,
+      directionResolution: resolution,
+      interferenceLevel: Math.max(0, Math.min(100, Number(options.interferenceLevel) || 0)),
+      seedGenerator: 'mode-two-resolution-closed-chain-v21'
+    };
+    const evaluation = c.evaluateTrial(trial);
+    if (!evaluation.resolutionClosed || evaluation.expectedRelation !== relation
+      || evaluation.isEntailed !== requestedEntailment) {
+      throw new Error(`Mode 2 seed invariant failed at ${resolution}-direction resolution.`);
+    }
+    return trial;
+  }
+  function generateTrial(rng, options = {}) {
     const decorations = randomDecorations(rng);
     return decorateTrial(
-      requireCore().generateTrial(rng, { ...options, directionResolution: resolution }),
+      generateResolutionClosedSeed(rng, options),
       decorations.categories,
       decorations.order
     );
