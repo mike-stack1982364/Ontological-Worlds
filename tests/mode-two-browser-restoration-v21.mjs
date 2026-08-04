@@ -86,6 +86,7 @@ const modeSelect = window.document.getElementById('logic-mode');
 const directionGroup = window.document.getElementById('direction-resolution-group');
 const directionSelect = window.document.getElementById('direction-resolution');
 const startButton = window.document.getElementById('start-btn');
+const nSlider = window.document.getElementById('n-slider');
 const matchButton = window.document.getElementById('match-btn');
 const noMatchButton = window.document.getElementById('no-match-btn');
 const matrix = window.document.getElementById('conflict-matrix');
@@ -130,6 +131,8 @@ for (let index = 0; index < 128; index += 1) {
   app.trials.push(trial);
 }
 
+nSlider.value = '1';
+app.n = 1;
 app.trials = [warmup];
 app.current = null;
 app.running = true;
