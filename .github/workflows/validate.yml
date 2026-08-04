@@ -37,9 +37,16 @@ jobs:
           node --check mode-one-nback-v10.js
           node --check mode-one-nback-v11.js
           node --check mode-router-v2.js
+          node --check mode-two-ontology-nback-v14.js
+          node --check mode-two-engine-v21.js
+          node --check mode-two-runtime-v21.js
           node --check mode-one-completion-v10.js
           node --check mode-one-completion-v11.js
           node --check audio-accessibility.js
+          node --check mode-one-conflict-matrix-v20.js
+          node --check mode-one-letter-continuity-v1.js
+      - name: Run Mode 2 24,000-simulation resolution audit
+        run: node tests/mode-two-restoration-v21.test.js
       - name: Install DOM test runtime
         run: npm install --no-save jsdom@26
       - name: Run legacy relational logic smoke tests
@@ -50,3 +57,5 @@ jobs:
         run: node tests/level-curriculum-browser-smoke.mjs
       - name: Run level-specific 160-case meta-curriculum runtime
         run: node tests/meta-curriculum-browser-smoke.mjs
+      - name: Run restored Mode 2 browser runtime
+        run: node tests/mode-two-browser-restoration-v21.mjs
