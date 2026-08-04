@@ -40,6 +40,12 @@ window.webkitAudioContext = window.AudioContext;
 
 for (const file of [
   'app.js',
+  'mode-release-gate.js',
+  'audio-only-display.js',
+  'response-window.js',
+  'ontology-integration-v4.js',
+  'cognitive-interference-v3.js',
+  'mode-one-triadic.js',
   'mode-one-interference.js',
   'mode-one-match-logic.js',
   'mode-one-spatial-core.js',
