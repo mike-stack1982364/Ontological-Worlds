@@ -56,16 +56,19 @@ for (const file of [
   'mode-one-nback-v10.js',
   'mode-one-nback-v11.js',
   'mode-router-v2.js',
-  'mode-two-engine-v21.js',
   'mode-one-completion-v10.js',
   'mode-one-completion-v11.js',
   'audio-accessibility.js',
   'mode-one-conflict-matrix-v20.js',
-  'mode-one-letter-continuity-v1.js',
-  'mode-two-runtime-v21.js'
+  'mode-one-letter-continuity-v1.js'
 ]) window.eval(fs.readFileSync(file, 'utf8'));
 
 window.document.dispatchEvent(new window.Event('DOMContentLoaded', { bubbles: true }));
+await new Promise(resolve => setTimeout(resolve, 80));
+
+// Production loads Mode 2 v21 dynamically after the legacy/Mode 1 script chain.
+window.eval(fs.readFileSync('mode-two-engine-v21.js', 'utf8'));
+window.eval(fs.readFileSync('mode-two-runtime-v21.js', 'utf8'));
 await new Promise(resolve => setTimeout(resolve, 80));
 
 const app = window.__ontologicalWorlds;
