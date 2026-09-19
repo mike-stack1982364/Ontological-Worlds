@@ -33,5 +33,7 @@ jobs:
         run: |
           node --check matching-tutorial.js
           node --check response-palette-v2.js
+      - name: Install test dependencies
+        run: npm ci
       - name: Audit tutorial examples and current palette
         run: node tests/matching-tutorial-logic.test.js

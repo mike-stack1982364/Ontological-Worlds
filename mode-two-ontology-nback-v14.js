@@ -19,8 +19,9 @@
   const start = root.document.getElementById('start-btn');
   if (start) start.disabled = true;
 
-  root.__modeTwoV21Ready = loadScript('mode-two-engine-v21.js?v=20260804-1')
-    .then(() => loadScript('mode-two-runtime-v21.js?v=20260804-1'))
+  root.__modeTwoV21Ready = loadScript('mode-two-engine-v21.js?v=20260920-1')
+    .then(() => loadScript('mode-two-runtime-v21.js?v=20260920-1'))
+    .then(() => root.__modeTwoFinalRuntimeReady)
     .catch(error => {
       root.__modeTwoV21LoadError = error;
       console.error('Mode 2 v21 failed to load.', error);

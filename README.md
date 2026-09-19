@@ -1,91 +1,104 @@
 # Ontological Worlds
 
-## Canonical training modes
+A browser-based spatial reasoning and N-back trainer. The main screen provides two spatial modes; **Extra Training** opens a separate ordered-number N-back screen. Modes 3–7 are unreleased and cannot be selected.
+
+## Run locally
+
+The application is a static site; no application build or server-side account is required. Serve the repository over HTTP, for example:
+
+```sh
+python3 -m http.server 8000
+```
+
+Open `http://localhost:8000/`. Keep all JavaScript files beside the HTML files: Mode 2 loads its engine and runtime dynamically. Speech, available voices and haptics depend on the browser and device.
+
+## Start a spatial session
+
+1. Choose Mode 1 or Mode 2.
+2. Select **4, 8 or 16 compass directions**. Both modes require an explicit choice before Start becomes available.
+3. Select an N-back level from **1–8**, session length and whole-triad match probability; adjust speech and display preferences as needed.
+4. Press **Start**. Both spatial modes are self-paced: there is no per-trial response deadline, but the overall session has a duration.
+
+Mode, N-back level, compass resolution and session duration are fixed during a session. **Adaptive N is unavailable**; choose a different N before the next session. Both spatial modes use **100% cognitive interference**, so that control is fixed. Pause preserves the current trial and excludes paused time from the session clock and response measurements.
+
+## What counts as a match?
+
+Each spatial trial contains two premises and a conclusion involving three letters. The premises determine a spatial relation; the conclusion may or may not be entailed by them.
+
+N-back comparisons use the trial exactly N positions earlier. Matching requires a single consistent one-to-one mapping between the historical and current letters. Letter names may change, the two premises may exchange order, and reversed wording is equivalent only when its compass direction is also reversed. The conclusion retains its conclusion role. Compass directions must match exactly: adjacent directions, an incorrect letter pair, or reversing endpoints without reversing direction do not count.
 
 ### Mode 1 — Relational Conflict Matrix
 
-Mode 1 is a three-statement relational N-back system with a session-selectable 4-, 8- or 16-direction compass.
+Answer all five decisions on **every trial**, including the initial N memory-fill trials:
 
-Each visible and spoken trial contains exactly two premises and one conclusion using three arbitrary letter-nodes. Statements 1 and 2 define the current spatial model. Statement 3 is separately evaluated for whether it is logically entailed by those premises.
+| Decision | Positive key | Negative key |
+| --- | --- | --- |
+| Statement 1 matches the N-back structure | A | S |
+| Statement 2 matches the N-back structure | D | F |
+| Statement 3 matches the N-back structure | H | J |
+| Statement 3 is entailed by the current premises | K | L |
+| Complete triad matches the N-back structure | Space | N |
 
-After the initial N memory-fill trials, every scored trial requires five binary decisions:
+Buttons provide the same choices. Each answer is locked after entry and gets immediate feedback; entering all five advances the trial. During memory fill, no historical target exists, so the three statement-match answers and complete-triad answer are **No**; judge current-trial entailment normally.
 
-1. whether current Statement 1 matches one statement in the trial exactly N positions earlier;
-2. whether current Statement 2 matches one historical statement;
-3. whether current Statement 3 matches one historical statement;
-4. whether current Statement 3 is entailed by current Statements 1 and 2;
-5. whether the complete current triad matches the historical triad.
+Statement matches are evaluated together under a coherent letter mapping and statement assignment, not as independent visual similarities. Current-trial entailment is a separate decision from historical matching. A complete-triad match requires all three statements to align.
 
-Statement-level matching is not calculated through three independent resemblance checks. The engine requires one globally consistent bijection between the historical and current letters and a one-to-one assignment between statements. A statement counts as a match only when it participates in the best coherent alignment. Equivalent reversed wording is accepted only when subject/object reversal is accompanied by the opposite compass direction. Arbitrary letter renaming and statement reordering do not by themselves break structural equivalence.
+After memory fill, every generated non-match preserves exactly two coherent statements and changes one relation. Controlled letter continuity retains two target letter identities, replaces one and maintains overlap with the preceding trial. These presentation constraints do not replace the structural scoring rule.
 
-Mode 1 alternates between two explicit comparison regimes:
-
-- role-flexible comparison, where any current statement may align with any historical statement;
-- role-sensitive comparison, where the historical and current conclusions must remain conclusions while the two premises may exchange order.
-
-A whole-triad MATCH requires all three statements to align under the same mapping and active role regime. One-statement and two-statement correspondences remain partial matches and are scored as interference rather than being collapsed into a single whole-trial answer.
-
-The cognitive-interference generator uses controlled profiles rather than generic random errors. Depending on the interference setting, it creates:
-
-- zero-, one- and two-of-three statement matches;
-- resolution-valid adjacent substitutions;
-- near, orthogonal and opposite-direction substitutions;
-- changed surface letters with preserved structure;
-- preserved surface letters with changed relational roles;
-- valid inverse wording;
-- conflicts between historical familiarity and current entailment;
-- globally coherent alignment requirements that suppress incompatible local interpretations.
-
-At maximum interference, non-match trials preferentially preserve exactly two globally coherent statements while changing one precise relation. The player must therefore discriminate a near-complete historical structure while independently determining whether the current conclusion is logically valid.
-
-Mode 1 supports N-back levels 1 through 8. The browser interface displays ten response buttons: Match/No Match for each historical statement decision, Entailed/Not Entailed for current conclusion validity, and Match/No Match for complete-triad identity. All five decisions must be entered before submission.
-
-Each of the five decisions is recorded separately, including correctness and first-response time. The trial itself is counted as correct only when all five responses are correct, preserving compatibility with the existing session progression while retaining native multidimensional diagnostic statistics.
+The score distinguishes **decision accuracy** from **complete-trial accuracy**: a complete trial is correct only when all five answers are correct. Historical hit/miss statistics refer to the complete-triad decision.
 
 ### Mode 2 — Ontological Integration
 
-Mode 2 displays the ontology categories All, Difference, Action, Division, Connection, Multiplication, Projection, Encompassment and Completion, together with Inner and Outer presentation labels.
+Mode 2 adds ontology categories and Inner/Outer labels to the spatial statements. Those labels do not affect scoring. Decide only whether the **complete three-statement compass structure** matches the N-back target.
 
-Mode 2 now uses the same customisable 4-, 8- or 16-direction selector as Mode 1. The selected resolution is frozen for the session and every warm-up, MATCH and NO MATCH trial is generated and validated inside that compass pool.
+The first N trials are unscored memory fill and advance automatically. Subsequent trials wait for **Match** or **No Match** after speech completes. Non-match trials preserve exactly two coherent statements while changing one relation within the selected compass resolution. Use **F/J** for Match and **D/K** for No Match, or the on-screen buttons.
 
-Its N-back answer is determined by the complete three-statement compass structure of the current and historical trials. Ontology categories and Inner/Outer labels are presentation-level cognitive transformations and are excluded from MATCH/NO MATCH scoring. Consistent letter renaming, premise reordering and logically equivalent reversed wording preserve structural identity.
+For either spatial mode, **P** pauses/resumes and **Escape** stops. Keyboard response shortcuts follow the Keyboard controls option and ignore held-key repetition and text-entry fields.
 
-Mode 2 uses a dedicated binary MATCH/NO MATCH response interface and remains fixed at 100% logical interference. Every scored NO MATCH preserves exactly two globally coherent statements under one consistent letter mapping and changes one relation within the selected compass resolution.
+## Extra Training — Ordered Number N-back
 
-### Exact relational core
+This separate screen supports **1–20 back**, **1–3 ordered digits per trial**, digits **1–9**, configurable match probability, interference, speech and a timed response window. Sessions can have a fixed duration or be open-ended.
 
-Both modes use the same relational compass algebra at the selected 4-, 8- or 16-direction resolution. The core rejects:
+A trial is a **Match if at least one digit is identical in the same position** as it was N trials earlier. The whole sequence need not match. For example, target `1, 2, 3` and current `1, 8, 9` match; current `2, 3, 1` does not. Digits repeated in different positions are interference.
 
-- adjacent but non-identical directions;
-- subject/object reversal without direction inversion;
-- correct relations assigned to the wrong letter pair;
-- incorrect shared-anchor branch comparisons;
-- locally plausible relations that fail the complete graph;
-- any generated relation that escapes the selected compass pool.
+The first N trials are unscored memory fill and advance automatically. Thereafter use Match/No Match buttons or **F/J** and **D/K**. The response timer begins after speech completes. Timeouts count as incorrect; d′ uses corrected hit and false-alarm rates, excludes omitted responses, and remains unavailable until both match and non-match responses exist.
 
-## Validation
+Settings are fixed until the session stops. Pause preserves the sequence and remaining response time; returning from a pause never inserts a replacement trial. If audio is unavailable, audio-only mode reveals the sequence so the trial remains usable. Switching away from this screen automatically pauses it. Number-session results are shown on this screen and are not saved to the main spatial-session history.
 
-The repository includes independent tests for:
+## Results and storage
 
-- all N-back levels from 1 through 8;
-- all selectable compass resolutions: 4, 8 and 16;
-- five mandatory Mode 1 decisions per scored trial;
-- globally consistent letter mapping;
-- one-to-one statement assignment;
-- role-sensitive and role-flexible alignment;
-- inverse-wording equivalence;
-- exact directional discrimination at the selected resolution;
-- all zero-, one- and two-of-three non-match masks;
-- controlled maximum-interference two-of-three lures;
-- current-trial entailment separated from historical matching;
-- complete-triad matching;
-- native per-decision scoring metadata;
-- Mode 2 binary browser routing and response handling;
-- Mode 2 resolution-closed MATCH and exact two-of-three NO MATCH generation;
-- ontology and form-label scoring neutrality.
+Completed or stopped spatial sessions appear under **History**. Results include mode, N, compass resolution, active duration, accuracy and response statistics. **Export CSV** downloads those summaries; **Clear** removes saved history from this browser.
 
-The Mode 2 regression audit runs 1,000 scored simulations at every combination of three compass resolutions and eight N-back levels: 24,000 simulations per validation run.
+History and preferences use browser storage on the current site and device. They are not synced across devices. If storage is unavailable, the app reports the problem and keeps new results in the current tab for export. Export before clearing browser data or leaving a tab with unsaved results.
 
-GitHub Actions runs separate Mode 1 conflict-matrix, canonical Mode 2 and browser-runtime validation jobs.
+## Development and validation
 
-This is a theoretically motivated cognitive-training design. It is not validated evidence that training increases general fluid intelligence or GAMSAT performance.
+Install test dependencies and run the current regression suite:
+
+```sh
+npm ci
+npm test
+```
+
+For the desktop and mobile Chromium interaction checks:
+
+```sh
+npx playwright install chromium
+npm run test:browser
+```
+
+Alternatively, set `CHROMIUM_EXECUTABLE_PATH` to an existing Chromium executable.
+
+Focused checks can also run directly:
+
+```sh
+node tests/core-correctness-regression.test.js
+node tests/mode-two-session-regression.test.js
+node tests/extra-training-runtime.test.js
+```
+
+Tests cover compass algebra, structural equivalence, exact N-back targets, maximum-interference lures, warm-up scoring, session timing, pause/restart, keyboard input, speech fallbacks, history and production-page integration. Physical speech output and haptics still require checks on the intended device.
+
+`index.html` and its loaded scripts define the current application. The Mode 2 loader `mode-two-ontology-nback-v14.js` loads `mode-two-engine-v21.js` and `mode-two-runtime-v21.js`. The extra screen uses `extra-training-runtime.js`. Older versioned scripts and tests remain as historical references; files absent from the production loading chain are not additional active modes.
+
+This is a theoretically motivated training design, not validated evidence that practice increases general fluid intelligence or GAMSAT performance.

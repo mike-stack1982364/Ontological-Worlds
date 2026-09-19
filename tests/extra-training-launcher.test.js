@@ -16,8 +16,8 @@ assert.ok(indexHtml.includes('id="extra-training-btn"'),
   'the Extra Training launcher must remain present');
 assert.ok(trainerHtml.includes('id="start"'),
   'the destination page must expose a playable Start control');
-assert.ok(trainerHtml.includes("$('start').onclick=start"),
-  'the destination Start control must be wired to the trainer runtime');
+assert.ok(trainerHtml.includes('<script src="extra-training-runtime.js"></script>'),
+  'the destination must load its dedicated trainer runtime');
 
 const attributes = {};
 const assignments = [];

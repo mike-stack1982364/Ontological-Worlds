@@ -1,0 +1,13 @@
+{
+  "name": "ontological-worlds",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Spatial relational and ordered number N-back trainers",
+  "scripts": {
+    "test": "node --test --test-concurrency=2 *.test.js tests/*.test.js && node tests/mode-two-browser-restoration-v21.mjs",
+    "test:runtime": "node --test tests/production-runtime-regression.test.js tests/session-lifecycle.test.js tests/mode-two-session-regression.test.js tests/extra-training-runtime.test.js tests/speech-lifecycle.test.js",
+    "test:browser": "node tests/browser-smoke.cjs"
+  },
+  "engines": { "node": ">=22" },
+  "devDependencies": { "jsdom": "26.1.0", "playwright": "1.58.2" }
+}

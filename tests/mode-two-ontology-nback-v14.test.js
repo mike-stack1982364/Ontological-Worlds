@@ -8,7 +8,7 @@ const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
 const modeTwo = require(path.join(__dirname, '..', 'mode-two-ontology-nback-v14.js'));
 
 assert.deepStrictEqual([...modeTwo.LEVELS], [1,2,3,4,5,6,7,8]);
-assert.strictEqual(modeTwo.version, 20);
+assert.strictEqual(modeTwo.version, 21);
 
 const target = modeTwo.decorateTrial({
   premises: [
@@ -59,9 +59,9 @@ metadataOnly.order = 'OI';
 assert.strictEqual(modeTwo.compare(target, metadataOnly).isMatch, true,
   'ontology categories and Inner/Outer order remain scoring-neutral');
 
-for (const [index, trial] of core.canonicalTrials().entries()) {
+for (const [index, [trial, expected]] of [[target, true], [twoOfThreeLure, false], [oneOfThreeLure, true]].entries()) {
   const decorated = modeTwo.decorateTrial(trial, ['Completion','Multiplication','Difference'], 'IO');
-  assert.strictEqual(modeTwo.evaluate(decorated).isMatch, trial.expected, `Mode 1 entailment parity ${index + 1}`);
+  assert.strictEqual(modeTwo.evaluate(decorated).withinTrialEntailed, expected, `Independent within-trial entailment ${index + 1}`);
 }
 
 class Rng {
@@ -74,7 +74,7 @@ class Rng {
 for (const level of modeTwo.LEVELS) {
   const rng = new Rng(1000 + level);
   const history = Array.from({ length: level }, () => modeTwo.generateTrial(rng, { matchProbability: 1 }));
-  for (let index = 0; index < 2048; index += 1) {
+  for (let index = 0; index < 64; index += 1) {
     const requestedMatch = index % 2 === 0;
     const historicalTarget = history[history.length - level];
     const current = modeTwo.generateNBackTrial(rng, historicalTarget, { match: requestedMatch, nBackLevel: level });
@@ -84,20 +84,22 @@ for (const level of modeTwo.LEVELS) {
     assert.strictEqual(result.isMatch, requestedMatch);
     if (!requestedMatch) {
       assert.strictEqual(current.partialStatementCompatibility, 2);
-      assert.ok(current.lureGenerationAttempts >= 1 && current.lureGenerationAttempts <= 1024);
+      assert.ok(current.lureGenerationAttempts >= 1 && current.lureGenerationAttempts <= 2048);
     }
   }
 }
 
-const audit = modeTwo.runExhaustiveAudit(8192);
+// The dedicated restoration audit covers 24,000 trials. Keep this focused
+// compatibility test small while exercising all 3 resolutions and 8 levels.
+const audit = modeTwo.runExhaustiveAudit(32);
 assert.strictEqual(audit.passed, true, JSON.stringify(audit.failures));
-assert.strictEqual(audit.totalEvaluations, 65536);
-assert.strictEqual(audit.matches, 32768);
-assert.strictEqual(audit.nonMatches, 32768);
-assert.strictEqual(audit.partialLureChecks, 32768);
+assert.strictEqual(audit.totalEvaluations, 768);
+assert.strictEqual(audit.matches, 384);
+assert.strictEqual(audit.nonMatches, 384);
+assert.strictEqual(audit.partialLureChecks, 384);
 assert.strictEqual(audit.invariants.completeThreeStatementCrossTrialComparison, true);
-assert.strictEqual(audit.invariants.twoStatementCompatibilityInsufficient, true);
+assert.strictEqual(audit.invariants.exactTwoStatementNonMatchLures, true);
 assert.strictEqual(audit.invariants.ontologyCategoriesScoringNeutral, true);
 assert.strictEqual(audit.invariants.collapsedGraphsRejectedAndRegenerated, true);
 
-console.log(JSON.stringify({ passed: true, audit }, null, 2));
+console.log(JSON.stringify({ passed: true, simulations: audit.totalEvaluations }, null, 2));

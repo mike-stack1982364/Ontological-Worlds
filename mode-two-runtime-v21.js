@@ -71,6 +71,10 @@
       const modeOneStop = app.stop.bind(app);
       const modeOneTogglePause = typeof app.togglePause === 'function' ? app.togglePause.bind(app) : null;
       let modeTwoAdvanceTimer = null;
+      let modeTwoPresentation = 0;
+      let modeTwoPhase = 'idle';
+      let responsePausedAt = null;
+      const now = () => rootObject.performance?.now?.() ?? Date.now();
 
       const selectedMode = () => Number(modeSelect.value) === 1 ? 1 : 0;
       const selectedResolution = () => {
@@ -90,6 +94,53 @@
         modeTwoAdvanceTimer = null;
       };
       const modeTwoInterference = () => 100;
+
+      function scheduleAdvance(token, milliseconds) {
+        clearModeTwoTimer();
+        modeTwoAdvanceTimer = rootObject.setTimeout(() => {
+          modeTwoAdvanceTimer = null;
+          if (app.running && !app.paused && token === app.sessionToken) {
+            modeTwoPhase = 'advance';
+            app.nextTrial(token);
+          }
+        }, milliseconds);
+      }
+
+      async function presentTrial(trial, token) {
+        const presentation = ++modeTwoPresentation;
+        modeTwoPhase = 'speaking';
+        app.awaiting = false;
+        setBinaryButtons(false);
+        const rendered = renderOntologicalTrial(trial);
+        if (premiseDisplay) {
+          premiseDisplay.textContent = rendered;
+          premiseDisplay.setAttribute('aria-label', rendered);
+        }
+        app.applyPremiseVisibility?.();
+        try { await app.speak?.(rendered); } catch (_) {}
+        // Cancelling speech is asynchronous in several browsers. An old speech
+        // completion must not open answers after pause/resume or restart.
+        if (presentation !== modeTwoPresentation || !app.running || app.paused
+          || token !== app.sessionToken || app.current !== trial) return trial;
+        if (trial.nBackWarmup || !trial.scored) {
+          modeTwoPhase = 'warmup';
+          if (feedback) feedback.textContent = `MEMORY FILL — ${app.trials.length} OF ${trial.nBackLevel}`;
+          scheduleAdvance(token, 900);
+        } else {
+          modeTwoPhase = 'response';
+          app.awaiting = true;
+          trial.started = now();
+          setBinaryButtons(true);
+        }
+        return trial;
+      }
+
+      function failSession(error) {
+        rootObject.__modeTwoLastError = error;
+        app.stop(true);
+        if (premiseDisplay) premiseDisplay.textContent = `MODE_2_GENERATION_FAILED: ${error?.message || error}`;
+        return null;
+      }
 
       function syncInterface() {
         const mode = selectedMode();
@@ -182,6 +233,9 @@
         this.directionResolution = resolution;
         clearModeTwoTimer();
         if (selectedMode() === 1) {
+          modeTwoPresentation += 1;
+          modeTwoPhase = 'idle';
+          responsePausedAt = null;
           this.trials = [];
           this.current = null;
           this.awaiting = false;
@@ -195,6 +249,8 @@
       app.nextTrial = async function routedFinalNextTrial(token = this.sessionToken) {
         if (selectedMode() === 0) return modeOneNextTrial(token);
         if (!this.running || this.paused || token !== this.sessionToken) return null;
+        if (this.current && !this.current._answered
+          && ['speaking', 'response', 'warmup'].includes(modeTwoPhase)) return this.current;
         clearModeTwoTimer();
         rootObject.clearTimeout(this.timerId);
         this.awaiting = false;
@@ -208,38 +264,17 @@
         let trial;
         try {
           trial = this.makeTrial();
+          if (!trial) throw new Error('Mode 2 generator returned no trial.');
+          renderOntologicalTrial(trial);
         } catch (error) {
-          this.running = false;
-          if (premiseDisplay) premiseDisplay.textContent = `MODE_2_GENERATION_FAILED: ${error?.message || error}`;
-          startButton.disabled = false;
-          throw error;
+          return failSession(error);
         }
-        if (!trial) throw new Error('Mode 2 generator returned no trial.');
         trial._answered = false;
         this.current = trial;
         this.trials.push(trial);
         this.score.shown = Number(this.score.shown || 0) + 1;
-        const rendered = renderOntologicalTrial(trial);
-        if (premiseDisplay) {
-          premiseDisplay.textContent = rendered;
-          premiseDisplay.setAttribute('aria-label', rendered);
-        }
-        this.applyPremiseVisibility?.();
-        try { await this.speak?.(rendered); } catch (_) {}
-        if (!this.running || this.paused || token !== this.sessionToken || this.current !== trial) return trial;
-
-        if (trial.nBackWarmup || !trial.scored) {
-          if (feedback) feedback.textContent = `MEMORY FILL — ${this.trials.length} OF ${trial.nBackLevel}`;
-          modeTwoAdvanceTimer = rootObject.setTimeout(() => {
-            modeTwoAdvanceTimer = null;
-            if (this.running && !this.paused && token === this.sessionToken) this.nextTrial(token);
-          }, 900);
-          return trial;
-        }
-        this.awaiting = true;
-        trial.started = rootObject.performance?.now?.() ?? Date.now();
-        setBinaryButtons(true);
-        return trial;
+        this.updateStats?.();
+        return presentTrial(trial, token);
       };
 
       app.answer = function routedFinalAnswer(response) {
@@ -252,8 +287,8 @@
         setBinaryButtons(false);
         const expected = Boolean(trial.nBackMatch);
         const correct = response === expected;
-        const now = rootObject.performance?.now?.() ?? Date.now();
-        const reactionTime = Math.max(0, now - Number(trial.started || now));
+        const answeredAt = now();
+        const reactionTime = Math.max(0, answeredAt - (Number.isFinite(trial.started) ? trial.started : answeredAt));
         this.rts.push(reactionTime);
         this.score.scored = Number(this.score.scored || 0) + 1;
         if (response && expected) this.score.hits = Number(this.score.hits || 0) + 1;
@@ -263,35 +298,59 @@
         trial.correct = correct;
         trial.response = response;
         trial.responseTime = reactionTime;
+        modeTwoPhase = 'feedback';
         if (feedback) feedback.textContent = correct ? 'CORRECT' : 'INCORRECT';
         if (explanation) {
           explanation.textContent = `${expected ? 'MATCH' : 'NO MATCH'} — the complete three-statement compass structure ${expected ? 'is' : 'is not'} identical to the trial ${trial.nBackLevel} position${trial.nBackLevel === 1 ? '' : 's'} back at ${trial.directionResolution}-direction resolution.`;
           explanation.classList.add('show');
         }
         try { this.updateStats?.(); } catch (_) {}
+        try {
+          if (this.settings().haptic) rootObject.navigator?.vibrate?.(correct ? 25 : [35, 25, 35]);
+        } catch (_) {}
         const nextToken = this.sessionToken;
-        modeTwoAdvanceTimer = rootObject.setTimeout(() => {
-          modeTwoAdvanceTimer = null;
-          if (this.running && !this.paused && nextToken === this.sessionToken) this.nextTrial(nextToken);
-        }, 1200);
+        scheduleAdvance(nextToken, 1200);
         return correct;
       };
 
       app.togglePause = function routedFinalTogglePause(...args) {
         if (selectedMode() === 0) return modeOneTogglePause ? modeOneTogglePause(...args) : undefined;
         if (!this.running) return false;
+        if (this.paused) this.endSessionPause?.();
+        else this.beginSessionPause?.();
         this.paused = !this.paused;
         pausedOverlay?.classList.toggle('show', this.paused);
         if (pauseButton) pauseButton.textContent = this.paused ? 'Resume' : 'Pause';
         if (this.paused) {
           clearModeTwoTimer();
-          try { this.synth?.cancel(); } catch (_) {}
+          modeTwoPresentation += 1;
+          responsePausedAt = modeTwoPhase === 'response' ? now() : null;
+          this.awaiting = false;
+          try {
+            if (this.cancelSpeech) this.cancelSpeech();
+            else this.synth?.cancel();
+          } catch (_) {}
+          try { this.stopDelta?.(); } catch (_) {}
           setBinaryButtons(false);
-        } else if (this.current?.scored && !this.current?._answered) {
-          this.awaiting = true;
-          setBinaryButtons(true);
         } else {
-          this.nextTrial(this.sessionToken);
+          try { this.synth?.resume(); } catch (_) {}
+          try { this.syncDelta?.(); } catch (_) {}
+          if (modeTwoPhase === 'response' && this.current && !this.current._answered) {
+            if (responsePausedAt !== null && Number.isFinite(this.current.started)) {
+              this.current.started += now() - responsePausedAt;
+            }
+            this.awaiting = true;
+            setBinaryButtons(true);
+          } else if (modeTwoPhase === 'speaking' && this.current) {
+            presentTrial(this.current, this.sessionToken);
+          } else if (modeTwoPhase === 'warmup') {
+            scheduleAdvance(this.sessionToken, 900);
+          } else if (modeTwoPhase === 'feedback') {
+            scheduleAdvance(this.sessionToken, 1200);
+          }
+          // A paused startup countdown is resumed by the session starter;
+          // generating here would insert a second trial into N-back history.
+          responsePausedAt = null;
         }
         return this.paused;
       };
@@ -299,6 +358,9 @@
       app.stop = function routedFinalStop(...args) {
         const preservedResolution = this.directionResolution || selectedResolution();
         clearModeTwoTimer();
+        modeTwoPresentation += 1;
+        modeTwoPhase = 'idle';
+        responsePausedAt = null;
         const result = modeOneStop(...args);
         if (preservedResolution) directionSelect.value = String(preservedResolution);
         setBinaryButtons(false);
@@ -324,9 +386,19 @@
     return installFinalRuntime(root);
   }
 
+  let resolveInstallation;
+  let rejectInstallation;
+  root.__modeTwoFinalRuntimeReady = new Promise((resolve, reject) => {
+    resolveInstallation = resolve;
+    rejectInstallation = reject;
+  });
+  // Standalone script consumers may inspect the error flag instead of awaiting
+  // readiness. Keep that path from emitting an unhandled promise rejection.
+  root.__modeTwoFinalRuntimeReady.catch(() => {});
   const schedule = () => root.setTimeout(() => root.setTimeout(() => {
     try {
-      install();
+      if (!install()) throw new Error('Mode 2 application was unavailable during installation.');
+      resolveInstallation(true);
     } catch (error) {
       root.__modeTwoFinalRuntimeV21Error = error;
       console.error('Mode 2 final runtime installation failed.', error);
@@ -334,6 +406,7 @@
       if (display) display.textContent = `MODE_2_INSTALL_FAILED: ${error?.message || error}`;
       const start = root.document.getElementById('start-btn');
       if (start) start.disabled = true;
+      rejectInstallation(error);
     }
   }, 0), 0);
 

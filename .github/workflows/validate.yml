@@ -1,4 +1,4 @@
-name: Validate logic engines
+name: Validate training modes
 
 on:
   push:
@@ -17,45 +17,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+      - name: Install reproducible test dependencies
+        run: npm ci
       - name: Check JavaScript syntax
         run: |
-          node --check app.js
-          node --check mode-release-gate.js
-          node --check audio-only-display.js
-          node --check response-window.js
-          node --check ontology-integration-v4.js
-          node --check mode-one-triadic.js
-          node --check cognitive-interference-v3.js
-          node --check mode-one-interference.js
-          node --check mode-one-match-logic.js
-          node --check mode-one-spatial-core.js
-          node --check mode-one-approved-trials-v4.js
-          node --check mode-one-approved-trials-v6.js
-          node --check mode-one-approved-trials-v7.js
-          node --check mode-one-nback-v8.js
-          node --check mode-one-nback-v9.js
-          node --check mode-one-nback-v10.js
-          node --check mode-one-nback-v11.js
-          node --check mode-router-v2.js
-          node --check mode-two-ontology-nback-v14.js
-          node --check mode-two-engine-v21.js
-          node --check mode-two-runtime-v21.js
-          node --check mode-one-completion-v10.js
-          node --check mode-one-completion-v11.js
-          node --check audio-accessibility.js
-          node --check mode-one-conflict-matrix-v20.js
-          node --check mode-one-letter-continuity-v1.js
-      - name: Run Mode 2 24,000-simulation resolution audit
-        run: node tests/mode-two-restoration-v21.test.js
-      - name: Install DOM test runtime
-        run: npm install --no-save jsdom@26
-      - name: Run legacy relational logic smoke tests
-        run: node tests/interference-smoke.mjs
-      - name: Run complete-profile N-back browser smoke test
-        run: node tests/profile-nback-browser-smoke.mjs
-      - name: Run level-specific 80-case browser runtime
-        run: node tests/level-curriculum-browser-smoke.mjs
-      - name: Run level-specific 160-case meta-curriculum runtime
-        run: node tests/meta-curriculum-browser-smoke.mjs
-      - name: Run restored Mode 2 browser runtime
-        run: node tests/mode-two-browser-restoration-v21.mjs
+          for file in *.js tests/*.js tests/helpers/*.cjs; do node --check "$file"; done
+      - name: Run logic audits and production-page regressions
+        run: npm test

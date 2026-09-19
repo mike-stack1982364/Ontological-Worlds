@@ -120,7 +120,7 @@
   }
 
   function rotateTrial(core, trial, steps) {
-    const codes = core.directions.map(item => item.code);
+    const codes = (core.DIRECTIONS || core.directions).map(item => item.code);
     const rotate = code => codes[(codes.indexOf(code) + steps + 16) % 16];
     const transform = statement => ({
       subject: statement.subject,

@@ -20,6 +20,7 @@
     evaluateTrial: core.evaluateTrial.bind(core),
     renderTrial: core.renderTrial.bind(core),
     explainTrial: core.explainTrial.bind(core),
+    hydrateTrial: core.hydrateTrial.bind(core),
     generateTrial: core.generateTrial.bind(core),
     renameTrial: core.renameTrial.bind(core),
     invert: core.invert.bind(core),
@@ -36,11 +37,22 @@
   function permutations(values) { if (values.length < 2) return [values.slice()]; return values.flatMap((v, i) => permutations(values.slice(0, i).concat(values.slice(i + 1))).map(rest => [v, ...rest])); }
   function clearPresentationState(trial) {
     if (!trial || typeof trial !== 'object') return trial;
-    ['submitted','conflictResponses','conflictDecisionCorrectness','conflictCorrectCount','conflictAllCorrect','conflictDecisionTimes','started','_answered'].forEach(key => { delete trial[key]; });
+    ['submitted','conflictResponses','conflictDecisionCorrectness','conflictCorrectCount','conflictAllCorrect','conflictDecisionTimes','started','_answered','correct','response','responseTime','speechComplete','_speechId'].forEach(key => { delete trial[key]; });
     return trial;
   }
   function canonicalStatement(statement, mapping) { const c = requireSpatial(); const direct = `${mapping[statement.subject]}>${statement.relation}>${mapping[statement.object]}`; const inverse = `${mapping[statement.object]}>${c.opposite(statement.relation)}>${mapping[statement.subject]}`; return direct < inverse ? direct : inverse; }
-  function ensureResolutionClosed(trial, expectedResolution) { const c = requireSpatial(); const resolution = c.normaliseResolution(expectedResolution ?? trial?.directionResolution, null); if (!resolution) return false; trial.directionResolution = resolution; const pool = c.allowedCodes(resolution); let evaluation; try { evaluation = c.evaluateTrial(trial); } catch (_) { return false; } const relations = statements(trial).map(item => item.relation).concat(evaluation.expectedRelation); return relations.every(code => pool.includes(code)); }
+  function ensureResolutionClosed(trial, expectedResolution) {
+    const c = requireSpatial();
+    const resolution = c.normaliseResolution(expectedResolution ?? trial?.directionResolution, null);
+    if (!resolution || !trial) return false;
+    if (trial.directionResolution != null && Number(trial.directionResolution) !== resolution) return false;
+    const pool = c.allowedCodes(resolution);
+    try {
+      const evaluation = c.evaluateTrial({ ...trial, directionResolution: resolution });
+      const relations = statements(trial).map(item => item.relation).concat(evaluation.expectedRelation);
+      return relations.every(code => pool.includes(code));
+    } catch (_) { return false; }
+  }
   function analyseAlignment(target, current, options = {}) {
     const targetResolution = Number(target?.directionResolution || 16), currentResolution = Number(current?.directionResolution || 16);
     if (targetResolution !== currentResolution) throw new Error('N-back target and current trial use different compass resolutions.');
@@ -67,7 +79,17 @@
   function renameAndTransform(rng, target) { const c = requireSpatial(), source = trialLetters(target), destination = shuffle(rng, LETTER_POOL).slice(0, 3); let trial = c.renameTrial(target, Object.fromEntries(source.map((letter, index) => [letter, destination[index]]))); trial = clearPresentationState(clone(trial)); if (random(rng) < .5) trial.premises.reverse(); trial.premises = trial.premises.map(s => random(rng) < .5 ? c.invert(s) : s); if (random(rng) < .5) trial.conclusion = c.invert(trial.conclusion); trial.mode = 0; trial.publicMode = 1; trial.directionResolution = Number(target.directionResolution || 16); return trial; }
   function oneStepMutations(statement, resolution) { const c = requireSpatial(), ring = c.allowedCodes(resolution), index = ring.indexOf(statement.relation); if (index < 0) return []; return [-1,1].map(sign => ({...statement, relation: ring[(index + sign + ring.length) % ring.length]})); }
   function mutateDirection(rng, statement, interferenceLevel = 0, directionResolution = 16) { const c = requireSpatial(), ring = c.allowedCodes(directionResolution), index = ring.indexOf(statement.relation); if (index < 0) throw new Error('Cannot mutate a relation outside the selected resolution.'); const level = Math.max(0, Math.min(100, Number(interferenceLevel) || 0)); let distance; if (level >= 85) distance = 1; else if (level >= 55) distance = Math.min(2, Math.floor(ring.length / 2)); else distance = Math.max(1, Math.floor(ring.length / 2)); const sign = random(rng) < .5 ? -1 : 1; return { ...statement, relation: ring[(index + sign * distance + ring.length) % ring.length] }; }
-  function finaliseConflictTrial(target, trial, options) { clearPresentationState(trial); const resolution = options.directionResolution, roleSensitive = Boolean(options.roleSensitive), evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }), requestedWholeMatch = Boolean(options.match); Object.assign(trial, { submitted: false, nBackRequestedMatch: requestedWholeMatch, nBackMatch: evaluation.wholeTrialMatch, isMatch: evaluation.wholeTrialMatch, statementMatchVector: evaluation.statementMatches.slice(), conclusionEntailed: evaluation.conclusionEntailed, conflictResponseVector: evaluation.responseVector.slice(), mappingConflict: evaluation.mappingConflict, localStatementCompatibility: evaluation.localStatementCompatibility.slice(), roleSensitive, directionResolution: resolution, interferenceLevel: options.interferenceLevel, interferenceProfile: `R${resolution}:${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:${Number(evaluation.wholeTrialMatch)}`, scored: true }); return trial; }
+  function finaliseConflictTrial(target, trial, options) {
+    clearPresentationState(trial);
+    // The candidate is cloned from history before relettering and mutation.
+    // Refresh its proof, explanation and signature instead of retaining the
+    // historical trial's result on a different set of displayed statements.
+    trial.letters = trialLetters(trial);
+    requireSpatial().hydrateTrial(trial);
+    const resolution = options.directionResolution, roleSensitive = Boolean(options.roleSensitive), evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }), requestedWholeMatch = Boolean(options.match);
+    Object.assign(trial, { submitted: false, nBackRequestedMatch: requestedWholeMatch, nBackMatch: evaluation.wholeTrialMatch, isMatch: evaluation.wholeTrialMatch, statementMatchVector: evaluation.statementMatches.slice(), conclusionEntailed: evaluation.conclusionEntailed, conflictResponseVector: evaluation.responseVector.slice(), mappingConflict: evaluation.mappingConflict, localStatementCompatibility: evaluation.localStatementCompatibility.slice(), roleSensitive, directionResolution: resolution, interferenceLevel: options.interferenceLevel, interferenceProfile: `R${resolution}:${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:${Number(evaluation.wholeTrialMatch)}`, scored: true });
+    return trial;
+  }
   function buildExactSingleConflictCandidates(rng, target, resolution) { const candidates = []; for (let transformAttempt = 0; transformAttempt < 40; transformAttempt++) { const source = renameAndTransform(rng, target); source.directionResolution = resolution; const base = statements(source).map(item => ({...item})); for (let index = 0; index < 3; index++) { for (const replacement of oneStepMutations(base[index], resolution)) { const trial = clearPresentationState(clone(source)), items = base.map(item => ({...item})); items[index] = replacement; trial.premises = items.slice(0,2); trial.conclusion = items[2]; candidates.push(trial); } } } return candidates; }
   function generateConflictTrial(rng, target, options = {}) {
     if (!target) throw new Error('A historical N-back target is required.');
@@ -103,14 +125,56 @@
     if (matrix.dataset.compassInputInstalled === 'true') return matrix.__inputApi;
     matrix.dataset.compassInputInstalled = 'true';
     const d = rootObject.document, responses = new Array(5).fill(null), decisionTimes = new Array(5).fill(null);
-    const clearFeedback = () => matrix.querySelectorAll('.conflict-choice').forEach(button => { button.classList.remove('feedback-correct','feedback-incorrect','selected'); button.querySelectorAll('.conflict-feedback-icon').forEach(icon => icon.remove()); });
-    const showButtonFeedback = (button, correct) => { button.classList.add(correct ? 'feedback-correct' : 'feedback-incorrect'); const icon = d.createElement('span'); icon.className = `conflict-feedback-icon ${correct ? 'correct' : 'incorrect'}`; icon.setAttribute('aria-hidden','true'); icon.innerHTML = correct ? '<svg viewBox="0 0 64 64"><path d="M13 33l12 12L52 18" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '<svg viewBox="0 0 64 64"><path d="M17 17l30 30M47 17L17 47" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>'; button.appendChild(icon); };
-    const reset = trial => { responses.fill(null); decisionTimes.fill(null); matrix.dataset.startedAt = String(Date.now()); matrix.dataset.submitting = 'false'; clearFeedback(); matrix.classList.add('active'); matrix.querySelectorAll('.conflict-choice').forEach(button => { button.disabled = !Boolean(trial?.scored); }); const progress = matrix.querySelector('#conflict-progress'); if (progress) progress.textContent = trial?.scored ? '0 of 5 decisions entered' : ''; };
-    const handleButton = button => { if (!button || button.disabled || !app.awaiting || matrix.dataset.submitting === 'true') return; const row = button.closest('.conflict-row'), index = Number(row?.dataset.decision); if (!Number.isInteger(index) || responses[index] !== null) return; responses[index] = button.dataset.value === '1'; decisionTimes[index] = Date.now() - Number(matrix.dataset.startedAt || Date.now()); row.querySelectorAll('.conflict-choice').forEach(choice => { choice.classList.toggle('selected', choice === button); choice.disabled = true; }); const expected = app.current?.conflictResponseVector?.[index]; if (typeof expected === 'boolean') showButtonFeedback(button, responses[index] === expected); const completed = responses.filter(value => value !== null).length, progress = matrix.querySelector('#conflict-progress'); if (progress) progress.textContent = `${completed} of 5 decisions entered`; if (completed === 5) { matrix.dataset.submitting = 'true'; app.submitConflictMatrix(responses.slice(), decisionTimes.slice()); } };
-    matrix.addEventListener('click', event => { const button = event.target.closest('.conflict-choice'); if (button) handleButton(button); });
+    const clearFeedback = () => matrix.querySelectorAll('.conflict-choice').forEach(button => {
+      button.classList.remove('feedback-correct','feedback-incorrect','selected');
+      button.querySelectorAll('.conflict-feedback-icon').forEach(icon => icon.remove());
+    });
+    const sync = () => matrix.querySelectorAll('.conflict-choice').forEach(button => {
+      const index = Number(button.closest('.conflict-row').dataset.decision);
+      button.disabled = !app.running || app.paused || !app.awaiting || responses[index] !== null;
+    });
+    const reset = trial => {
+      responses.fill(null); decisionTimes.fill(null);
+      matrix.dataset.startedAt = String(Date.now()); matrix.dataset.submitting = 'false';
+      clearFeedback(); matrix.classList.add('active'); sync();
+      const progress = matrix.querySelector('#conflict-progress');
+      if (progress) progress.textContent = trial?.nBackWarmup
+        ? 'No N-back target yet: choose No for the three matches and whole triad; judge entailment normally.'
+        : '0 of 5 decisions entered';
+    };
+    const handleButton = button => {
+      if (!app.running || app.paused || !app.awaiting || !button || button.disabled || matrix.dataset.submitting === 'true') return;
+      const row = button.closest('.conflict-row'), index = Number(row?.dataset.decision);
+      if (!Number.isInteger(index) || index < 0 || index > 4 || responses[index] !== null) return;
+      responses[index] = button.dataset.value === '1';
+      decisionTimes[index] = Math.max(0, Date.now() - Number(matrix.dataset.startedAt));
+      row.querySelectorAll('.conflict-choice').forEach(choice => { choice.classList.toggle('selected', choice === button); choice.disabled = true; });
+      const correct = responses[index] === app.current.conflictResponseVector[index];
+      try { if (app.settings().haptic) rootObject.navigator?.vibrate?.(correct ? 25 : [35, 25, 35]); } catch (_) {}
+      button.classList.add(correct ? 'feedback-correct' : 'feedback-incorrect');
+      const icon = d.createElement('span');
+      icon.className = 'conflict-feedback-icon ' + (correct ? 'correct' : 'incorrect');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = correct ? '<svg viewBox="0 0 64 64"><path d="M13 33l12 12L52 18" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '<svg viewBox="0 0 64 64"><path d="M17 17l30 30M47 17L17 47" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      button.appendChild(icon);
+      const completed = responses.filter(value => value !== null).length, progress = matrix.querySelector('#conflict-progress');
+      if (progress) progress.textContent = completed + ' of 5 decisions entered';
+      if (completed === 5) { matrix.dataset.submitting = 'true'; app.submitConflictMatrix(responses.slice(), decisionTimes.slice()); }
+    };
+    matrix.addEventListener('click', event => handleButton(event.target.closest('.conflict-choice')));
     const keyboard = ['a','s','d','f','h','j','k','l',' ','n'];
-    d.addEventListener('keydown', event => { if (!matrix.classList.contains('active') || !app.awaiting || /INPUT|SELECT|TEXTAREA/.test(event.target?.tagName || '')) return; const key = event.code === 'Space' ? ' ' : event.key.toLowerCase(), keyIndex = keyboard.indexOf(key); if (keyIndex < 0) return; event.preventDefault(); event.stopImmediatePropagation(); const decision = Math.floor(keyIndex / 2), value = keyIndex % 2 === 0; handleButton(matrix.querySelector(`[data-decision="${decision}"] [data-value="${value ? 1 : 0}"]`)); }, true);
-    return matrix.__inputApi = { reset };
+    d.addEventListener('keydown', event => {
+      if (!matrix.classList.contains('active') || !app.running || app.paused || !app.awaiting || !d.getElementById('keyboard')?.checked ||
+          event.repeat || event.ctrlKey || event.metaKey || event.altKey || d.querySelector('.modal.show') || d.body.classList.contains('matching-tutorial-open') ||
+          /INPUT|SELECT|TEXTAREA/.test(event.target?.tagName || '') || event.target?.isContentEditable) return;
+      const key = event.code === 'Space' ? ' ' : (event.key || '').toLowerCase(), keyIndex = keyboard.indexOf(key);
+      if (key === ' ' && event.target?.closest?.('button, a[href], summary')) return;
+      if (keyIndex < 0) return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      const decision = Math.floor(keyIndex / 2), value = keyIndex % 2 === 0;
+      handleButton(matrix.querySelector('[data-decision="' + decision + '"] [data-value="' + (value ? 1 : 0) + '"]'));
+    }, true);
+    return matrix.__inputApi = { reset, sync, addPausedTime: ms => { matrix.dataset.startedAt = String(Number(matrix.dataset.startedAt) + ms); } };
   }
   function installBrowser(rootObject) {
     const app = rootObject.__ontologicalWorlds, d = rootObject.document;
@@ -120,7 +184,24 @@
     const ui = ensureResolutionUI(d, app), input = installMatrixInput(rootObject, app, matrix);
     const originalSettings = app.settings.bind(app), originalStart = app.start.bind(app), originalNextTrial = app.nextTrial.bind(app), originalStop = app.stop.bind(app), originalTogglePause = app.togglePause?.bind(app);
     const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation');
-    let advanceTimerId = null;
+    let advanceTimerId = null, advanceDue = 0, advanceRemaining = 0;
+    const scheduleAdvance = (delay = 1600) => {
+      clearTimeout(advanceTimerId);
+      advanceRemaining = delay; advanceDue = Date.now() + delay;
+      const token = app.sessionToken;
+      advanceTimerId = rootObject.setTimeout(() => {
+        advanceTimerId = null;
+        if (app.running && !app.paused && token === app.sessionToken) app.nextTrial(token);
+      }, delay);
+    };
+    const speakTrial = trial => {
+      const token = app.sessionToken;
+      const speechId = trial._speechId = (trial._speechId || 0) + 1;
+      trial.speechComplete = false;
+      Promise.resolve(app.speak?.(requireSpatial().renderTrial(trial))).then(success => {
+        if (app.running && !app.paused && app.current === trial && token === app.sessionToken && speechId === trial._speechId) trial.speechComplete = success !== false;
+      }).catch(() => {});
+    };
     app.settings = function() { const settings = originalSettings(); return { ...settings, directionResolution: this.running ? this.directionResolution : ui.getSelected() }; };
     app.getSelectedDirectionResolution = ui.getSelected;
     app.validateDirectionResolutionBeforeStart = ui.validate;
@@ -139,7 +220,7 @@
       if (!this.running || this.paused || token !== this.sessionToken) return null;
       clearTimeout(this.timerId); clearTimeout(advanceTimerId); advanceTimerId = null;
       const resolution = requireSpatial().normaliseResolution(this.directionResolution, null);
-      if (!resolution) return this.failModeOneStartup?.(new Error('Mode 1 has no frozen compass resolution.')) || null;
+      if (!resolution) return this.failModeOneStartup(new Error('Mode 1 has no frozen compass resolution.'));
       let trial = null, rendered = '', lastError = null;
       for (let attempt = 0; attempt < 32 && !trial; attempt++) {
         try {
@@ -151,76 +232,86 @@
           trial = candidate; rendered = candidateRendered.trim();
         } catch (error) { lastError = error; }
       }
-      if (!trial) return this.failModeOneStartup?.(lastError || new Error('Mode 1 could not generate and render a valid trial.')) || null;
+      if (!trial) return this.failModeOneStartup(lastError || new Error('Mode 1 could not generate a valid trial.'));
       if (!this.running || this.paused || token !== this.sessionToken) return null;
-      if (!premiseDisplay) return this.failModeOneStartup?.(new Error('Premise display element is missing.')) || null;
       premiseDisplay.textContent = rendered;
-      if (premiseDisplay.textContent.trim() !== rendered) return this.failModeOneStartup?.(new Error('Premise DOM write did not persist.')) || null;
-      this.current = trial;
-      this.trials.push(trial);
-      this.score.shown++;
+      premiseDisplay.setAttribute('aria-label', rendered);
+      this.current = trial; trial.started = Date.now(); trial._answered = false;
+      this.trials.push(trial); this.score.shown++;
       premiseDisplay.classList.remove('correct','incorrect');
       if (feedback) feedback.textContent = '';
       if (explanation) explanation.textContent = '';
-      input.reset(trial);
-      this.awaiting = true;
-      try { this.speak?.(rendered); } catch (_) {}
-      try { this.updateStats?.(); } catch (_) {}
+      this.awaiting = true; input.reset(trial);
+      this.applyPremiseVisibility?.(); speakTrial(trial); this.updateStats?.();
       return trial;
     };
     app.failModeOneStartup = function(error) {
       console.error('Mode 1 startup failed.', error);
-      this.running = false;
-      this.paused = false;
-      this.awaiting = false;
-      this.current = null;
-      this.trials = [];
-      this.sessionToken++;
-      clearTimeout(this.timerId); clearTimeout(advanceTimerId); clearInterval(this.sessionTimerId);
-      advanceTimerId = null;
-      try { this.synth?.cancel(); } catch (_) {}
-      try { this.stopDelta?.(); } catch (_) {}
-      const countdown = d.getElementById('countdown-box');
-      if (countdown) countdown.textContent = '';
-      if (premiseDisplay) premiseDisplay.textContent = `START_FAILED: ${error?.message || 'Unknown Mode 1 startup error'}`;
-      const start = d.getElementById('start-btn'), pause = d.getElementById('pause-btn'), stop = d.getElementById('stop-btn');
-      if (start) start.disabled = false;
-      if (pause) pause.disabled = true;
-      if (stop) stop.disabled = true;
-      ui.select.disabled = false;
-      ui.sync();
+      this.stop(true);
+      premiseDisplay.textContent = 'TRAINING_STOPPED: ' + (error?.message || 'Unable to generate a valid trial.');
       return null;
     };
     app.start = function(...args) {
-      const mode = Number(originalSettings().mode);
-      if (mode !== 0) return originalStart(...args);
-      if (this.running) return false;
-      if (!ui.validate(true)) return false;
+      if (Number(originalSettings().mode) !== 0) return originalStart(...args);
+      if (this.running || !ui.validate(true)) return false;
       this.directionResolution = ui.getSelected();
-      this.trials = [];
-      this.current = null;
-      this.awaiting = false;
+      this.trials = []; this.current = null; this.awaiting = false;
+      this.conflictDecisionStats = Array.from({length: 5}, () => ({hits: 0, misses: 0, falseAlarms: 0, correctRejects: 0, scored: 0, correct: 0}));
       const result = originalStart(...args);
       if (result && typeof result.catch === 'function') result.catch(error => this.failModeOneStartup(error));
       return result;
     };
-    app.submitConflictMatrix = function(responses, decisionTimes) {
-      if (!this.current?.scored || !Array.isArray(this.current.conflictResponseVector) || !this.awaiting || this.current.submitted) return;
-      this.current.submitted = true;
-      const expected = this.current.conflictResponseVector, correctness = responses.map((value,index) => value === expected[index]);
-      Object.assign(this.current, { conflictResponses: responses.slice(), conflictDecisionCorrectness: correctness.slice(), conflictCorrectCount: correctness.filter(Boolean).length, conflictAllCorrect: correctness.every(Boolean), conflictDecisionTimes: decisionTimes.slice(), directionResolution: this.directionResolution });
-      this.awaiting = false;
-      clearTimeout(this.timerId); clearTimeout(advanceTimerId);
-      if (feedback) feedback.textContent = this.current.conflictAllCorrect ? 'ALL FIVE CORRECT' : `${this.current.conflictCorrectCount}/5 CORRECT`;
-      if (explanation) explanation.textContent = requireSpatial().explainTrial(this.current);
-      try { this.updateStats?.(); } catch (_) {}
-      const token = this.sessionToken;
-      advanceTimerId = rootObject.setTimeout(() => { advanceTimerId = null; if (this.running && !this.paused && token === this.sessionToken) this.nextTrial(token); }, 1600);
+    app.submitConflictMatrix = function(responses, decisionTimes = []) {
+      if (!this.running || this.paused || !this.current?.scored || !Array.isArray(this.current.conflictResponseVector) ||
+          !this.awaiting || this.current.submitted || !Array.isArray(responses) || responses.length !== 5 || !Array.from(responses).every(value => typeof value === 'boolean')) return false;
+      const trial = this.current, expected = trial.conflictResponseVector, correctness = responses.map((value,index) => value === expected[index]);
+      const responseTime = Math.max(0, Date.now() - trial.started);
+      Object.assign(trial, { submitted: true, _answered: true, correct: correctness.every(Boolean), responseTime,
+        conflictResponses: responses.slice(), conflictDecisionCorrectness: correctness, conflictCorrectCount: correctness.filter(Boolean).length,
+        conflictAllCorrect: correctness.every(Boolean), conflictDecisionTimes: Array.from({length: 5}, (_, i) => Number.isFinite(decisionTimes[i]) ? Math.max(0, decisionTimes[i]) : responseTime),
+        directionResolution: this.directionResolution });
+      const signalKey = (answer, truth) => truth ? (answer ? 'hits' : 'misses') : (answer ? 'falseAlarms' : 'correctRejects');
+      this.score.scored++;
+      this.score[signalKey(responses[4], expected[4])]++;
+      this.score.correctTrials = (this.score.correctTrials || 0) + Number(trial.correct);
+      this.conflictDecisionStats ||= Array.from({length: 5}, () => ({hits: 0, misses: 0, falseAlarms: 0, correctRejects: 0, scored: 0, correct: 0}));
+      responses.forEach((value, i) => {
+        const stats = this.conflictDecisionStats[i]; stats.scored++; stats.correct += Number(correctness[i]); stats[signalKey(value, expected[i])]++;
+      });
+      this.rts.push(responseTime); this.awaiting = false; input.sync();
+      clearTimeout(this.timerId); this.cancelSpeech?.();
+      if (feedback) feedback.textContent = trial.conflictAllCorrect ? 'ALL FIVE CORRECT' : trial.conflictCorrectCount + '/5 CORRECT';
+      if (explanation) explanation.textContent = requireSpatial().explainTrial(trial);
+      this.updateStats?.(); scheduleAdvance(); return true;
     };
-    if (originalTogglePause) app.togglePause = function(...args) { const wasPaused = this.paused, result = originalTogglePause(...args); if (wasPaused && !this.paused && this.current && !this.current.submitted) { this.awaiting = true; return result; } return result; };
-    app.stop = function(...args) { clearTimeout(advanceTimerId); advanceTimerId = null; const result = originalStop(...args); this.directionResolution = null; this.current = null; ui.select.value = ''; matrix.classList.remove('active'); ui.sync(); return result; };
-    app.__mandatoryCompassResolutionInstalled = true;
-    ui.sync();
+    app.togglePause = function(...args) {
+      if (Number(originalSettings().mode) !== 0) return originalTogglePause?.(...args);
+      if (!this.running) return;
+      if (this._starting) return originalTogglePause?.(...args);
+      if (!this.paused) {
+        this.beginSessionPause?.(); this.paused = true;
+        if (advanceTimerId !== null) advanceRemaining = Math.max(0, advanceDue - Date.now());
+        clearTimeout(advanceTimerId); advanceTimerId = null;
+        this.cancelSpeech?.(); this.stopDelta?.();
+      } else {
+        const elapsed = this.endSessionPause?.() || 0;
+        this.paused = false;
+        if (this.current) this.current.started += elapsed;
+        input.addPausedTime(elapsed); this.syncDelta?.();
+        if (this.current?.submitted) scheduleAdvance(advanceRemaining);
+        else if (this.current && !this.current.speechComplete) speakTrial(this.current);
+      }
+      d.getElementById('paused-overlay').classList.toggle('show', this.paused);
+      d.getElementById('pause-btn').textContent = this.paused ? 'Resume' : 'Pause';
+      input.sync();
+    };
+    app.stop = function(...args) {
+      clearTimeout(advanceTimerId); advanceTimerId = null; advanceRemaining = 0;
+      const result = originalStop(...args);
+      this.directionResolution = null; this.current = null; ui.select.value = '';
+      matrix.classList.remove('active'); input.sync(); ui.sync(); return result;
+    };
+    app.__mandatoryCompassResolutionInstalled = true; ui.sync();
   }
   function runConflictAudit(iterationsPerResolution = 1000) { class AuditRng { constructor(seed) { this.s=seed>>>0; } next(){let v=this.s+=1831565813;v=Math.imul(v^v>>>15,1|v);v^=v+Math.imul(v^v>>>7,61|v);return((v^v>>>14)>>>0)/4294967296;} pick(values){return values[Math.floor(this.next()*values.length)];} shuffle(values){return fisherYates(this,values);} } const failures=[], rows=[]; for (const resolution of [4,8,16]) { const rng=new AuditRng(0x61000000+resolution), row={resolution,failures:0,exactTwo:0,nonMatches:0}; let target=generateWarmupTrial(rng,{interferenceLevel:100,directionResolution:resolution}); for(let i=0;i<iterationsPerResolution;i++){ try{ const trial=generateConflictTrial(rng,target,{match:false,interferenceLevel:100,roleSensitive:true,directionResolution:resolution}); const evaluation=evaluateConflictMatrix(target,trial,{roleSensitive:true}); row.nonMatches++; if(evaluation.matchedCount===2) row.exactTwo++; if(evaluation.wholeTrialMatch||!ensureResolutionClosed(trial,resolution)||evaluation.matchedCount!==2||trial.submitted) row.failures++; target=trial; }catch(error){row.failures++;if(failures.length<20)failures.push(`${resolution}-${i}:${error.message}`);} } if(row.failures) failures.push(`resolution-${resolution}-summary`); rows.push(row); } return {passed:failures.length===0,failures,iterationsPerResolution,rows}; }
   return { version: 20, LEVELS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, installBrowser, runAudit: runConflictAudit, runConflictAudit, ensureResolutionClosed, mutateDirection };

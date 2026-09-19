@@ -83,17 +83,18 @@
     const c = requireCore();
     const resolution = normaliseResolution(expectedResolution, null);
     if (!resolution) return false;
+    if (trial?.directionResolution != null
+      && normaliseResolution(trial.directionResolution, null) !== resolution) return false;
     const pool = c.allowedCodes(resolution);
-    let evaluation;
     try {
-      evaluation = c.evaluateTrial({ ...trial, directionResolution: resolution });
+      const evaluation = c.evaluateTrial({ ...trial, directionResolution: resolution });
+      return statements(trial)
+        .map(statement => statement.relation)
+        .concat(evaluation.expectedRelation)
+        .every(code => pool.includes(code));
     } catch (_) {
       return false;
     }
-    return statements(trial)
-      .map(statement => statement.relation)
-      .concat(evaluation.expectedRelation)
-      .every(code => pool.includes(code));
   }
   function relationalSignature(trial) {
     const c = requireCore();
@@ -174,11 +175,16 @@
     });
   }
   function evaluateHistory(history, currentIndex, nBackLevel) {
+    if (!Array.isArray(history) || !Number.isInteger(currentIndex)
+      || currentIndex < 0 || currentIndex >= history.length || !history[currentIndex]) {
+      throw new Error('Mode 2 history requires an existing current trial and a valid index.');
+    }
     const level = Math.max(1, Math.min(8, Math.round(Number(nBackLevel) || 1)));
     const targetIndex = currentIndex - level;
     if (targetIndex < 0) {
       return Object.freeze({ nBackLevel: level, currentIndex, targetIndex, warmup: true, isMatch: false, scored: false });
     }
+    if (!history[targetIndex]) throw new Error('Mode 2 history is missing the N-back target.');
     return Object.freeze({
       ...compare(history[targetIndex], history[currentIndex]),
       nBackLevel: level,
@@ -278,6 +284,14 @@
     const destination = shuffled(rng, c.LETTERS || 'ABCDEFGHJKLMNPQRSTUVWXYZ'.split('')).slice(0, 3);
     const mapping = Object.fromEntries(source.map((letter, index) => [letter, destination[index]]));
     const out = clone(c.renameTrial(target, mapping));
+    // A new presentation inherits the relational graph, never an earlier
+    // participant's answer, timing, or diagnostics about a different target.
+    for (const key of [
+      '_answered', 'started', 'correct', 'response', 'responseTime', 'submitted',
+      'conflictResponses', 'conflictDecisionCorrectness', 'conflictCorrectCount',
+      'conflictAllCorrect', 'conflictDecisionTimes', 'interferenceSlot',
+      'partialStatementCompatibility', 'statementMatchVector', 'lureGenerationAttempts'
+    ]) delete out[key];
     if (random(rng) < 0.5) out.premises.reverse();
     out.premises = out.premises.map(statement => random(rng) < 0.5 ? c.invert(statement) : statement);
     if (random(rng) < 0.5) out.conclusion = c.invert(out.conclusion);

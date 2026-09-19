@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { JSDOM } from 'jsdom';
+import { createRequire } from 'node:module';
+const { JSDOM } = createRequire(import.meta.url)('jsdom');
 
-const html = fs.readFileSync('index.html', 'utf8')
+const productionHtml = fs.readFileSync('index.html', 'utf8');
+const html = productionHtml
   .replace(/<script[^>]*src="[^"]+"[^>]*><\/script>/g, '');
 const dom = new JSDOM(html, {
   runScripts: 'outside-only',
@@ -38,30 +40,13 @@ window.AudioContext = class AudioContext {
 };
 window.webkitAudioContext = window.AudioContext;
 
-for (const file of [
-  'app.js',
-  'mode-release-gate.js',
-  'audio-only-display.js',
-  'response-window.js',
-  'ontology-integration-v4.js',
-  'cognitive-interference-v3.js',
-  'mode-one-triadic.js',
-  'mode-one-interference.js',
-  'mode-one-match-logic.js',
-  'mode-one-spatial-core.js',
-  'mode-zero-exact-matching-v12.js',
-  'mode-one-approved-trials-v7.js',
-  'mode-one-nback-v8.js',
-  'mode-one-nback-v9.js',
-  'mode-one-nback-v10.js',
-  'mode-one-nback-v11.js',
-  'mode-router-v2.js',
-  'mode-one-completion-v10.js',
-  'mode-one-completion-v11.js',
-  'audio-accessibility.js',
-  'mode-one-conflict-matrix-v20.js',
-  'mode-one-letter-continuity-v1.js'
-]) window.eval(fs.readFileSync(file, 'utf8'));
+// Exercise the shipped script chain. Loading a separate legacy chain here used
+// to conceal production-only routing failures. JSDOM's outside-only mode does
+// not fetch the dynamic Mode 2 loader, so its two files are installed below.
+const scripts = [...productionHtml.matchAll(/<script\b[^>]*\bsrc="([^"]+)"[^>]*><\/script>/g)]
+  .map(match => match[1].split('?')[0])
+  .filter(file => file !== 'mode-two-ontology-nback-v14.js');
+for (const file of scripts) window.eval(fs.readFileSync(file, 'utf8'));
 
 // JSDOM emits DOMContentLoaded once after synchronous script registration.
 // Do not dispatch it manually: duplicate dispatches re-run legacy installers and
@@ -71,7 +56,7 @@ await new Promise(resolve => setTimeout(resolve, 80));
 // Production loads Mode 2 v21 dynamically after the legacy/Mode 1 script chain.
 window.eval(fs.readFileSync('mode-two-engine-v21.js', 'utf8'));
 window.eval(fs.readFileSync('mode-two-runtime-v21.js', 'utf8'));
-await new Promise(resolve => setTimeout(resolve, 80));
+await window.__modeTwoFinalRuntimeReady;
 
 const app = window.__ontologicalWorlds;
 const modeTwo = window.__modeTwoOntologyNBackV21;

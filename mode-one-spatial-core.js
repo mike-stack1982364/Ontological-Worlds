@@ -66,7 +66,12 @@
   function directionFromVector(x, y) {
     if (Math.abs(x) < EPSILON && Math.abs(y) < EPSILON) return 'BALANCE';
     const clockwise = (Math.atan2(x, y) + TWO_PI) % TWO_PI;
-    return DIRECTIONS[Math.round(clockwise / (TWO_PI / 16)) % 16].code;
+    // Half-sector results occur when composing two adjacent compass sectors.
+    // Floating point noise must not choose opposite sides of that boundary
+    // when the same relation is worded in reverse. Break ties clockwise in
+    // both hemispheres, with a tolerance far smaller than a compass sector.
+    const sector = clockwise / (TWO_PI / 16);
+    return DIRECTIONS[Math.floor(sector + 0.5 + EPSILON) % 16].code;
   }
   function relationVector(code) { const d = direction(code); return [d.x, d.y]; }
   function circularDistance(firstCode, secondCode, resolution = 16) {
@@ -135,7 +140,9 @@
     else if (opposite(expectedRelation) === assertedRelation) distinctionClass = 'subject-object-reversal';
     else if (circularDistance(expectedRelation, assertedRelation, resolution) === 1) distinctionClass = 'adjacent-resolution-substitution';
     else distinctionClass = 'local-or-global-relational-error';
-    return { graph, queryPairValid, expectedRelation, assertedRelation, distinctionClass, isEntailed, directionResolution: resolution, resolutionClosed: pool.includes(expectedRelation) && pool.includes(assertedRelation) };
+    const resolutionClosed = [...trial.premises.map(premise => premise.relation), expectedRelation, assertedRelation]
+      .every(relation => pool.includes(relation));
+    return { graph, queryPairValid, expectedRelation, assertedRelation, distinctionClass, isEntailed, directionResolution: resolution, resolutionClosed };
   }
   function invert(statement) { return { subject: statement.object, relation: opposite(statement.relation), object: statement.subject }; }
   function renderStatement(statement) { return `${statement.subject} is ${direction(statement.relation).name} of ${statement.object}`; }
