@@ -2,6 +2,17 @@
 
 const assert = require('node:assert/strict');
 const { createTrainer, makeTrial, sameSlots, normaliseSettings, dPrime, normalQuantile } = require('../extra-training-runtime.js');
+const numberSpeech = require('../number-speech.js');
+
+// Real player, short deterministic PCM, and a clocked audio graph. This observes
+// complete compound buffers rather than pretending each speech callback played
+// a number successfully.
+const audioData = { sampleRate: 8000, clips: Object.fromEntries(Object.keys(numberSpeech.RATES).map(rate => [rate,
+  Object.fromEntries(Array.from({ length: 9 }, (_, index) => {
+    const samples = Buffer.alloc(1600);
+    for (let i = 0; i < 800; i++) samples.writeInt16LE((i % 2 ? 1 : -1) * (index + 1) * 1000, i * 2);
+    return [index + 1, samples.toString('base64')];
+  }))])) };
 
 function seededRandom(seed) {
   return () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
@@ -31,27 +42,45 @@ function fixture(options = {}) {
     setTimeout: (fn, ms) => schedule(fn, ms), clearTimeout: id => tasks.delete(id),
     setInterval: (fn, ms) => schedule(fn, ms, true), clearInterval: id => tasks.delete(id)
   };
-  const spoken = [], speechTasks = new Set();
+  const spoken = [], sources = [], contexts = [];
+  environment.__numberSpeechAudio = numberSpeech;
+  environment.__numberSpeechData = audioData;
+  environment.speechSynthesis = Object.fromEntries(['resume', 'cancel', 'speak'].map(name => [name, () => {
+    assert.fail(`Traditional number playback called native speechSynthesis.${name}`);
+  }]));
   if (options.speech) {
     elements.speak.checked = true;
-    environment.SpeechSynthesisUtterance = function (text) { this.text = text; };
-    environment.speechSynthesis = {
-      resume() {},
-      cancel() { speechTasks.forEach(id => tasks.delete(id)); speechTasks.clear(); },
-      speak(utterance) {
-        spoken.push(utterance.text);
-        const id = schedule(() => {
-          speechTasks.delete(id);
-          if (options.speech === 'failure') utterance.onerror();
-          else utterance.onend();
-        }, 100);
-        speechTasks.add(id);
+    environment.AudioContext = class {
+      constructor() { this.state = 'running'; this.sampleRate = 8000; this.destination = {}; this.baseLatency = 0; this.outputLatency = 0; contexts.push(this); }
+      get currentTime() { return time / 1000; }
+      resume() { this.state = 'running'; return Promise.resolve(); }
+      close() { this.state = 'closed'; return Promise.resolve(); }
+      createBuffer(channels, length, sampleRate) {
+        const samples = new Float32Array(length);
+        return { length, sampleRate, duration: length / sampleRate, getChannelData: () => samples };
+      }
+      createGain() { return { gain: { value: 1 }, connect() {}, disconnect() {} }; }
+      createBufferSource() {
+        const source = {
+          buffer: null, playbackRate: { value: 1 }, onended: null, loop: false, stopped: false,
+          connect() {}, disconnect() {},
+          start() {
+            if (this.loop) return;
+            if (options.speech === 'failure') throw new Error('Audio output unavailable');
+            spoken.push(this.buffer);
+            this.completed = this.onended;
+            this.endTask = schedule(() => { this.onended?.(); }, this.buffer.duration * 1000);
+          },
+          stop() { this.stopped = true; tasks.delete(this.endTask); this.onended?.(); }
+        };
+        sources.push(source); return source;
       }
     };
   }
   const trainer = createTrainer(environment);
-  const flush = async () => { await Promise.resolve(); await Promise.resolve(); };
+  const flush = async () => { for (let i = 0; i < 16; i++) await Promise.resolve(); };
   async function advance(milliseconds) {
+    await flush();
     const destination = time + milliseconds;
     for (let guard = 0; guard < 100000; guard++) {
       const next = [...tasks].filter(([, task]) => task.due <= destination).sort((a, b) => a[1].due - b[1].due || a[0] - b[0])[0];
@@ -66,7 +95,7 @@ function fixture(options = {}) {
     time = destination;
     await flush();
   }
-  return { ...trainer, elements, events, environment, tasks, spoken, flush, advance, jump: ms => { time += ms; } };
+  return { ...trainer, elements, events, environment, tasks, spoken, sources, contexts, flush, advance, now: () => time, jump: ms => { time += ms; } };
 }
 
 async function run() {
@@ -75,7 +104,7 @@ async function run() {
   assert.deepEqual(sameSlots([2, 3, 1], [1, 2, 3]), []);
   assert.deepEqual(sameSlots([1, 1, 9], [1, 2, 1]), [0]);
   let generated = 0;
-  for (const n of [1, 2, 8, 20]) for (const count of [1, 2, 3]) for (const interference of [0, 25, 50, 75, 100]) for (const probability of [0, 100]) {
+  for (let n = 1; n <= 20; n++) for (const count of [1, 2, 3]) for (const interference of [0, 25, 50, 75, 100]) for (const probability of [0, 20, 30, 35, 40, 50, 60, 100]) {
     const settings = normaliseSettings({ n, count, interference, probability });
     const history = [], random = seededRandom(23847);
     for (let index = 0; index < n + 80; index++) {
@@ -85,7 +114,7 @@ async function run() {
       assert.equal(trial.scored, index >= n);
       assert.deepEqual(trial.target, index >= n ? history[index - n].values : null);
       assert.equal(trial.match, index >= n && trial.values.some((value, slot) => value === history[index - n].values[slot]));
-      if (index >= n) assert.equal(trial.match, probability === 100);
+      if (index >= n && [0, 100].includes(probability)) assert.equal(trial.match, probability === 100);
       history.push(trial); generated++;
     }
   }
@@ -178,16 +207,104 @@ async function run() {
   const audio = fixture({ speech: true }); audio.elements['audio-only'].checked = true;
   audio.start(); await audio.advance(50); const audioTrial = audio.state.current;
   audio.pause(); await audio.advance(1000); audio.pause();
-  await audio.advance(899); assert.equal(audio.state.phase, 'speaking');
+  await audio.advance(1409); assert.equal(audio.state.phase, 'speaking');
   await audio.advance(1); assert.equal(audio.state.phase, 'response');
   assert.equal(audio.state.current, audioTrial); assert.equal(audio.state.score.shown, 1);
-  assert.equal(audio.spoken.length, 4); // Initial interrupted number plus replayed sequence.
+  assert.equal(audio.spoken.length, 2); // Interrupted full sequence and full replay.
   audio.stop(); assert.equal(audio.tasks.size, 0);
+
+  // All supported N/count/response combinations preserve the full response
+  // window. Rotate probability, interference, and silent/audio-only states;
+  // their complete generator combinations are independently checked above.
+  let lifecycleCombinations = 0;
+  for (let n = 1; n <= 20; n++) for (const count of [1, 2, 3]) for (const response of [1, 2, 3, 5, 8, 12, 20]) {
+    const f = fixture({ speech: true });
+    Object.entries({ n, count, response, probability: [20, 30, 35, 40, 50, 60][n % 6], interference: [0, 25, 50, 75, 100][n % 5] }).forEach(([id, value]) => { f.elements[id].value = String(value); });
+    f.elements.session.value = 'open';
+    // Muted output and unchecked speech both keep an audio-only trial visible.
+    f.elements['audio-only'].checked = true;
+    if ((n + count + response) % 2) f.elements.volume.value = '0';
+    else f.elements.speak.checked = false;
+    f.start(); await f.flush();
+    assert.equal(f.state.phase, 'response');
+    assert.equal(f.elements.stimulus.classList.contains('hidden'), false);
+    assert.equal(f.state.remaining, response * 1000);
+    await f.advance(n * (response * 1000 + 450));
+    assert.equal(f.state.current.scored, true);
+    assert.equal(f.state.score.shown, n + 1);
+    f.answer(f.state.current.match); assert.equal(f.state.score.correct, 1);
+    assert.equal(f.spoken.length, 0);
+    f.stop(); assert.equal(f.tasks.size, 0);
+    lifecycleCombinations++;
+  }
+
+  // The player receives one uninterrupted buffer under every speed/gap/count
+  // combination; response timing begins after both its tail and output drain.
+  let audibleCombinations = 0;
+  for (const rate of Object.keys(numberSpeech.RATES)) for (const spacing of Object.keys(numberSpeech.GAPS)) for (const count of [1, 2, 3]) {
+    const f = fixture({ speech: true });
+    f.elements.rate.value = rate; f.elements.spacing.value = spacing; f.elements.count.value = String(count);
+    f.elements['audio-only'].checked = true;
+    f.elements.volume.value = ['.4', '.6', '.8', '1'][audibleCombinations % 4];
+    f.start(); await f.flush();
+    assert.equal(f.state.phase, 'speaking'); assert.equal(f.state.awaiting, false);
+    assert.equal(f.spoken.length, 1);
+    const expected = numberSpeech.buildSequence(f.state.current.values, f.state.settings, audioData);
+    assert.deepEqual(f.spoken[0].getChannelData(0), expected.samples);
+    const completion = expected.duration * 1000 + 60;
+    await f.advance(completion - .01);
+    assert.equal(f.state.phase, 'speaking'); assert.equal(f.state.score.scored, 0);
+    await f.advance(.02);
+    assert.equal(f.state.phase, 'response');
+    assert.equal(f.state.deadline > f.now() + 999, true);
+    assert.equal(f.elements.stimulus.classList.contains('hidden'), true);
+    f.stop(); assert.equal(f.tasks.size, 0); audibleCombinations++;
+  }
+
+  // Expiration of session time must not cut a phoneme in half. Automatic finish
+  // waits for the complete playing buffer; an explicit Stop remains immediate.
+  for (const session of [5, 10, 15, 20, 30, 45, 60, 'open']) {
+    const expiring = fixture({ speech: true }); expiring.elements.session.value = String(session);
+    expiring.start(); await expiring.flush();
+    expiring.state.elapsed = (session === 'open' ? 60 : session) * 60000 - 100;
+    const finalSource = expiring.sources.find(source => !source.loop);
+    await expiring.advance(250);
+    assert.equal(expiring.state.running, true); assert.equal(expiring.state.phase, 'speaking');
+    assert.equal(finalSource.stopped, false);
+    await expiring.advance(1160);
+    if (session === 'open') {
+      assert.equal(expiring.state.running, true); assert.equal(expiring.state.phase, 'response');
+      expiring.stop();
+    } else {
+      assert.equal(expiring.state.running, false);
+      assert.equal(expiring.elements.stimulus.textContent, 'SESSION COMPLETE');
+    }
+    assert.equal(expiring.tasks.size, 0);
+  }
+
+  // Completed Test speech, cancelled tests, Stop/Start, and a delayed old audio
+  // event cannot close the new output or open a response window prematurely.
+  const stale = fixture({ speech: true });
+  stale.elements.test.onclick(); await stale.flush();
+  const oldTest = stale.sources.find(source => !source.loop), oldTestEnd = oldTest.completed;
+  stale.start(); await stale.flush();
+  assert.equal(oldTest.stopped, true);
+  const firstTrial = stale.state.current, firstEnd = stale.sources.filter(source => !source.loop).at(-1).completed;
+  oldTestEnd?.(); await stale.flush();
+  assert.equal(stale.state.current, firstTrial); assert.equal(stale.state.phase, 'speaking');
+  stale.stop(); stale.start(); await stale.flush();
+  const newTrial = stale.state.current, newSource = stale.sources.filter(source => !source.loop).at(-1);
+  firstEnd?.(); oldTestEnd?.(); await stale.flush();
+  assert.equal(stale.state.current, newTrial); assert.equal(stale.state.score.shown, 1);
+  assert.equal(stale.state.phase, 'speaking'); assert.equal(newSource.stopped, false);
+  await stale.advance(1410);
+  assert.equal(stale.state.phase, 'response'); assert.equal(stale.state.current, newTrial);
+  stale.stop(); assert.equal(stale.tasks.size, 0);
 
   const complete = fixture(); complete.start(); await complete.flush(); await complete.advance(300000);
   assert.equal(complete.state.running, false); assert.equal(complete.elements.stimulus.textContent, 'SESSION COMPLETE');
   assert.equal(complete.tasks.size, 0);
   assert.ok(complete.state.trials.length <= 8);
-  console.log(JSON.stringify({ passed: true, generatedTrials: generated, timingScoringAndAudioRegressions: true }));
+  console.log(JSON.stringify({ passed: true, generatedTrials: generated, lifecycleCombinations, audibleCombinations, timingScoringAndAudioRegressions: true }));
 }
 run().catch(error => { console.error(error); process.exitCode = 1; });

@@ -25,3 +25,19 @@ jobs:
           for file in *.js tests/*.js tests/helpers/*.cjs; do node --check "$file"; done
       - name: Run logic audits and production-page regressions
         run: npm test
+
+  number-audio-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install test dependencies
+        run: npm ci
+      - name: Install Chromium audio test runtime
+        run: npx playwright install --with-deps chromium
+      - name: Render all number-audio variations and verify playback
+        run: npm run test:audio:browser

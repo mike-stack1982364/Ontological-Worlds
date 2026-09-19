@@ -6,7 +6,6 @@
   if (root && root.document) api.createTrainer(root);
 })(typeof window !== 'undefined' ? window : null, () => {
   const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
   const RATES = { average: 1, 'moderately-fast': 1.3, fast: 1.65, 'very-fast': 2.1, 'extremely-fast': 2.8, 'incredibly-fast': 4, 'ultra-fast': 6 };
   const GAPS = { average: 300, 'moderately-fast': 200, fast: 120, 'very-fast': 80, 'extremely-fast': 40, 'incredibly-fast': 15, 'ultra-fast': 0 };
   const CONTROL_IDS = ['n', 'count', 'response', 'session', 'probability', 'interference', 'rate', 'spacing', 'volume', 'speak', 'audio-only', 'keyboard', 'haptic', 'test'];
@@ -82,53 +81,24 @@
     const later = (callback, delay) => environment.setTimeout(callback, delay);
     const clear = handle => environment.clearTimeout(handle);
     const random = () => environment.Math.random();
-    const state = { running: false, paused: false, awaiting: false, phase: 'idle', trials: [], current: null, timer: null, clock: null, generation: 0, speechCancel: null, elapsed: 0, activeStarted: 0, remaining: 0, deadline: 0, settings: null, score: emptyScore() };
+    const speechApi = environment.__numberSpeechAudio || (typeof require === 'function' ? require('./number-speech.js') : null);
+    const speechPlayer = speechApi?.createPlayer(environment);
+    const state = { running: false, paused: false, awaiting: false, phase: 'idle', trials: [], current: null, timer: null, clock: null, generation: 0, finishAfterSpeech: false, elapsed: 0, activeStarted: 0, remaining: 0, deadline: 0, settings: null, score: emptyScore() };
     $('n').innerHTML = Array.from({ length: 20 }, (_, i) => `<option value="${i + 1}"${i === 1 ? ' selected' : ''}>${i + 1}-back</option>`).join('');
 
     function readSettings() {
       const values = Object.fromEntries(CONTROL_IDS.slice(0, 9).map(id => [id, $(id).value]));
       return normaliseSettings({ ...values, speak: $('speak').checked, audioOnly: $('audio-only').checked, keyboard: $('keyboard').checked, haptic: $('haptic').checked });
     }
-    function cancelSpeech() {
-      if (state.speechCancel) state.speechCancel();
-      try { environment.speechSynthesis?.cancel(); } catch (_) { /* Speech is optional. */ }
-    }
+    // One complete PCM sequence replaces per-digit native synthesis. In
+    // particular, there is no shared speechSynthesis.cancel() call that can
+    // arrive late and cut off the next digit or a restarted session.
+    function cancelSpeech() { speechPlayer?.cancel(); }
     function speak(values, settings) {
-      cancelSpeech();
-      if (!settings.speak || !environment.speechSynthesis || !environment.SpeechSynthesisUtterance) return Promise.resolve(false);
-      return new Promise(resolve => {
-        let finished = false, watchdog = null, gap = null, index = 0;
-        const finish = ok => {
-          if (finished) return;
-          finished = true;
-          clear(watchdog); clear(gap);
-          if (state.speechCancel === cancel) state.speechCancel = null;
-          if (!ok) { try { environment.speechSynthesis.cancel(); } catch (_) {} }
-          resolve(ok);
-        };
-        const cancel = () => finish(false);
-        state.speechCancel = cancel;
-        const nextNumber = () => {
-          if (finished) return;
-          try {
-            const utterance = new environment.SpeechSynthesisUtterance(WORDS[values[index]]);
-            utterance.lang = 'en-AU'; utterance.rate = RATES[settings.rate]; utterance.pitch = 1; utterance.volume = settings.volume;
-            let settled = false;
-            utterance.onend = () => {
-              if (finished || settled) return;
-              settled = true; clear(watchdog);
-              index += 1;
-              if (index === values.length) finish(true);
-              else gap = later(nextNumber, GAPS[settings.spacing]);
-            };
-            utterance.onerror = () => finish(false);
-            watchdog = later(() => finish(false), 10000);
-            environment.speechSynthesis.resume();
-            environment.speechSynthesis.speak(utterance);
-          } catch (_) { finish(false); }
-        };
-        nextNumber();
-      });
+      return speechPlayer ? speechPlayer.play(values, settings) : Promise.resolve(false);
+    }
+    function audioEnabled(settings) {
+      return !!(settings.speak && settings.volume > 0 && speechPlayer?.available());
     }
     function buttons() { $('match').disabled = $('no-match').disabled = !state.running || state.paused || !state.awaiting; }
     function updateStats() {
@@ -145,7 +115,10 @@
       const minutes = Math.floor(amount / 60000), seconds = Math.floor(amount % 60000 / 1000);
       $('clock').textContent = `${duration === null ? 'OPEN · ' : ''}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
       $('sessionprogress').style.width = duration === null ? '0%' : `${Math.min(100, elapsed() / duration * 100)}%`;
-      if (duration !== null && amount <= 0 && state.running) stop('SESSION COMPLETE');
+      if (duration !== null && amount <= 0 && state.running) {
+        if (state.phase === 'speaking') state.finishAfterSpeech = true;
+        else stop('SESSION COMPLETE');
+      }
     }
     function progress() {
       const fraction = state.settings ? state.remaining / (state.settings.response * 1000) : 0;
@@ -172,10 +145,11 @@
     async function present() {
       const trial = state.current, generation = state.generation;
       state.phase = 'speaking'; state.awaiting = false; buttons();
-      const audible = state.settings.speak && state.settings.volume > 0 && environment.speechSynthesis && environment.SpeechSynthesisUtterance;
+      const audible = audioEnabled(state.settings);
       $('stimulus').classList.toggle('hidden', !!(state.settings.audioOnly && audible));
       const spoken = await speak(trial.values, state.settings);
       if (!state.running || state.paused || state.generation !== generation || state.current !== trial) return;
+      if (state.finishAfterSpeech) { stop('SESSION COMPLETE'); return; }
       trial.audioAvailable = !!(spoken && audible);
       if (state.settings.audioOnly && !spoken) {
         $('stimulus').classList.remove('hidden');
@@ -228,7 +202,8 @@
     function start() {
       if (state.running) return;
       cancelSpeech(); clear(state.timer); environment.clearInterval(state.clock);
-      Object.assign(state, { running: true, paused: false, awaiting: false, trials: [], current: null, elapsed: 0, activeStarted: now(), settings: readSettings(), score: emptyScore(), generation: state.generation + 1 });
+      Object.assign(state, { running: true, paused: false, awaiting: false, trials: [], current: null, finishAfterSpeech: false, elapsed: 0, activeStarted: now(), settings: readSettings(), score: emptyScore(), generation: state.generation + 1 });
+      if (audioEnabled(state.settings)) speechPlayer.prepare();
       CONTROL_IDS.forEach(id => { $(id).disabled = true; });
       $('start').disabled = true; $('pause').disabled = $('stop').disabled = false; $('pause').textContent = 'Pause';
       updateStats(); updateClock();
@@ -238,7 +213,7 @@
     function stop(message = 'READY') {
       if (state.running && !state.paused) state.elapsed += now() - state.activeStarted;
       Object.assign(state, { running: false, paused: false, awaiting: false, phase: 'idle', generation: state.generation + 1 });
-      clear(state.timer); environment.clearInterval(state.clock); cancelSpeech();
+      clear(state.timer); environment.clearInterval(state.clock); cancelSpeech(); speechPlayer?.release?.();
       CONTROL_IDS.forEach(id => { $(id).disabled = false; });
       $('start').disabled = false; $('pause').disabled = $('stop').disabled = true; $('pause').textContent = 'Pause';
       buttons(); progress();
@@ -265,7 +240,18 @@
     }
     $('start').onclick = start; $('stop').onclick = () => stop(); $('pause').onclick = pause;
     $('match').onclick = () => answer(true); $('no-match').onclick = () => answer(false);
-    $('test').onclick = () => { if (!state.running) return speak([6, 8, 9], { ...readSettings(), speak: true }); };
+    $('test').onclick = () => {
+      if (state.running) return;
+      const generation = ++state.generation;
+      $('feedback').textContent = 'TESTING AUDIO';
+      return speak([6, 8, 9], { ...readSettings(), speak: true }).then(ok => {
+        if (!state.running && state.generation === generation) {
+          speechPlayer?.release?.();
+          $('feedback').textContent = ok ? 'AUDIO READY' : 'Audio unavailable. Check the volume and try again.';
+        }
+        return ok;
+      });
+    };
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && state.running) { stop(); return; }
       if (!state.settings?.keyboard || !state.awaiting || state.paused || event.repeat || event.ctrlKey || event.altKey || event.metaKey) return;

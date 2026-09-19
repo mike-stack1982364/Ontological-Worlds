@@ -16,7 +16,7 @@ assert.ok(indexHtml.includes('id="extra-training-btn"'),
   'the Extra Training launcher must remain present');
 assert.ok(trainerHtml.includes('id="start"'),
   'the destination page must expose a playable Start control');
-assert.ok(trainerHtml.includes('<script src="extra-training-runtime.js"></script>'),
+assert.ok(/<script src="extra-training-runtime\.js(?:\?[^"]*)?"><\/script>/.test(trainerHtml),
   'the destination must load its dedicated trainer runtime');
 
 const attributes = {};

@@ -63,6 +63,8 @@ A trial is a **Match if at least one digit is identical in the same position** a
 
 The first N trials are unscored memory fill and advance automatically. Thereafter use Match/No Match buttons or **F/J** and **D/K**. The response timer begins after speech completes. Timeouts count as incorrect; d′ uses corrected hit and false-alarm rates, excludes omitted responses, and remains unavailable until both match and non-match responses exist.
 
+Number speech uses a bundled, consistent voice. Complete digits and the selected gaps are assembled into one continuous audio sequence, with a protected startup lead-in and ending. Faster settings preserve pitch and the initial and final consonants; their labels indicate relative speed rather than an exact whole-word multiplier. No network speech service or installed system voice is required. The response timer waits for the full audio sequence and output latency. A session ending automatically finishes its current spoken sequence; Pause or Stop interrupts it immediately, and Resume replays an interrupted sequence from the beginning.
+
 Settings are fixed until the session stops. Pause preserves the sequence and remaining response time; returning from a pause never inserts a replacement trial. If audio is unavailable, audio-only mode reveals the sequence so the trial remains usable. Switching away from this screen automatically pauses it. Number-session results are shown on this screen and are not saved to the main spatial-session history.
 
 ## Results and storage
@@ -85,6 +87,7 @@ For the desktop and mobile Chromium interaction checks:
 ```sh
 npx playwright install chromium
 npm run test:browser
+npm run test:audio:browser
 ```
 
 Alternatively, set `CHROMIUM_EXECUTABLE_PATH` to an existing Chromium executable.
