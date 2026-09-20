@@ -1,185 +1,224 @@
 #!/usr/bin/env python3
-"""Build complete, offline spoken digits. Requires FFmpeg with flite/rubberband.
+"""Build complete, offline human-spoken digits from the licensed source manifest.
 
-No browser TTS, network service, downloaded recording, or runtime synthesis is
-used by the generated asset. Regenerate with Python 3 and FFmpeg 6.1.1 / Flite 2.2.
+Requires Python 3 and FFmpeg with Rubber Band. The Average setting retains every
+source sample with a single linear loudness adjustment. Faster settings process
+each whole recording at a conservative, pitch-preserving tempo. No speech is
+spliced, gated, faded, or cropped, and every clip receives fixed silent guards.
 """
 
 import argparse
 import array
 import base64
 import hashlib
+import io
 import json
+import math
 from pathlib import Path
 import subprocess
 import sys
+import wave
 
-SAMPLE_RATE = 16000
 RATES = {
     "average": 1,
-    "moderately-fast": 1.3,
-    "fast": 1.65,
-    "very-fast": 2.1,
-    "extremely-fast": 2.8,
-    "incredibly-fast": 4,
-    "ultra-fast": 6,
+    "moderately-fast": 1.12,
+    "fast": 1.25,
+    "very-fast": 1.4,
+    "extremely-fast": 1.55,
+    "incredibly-fast": 1.7,
+    "ultra-fast": 1.85,
 }
 WORDS = "one two three four five six seven eight nine".split()
-EDGE = round(SAMPLE_RATE * 0.100)
-PROTECTED = round(SAMPLE_RATE * 0.080)
-GUARD = round(SAMPLE_RATE * 0.020)
-OVERLAP = round(SAMPLE_RATE * 0.005)
-PAD = round(SAMPLE_RATE * 0.250)
+TARGET_RMS_DBFS = -20
+PEAK_CEILING = 0.8
+QUIET_GUARD_SECONDS = 0.020
+DURATION_ALLOWANCE_SECONDS = 0.080
 
 
-def unpack(raw):
-    samples = array.array("h")
+def unpack(raw, typecode="h"):
+    samples = array.array(typecode)
     samples.frombytes(raw)
     if sys.byteorder != "little":
         samples.byteswap()
     return list(samples)
 
 
-def pack(samples):
-    data = array.array("h", samples)
+def pack(samples, typecode="h"):
+    data = array.array(typecode, samples)
     if sys.byteorder != "little":
         data.byteswap()
     return data.tobytes()
 
 
-def ffmpeg(args, raw=None):
-    return subprocess.run(
-        ["ffmpeg", "-hide_banner", "-loglevel", "error", *args],
-        input=raw, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True,
-    ).stdout
+def digest(raw):
+    return hashlib.sha256(raw).hexdigest()
 
 
-def synthesize(word):
-    raw = ffmpeg([
-        "-f", "lavfi", "-i", f"flite=text={word}:voice=slt",
-        "-ac", "1", "-ar", str(SAMPLE_RATE), "-f", "s16le", "pipe:1",
-    ])
-    samples = unpack(raw)
-    peak = max(abs(value) for value in samples)
-    if len(samples) < EDGE * 3 or peak < 100:
-        raise ValueError(f"Incomplete synthesized word: {word}")
-    # The same linear gain applies to every speed of this digit. No gates,
-    # onset fades, silence detection, or truncation are permitted here.
-    gain = (32767 * 0.85) / peak
-    return [round(value * gain) for value in samples], hashlib.sha256(raw).hexdigest()
+def measure(samples):
+    if not samples or not all(math.isfinite(value) for value in samples):
+        raise ValueError("Missing or invalid audio samples")
+    return (
+        math.sqrt(sum(value * value for value in samples) / len(samples)),
+        max(abs(value) for value in samples),
+    )
 
 
-def crossfade(left, right, frames):
-    if frames < 1:
-        return left + right
-    mixed = [round(left[-frames + i] * (1 - (i + 1) / (frames + 1))
-                   + right[i] * ((i + 1) / (frames + 1)))
-             for i in range(frames)]
-    return left[:-frames] + mixed + right[frames:]
+def read_source(manifest, digit, word):
+    entry = manifest["clips"][digit]
+    if entry["transcript"].lower().strip() != word:
+        raise ValueError(f"Wrong source transcript for {digit}")
+    raw_wav = base64.b64decode(entry["wavBase64"], validate=True)
+    if digest(raw_wav) != entry["sha256"]:
+        raise ValueError(f"Source WAV hash does not match for {digit}")
+    with wave.open(io.BytesIO(raw_wav), "rb") as source:
+        if (source.getnchannels() != 1 or source.getsampwidth() != 2
+                or source.getframerate() != manifest["sampleRate"]
+                or source.getcomptype() != "NONE"):
+            raise ValueError(f"Source {digit} must be mono PCM16 at the manifest sample rate")
+        pcm = source.readframes(source.getnframes())
+        if len(pcm) != source.getnframes() * 2:
+            raise ValueError(f"Incomplete source recording for {digit}")
+    if entry.get("pcmSha256") and digest(pcm) != entry["pcmSha256"]:
+        raise ValueError(f"Source PCM hash does not match for {digit}")
+    samples = unpack(pcm)
+    if len(samples) < manifest["sampleRate"] * 0.2:
+        raise ValueError(f"Source recording is unexpectedly short for {digit}")
+    source_rms, source_peak = measure([value / 32768 for value in samples])
+    if source_rms < 0.005 or source_peak >= 32767 / 32768:
+        raise ValueError(f"Source {digit} is silent or clipped")
+    # One linear gain per complete recording: no gate, compressor, limiter,
+    # silence trim, or envelope fade can erase a quiet initial consonant.
+    gain = min(10 ** (TARGET_RMS_DBFS / 20) / source_rms,
+               PEAK_CEILING / source_peak)
+    normalized = [round(value * gain) for value in samples]
+    output_rms, output_peak = measure([value / 32768 for value in normalized])
+    return normalized, {
+        "wavSha256": digest(raw_wav), "pcmSha256": digest(pcm),
+        "normalizedPcmSha256": digest(pack(normalized)),
+        "frames": len(samples),
+        "normalization": {"gain": gain, "sourceRms": source_rms,
+                          "sourcePeak": source_peak, "outputRms": output_rms,
+                          "outputPeak": output_peak},
+    }
 
 
-def speech_bounds(samples):
-    # Flite emits low-level noise around speech. This conservative 10-ms RMS
-    # detector chooses which regions to protect, NEVER which samples to remove.
-    frame = round(SAMPLE_RATE * 0.010)
-    active = [i for i in range(0, len(samples) - frame + 1, frame)
-              if sum(value * value for value in samples[i:i + frame]) / frame > 64 ** 2]
-    if not active or active[-1] - active[0] < 2 * EDGE:
-        raise ValueError("Cannot identify complete speech boundaries")
-    return active[0], active[-1] + frame
-
-
-def stretch(samples, rate):
-    padded = [0] * PAD + samples + [0] * PAD
-    transformed = unpack(ffmpeg([
-        "-f", "s16le", "-ar", str(SAMPLE_RATE), "-ac", "1", "-i", "pipe:0",
-        "-af", f"rubberband=tempo={rate}:pitch=1:transients=crisp:formant=preserved",
-        "-f", "s16le", "pipe:1",
-    ], pack(padded)))
-    start = round(PAD / rate)
-    length = round(len(samples) / rate)
-    if len(transformed) < start + length:
-        raise ValueError("Time stretcher returned an incomplete body")
-    return transformed[start:start + length]
-
-
-def accelerate(samples, rate, bounds):
-    onset, end = bounds
+def accelerate(samples, rate, sample_rate):
     if rate == 1:
-        return samples[:], [
-            {"sourceStart": onset, "outputStart": onset, "frames": PROTECTED},
-            {"sourceStart": end - PROTECTED, "outputStart": end - PROTECTED, "frames": PROTECTED},
-        ]
-    # Five regions retain the entire word and its exterior noise. Noise and
-    # the middle accelerate; the two speech boundaries retain original pitch,
-    # timing and PCM samples. Overlap joins lie OUTSIDE the protected 80 ms.
-    first = (max(0, onset - GUARD), onset + EDGE)
-    last = (end - EDGE, min(len(samples), end + GUARD))
-    pieces = [
-        stretch(samples[:first[0]], rate),
-        samples[first[0]:first[1]],
-        stretch(samples[first[1]:last[0]], rate),
-        samples[last[0]:last[1]],
-        stretch(samples[last[1]:], rate),
-    ]
-    result = pieces[0]
-    starts = [0]
-    for piece in pieces[1:]:
-        overlap = min(OVERLAP, len(result), len(piece))
-        starts.append(len(result) - overlap)
-        result = crossfade(result, piece, overlap)
-    preserved = [
-        {"sourceStart": onset, "outputStart": starts[1] + onset - first[0], "frames": PROTECTED},
-        {"sourceStart": end - PROTECTED, "outputStart": starts[3] + end - PROTECTED - last[0], "frames": PROTECTED},
-    ]
-    # Audio gain must not clip after the transform. Original edge samples stay
-    # unchanged; any unexpected overshoot fails the build instead of limiting.
-    if any(abs(value) >= 32767 for value in result):
-        raise ValueError("Time-stretched waveform clips")
-    for region in preserved:
-        source, output, count = region["sourceStart"], region["outputStart"], region["frames"]
-        assert result[output:output + count] == samples[source:source + count]
-    return result, preserved
+        return samples[:], len(samples), {"leading": 0, "trailing": 0}
+    # Flush padding protects short recordings from incomplete filter output.
+    # Pass the WHOLE word to Rubber Band once and retain EVERY nonzero output
+    # sample, including transform latency/tails; never assume a crop offset.
+    flush_padding = round(sample_rate * 0.250)
+    # One additional terminal zero keeps an exact input-block boundary from
+    # triggering an early filter flush. Validate full output length below.
+    trailing_padding = flush_padding + 1
+    padded = [0] * flush_padding + samples + [0] * trailing_padding
+    result = subprocess.run([
+        "ffmpeg", "-hide_banner", "-loglevel", "error",
+        "-f", "s16le", "-ar", str(sample_rate), "-ac", "1", "-i", "pipe:0",
+        "-af", f"rubberband=tempo={rate}:pitch=1:transients=crisp:formant=preserved:pitchq=quality:window=short",
+        "-f", "f32le", "pipe:1",
+    ], input=pack(padded), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+    transformed = unpack(result.stdout, "f")
+    _, peak = measure(transformed)
+    # Inspect floating-point output BEFORE PCM16 quantization so a conversion
+    # cannot silently saturate overshoots and hide clipping from validation.
+    if peak >= 32767 / 32768:
+        raise ValueError(f"Tempo {rate} creates clipped audio")
+    expected_frames = len(padded) / rate
+    if abs(len(transformed) - expected_frames) > 1:
+        raise ValueError(f"Unexpected tempo duration at {rate}: {len(transformed)} frames")
+    quantized = [round(value * 32768) for value in transformed]
+    # Remove only digital silence introduced by flush padding. Limit removal
+    # to the known tempo-scaled padding extent. The input is never trimmed, and
+    # every nonzero sample remains even when the transform bleeds into padding.
+    padding_limit = math.floor(flush_padding / rate)
+    trailing_limit = math.floor(trailing_padding / rate)
+    start, end = 0, len(quantized)
+    while start < padding_limit and quantized[start] == 0:
+        start += 1
+    while len(quantized) - end < trailing_limit and quantized[end - 1] == 0:
+        end -= 1
+    if any(quantized[:start]) or any(quantized[end:]):
+        raise ValueError("Padding removal would erase a nonzero sample")
+    rendered = quantized[start:end]
+    if abs(len(rendered) - len(samples) / rate) > sample_rate * DURATION_ALLOWANCE_SECONDS:
+        raise ValueError(f"Unexpected retained tempo duration at {rate}: {len(rendered)} versus {len(samples) / rate} frames")
+    return rendered, len(quantized), {"leading": start, "trailing": len(quantized) - end}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path,
-                        default=Path(__file__).resolve().parents[1] / "number-speech-data.js")
+    root = Path(__file__).resolve().parents[1]
+    parser.add_argument("--source", type=Path, default=root / "assets/number-voice/source.json")
+    parser.add_argument("--output", type=Path, default=root / "number-speech-data.js")
     args = parser.parse_args()
-    originals = {}
-    source_hashes = {}
+    manifest = json.loads(args.source.read_text())
+    sample_rate = manifest["sampleRate"]
+    if not isinstance(sample_rate, int) or not 8000 <= sample_rate <= 96000:
+        raise ValueError("Unsupported source sample rate")
+    guard_frames = round(sample_rate * QUIET_GUARD_SECONDS)
+    originals, sources = {}, {}
     for digit, word in enumerate(WORDS, 1):
-        originals[str(digit)], source_hashes[str(digit)] = synthesize(word)
-    clips = {}
-    clip_hashes = {}
-    frame_counts = {}
-    source_bounds = {digit: speech_bounds(source) for digit, source in originals.items()}
-    preserved_regions = {}
+        originals[str(digit)], sources[str(digit)] = read_source(manifest, str(digit), word)
+    clips, clip_hashes, frame_counts, rendered_frames = {}, {}, {}, {}
+    full_transform_frames, padding_removed_frames, schedule_tail_frames = {}, {}, {}
+    duration_allowance_frames = round(sample_rate * DURATION_ALLOWANCE_SECONDS)
     prior = {digit: float("inf") for digit in originals}
     for speed, rate in RATES.items():
         clips[speed], clip_hashes[speed], frame_counts[speed] = {}, {}, {}
-        preserved_regions[speed] = {}
+        rendered_frames[speed] = {}
+        full_transform_frames[speed], padding_removed_frames[speed] = {}, {}
+        schedule_tail_frames[speed] = {}
         for digit, source in originals.items():
-            samples, preserved_regions[speed][digit] = accelerate(source, rate, source_bounds[digit])
-            if len(samples) >= prior[digit]:
+            rendered, full_transform_frames[speed][digit], padding_removed_frames[speed][digit] = accelerate(source, rate, sample_rate)
+            # Different tempos can leave different amounts of quiet transform
+            # tail. Add only zeros to a shared duration allowance: every speed
+            # becomes predictably shorter without ever cutting an audio tail.
+            scheduled_length = round(len(source) / rate) + duration_allowance_frames
+            tail_frames = scheduled_length - len(rendered)
+            if tail_frames < 0:
+                raise ValueError(f"Transform tail exceeds its allowance for {digit}: {speed}")
+            if scheduled_length >= prior[digit]:
                 raise ValueError(f"Non-increasing speed for {digit}: {speed}")
-            prior[digit] = len(samples)
+            prior[digit] = scheduled_length
+            samples = [0] * guard_frames + rendered + [0] * (tail_frames + guard_frames)
+            if any(abs(value) >= 32767 for value in samples):
+                raise ValueError(f"PCM quantization clips {digit} at {speed}")
             raw = pack(samples)
             clips[speed][digit] = base64.b64encode(raw).decode("ascii")
-            clip_hashes[speed][digit] = hashlib.sha256(raw).hexdigest()
+            clip_hashes[speed][digit] = digest(raw)
             frame_counts[speed][digit] = len(samples)
+            rendered_frames[speed][digit] = len(rendered)
+            schedule_tail_frames[speed][digit] = tail_frames
     data = {
-        "format": "pcm-s16le", "sampleRate": SAMPLE_RATE,
-        "voice": "CMU Flite 2.2 cmu_us_slt", "version": 1,
-        "protectedSpeechBoundaryFrames": PROTECTED,
-        "sourceSpeechBounds": source_bounds, "preservedRegions": preserved_regions,
-        "rates": RATES, "clips": clips,
-        "sourcePcmSha256": source_hashes, "clipPcmSha256": clip_hashes,
-        "frames": frame_counts,
+        "format": "pcm-s16le", "sampleRate": sample_rate,
+        "voice": manifest["voice"], "version": 2,
+        "provenance": manifest["provenance"],
+        "sourceManifestSha256": digest(args.source.read_bytes()),
+        "sourceWavSha256": {digit: source["wavSha256"] for digit, source in sources.items()},
+        "sourcePcmSha256": {digit: source["pcmSha256"] for digit, source in sources.items()},
+        "normalizedSourcePcmSha256": {digit: source["normalizedPcmSha256"] for digit, source in sources.items()},
+        "sourceFrames": {digit: source["frames"] for digit, source in sources.items()},
+        "normalization": {"targetRmsDbfs": TARGET_RMS_DBFS, "peakCeiling": PEAK_CEILING,
+                          "digits": {digit: source["normalization"] for digit, source in sources.items()}},
+        "processing": {"method": "whole-word-pitch-preserving", "pitch": 1,
+                       "rateRange": [min(RATES.values()), max(RATES.values())],
+                       "crossfades": False, "sourceTrimming": False,
+                       "trimming": "padding-only-digital-silence",
+                       "flushPaddingFrames": round(sample_rate * 0.250),
+                       "flushTrailingPaddingFrames": round(sample_rate * 0.250) + 1,
+                       "durationAllowanceFrames": duration_allowance_frames,
+                       "window": "short"},
+        "quietGuardFrames": guard_frames,
+        "rates": RATES, "clips": clips, "clipPcmSha256": clip_hashes,
+        "frames": frame_counts, "renderedFrames": rendered_frames,
+        "fullTransformFrames": full_transform_frames,
+        "paddingRemovedFrames": padding_removed_frames,
+        "scheduleTailFrames": schedule_tail_frames,
     }
     header = """// Generated by scripts/build-number-speech.py. Do not edit waveform data.
-// Complete spoken digits from CMU Flite slt; see NUMBER-SPEECH-ASSETS.md.
+// Complete human-spoken digits; source and attribution: NUMBER-SPEECH-ASSETS.md.
 (function (root) {
   'use strict';
   const data = """
@@ -191,7 +230,7 @@ def main():
     args.output.write_text(header + json.dumps(data, indent=2) + footer)
     print(f"Wrote {args.output.name}: {args.output.stat().st_size:,} bytes; 63 complete clips")
     for speed in RATES:
-        durations = [value / SAMPLE_RATE for value in frame_counts[speed].values()]
+        durations = [value / sample_rate for value in frame_counts[speed].values()]
         print(f"{speed}: {min(durations):.3f}–{max(durations):.3f} seconds")
 
 

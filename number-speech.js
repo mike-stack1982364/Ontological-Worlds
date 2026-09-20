@@ -5,7 +5,7 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.__numberSpeechAudio = api;
 })(typeof window !== 'undefined' ? window : globalThis, () => {
-  const RATES = Object.freeze({ average: 1, 'moderately-fast': 1.3, fast: 1.65, 'very-fast': 2.1, 'extremely-fast': 2.8, 'incredibly-fast': 4, 'ultra-fast': 6 });
+  const RATES = Object.freeze({ average: 1, 'moderately-fast': 1.12, fast: 1.25, 'very-fast': 1.4, 'extremely-fast': 1.55, 'incredibly-fast': 1.7, 'ultra-fast': 1.85 });
   const GAPS = Object.freeze({ average: 300, 'moderately-fast': 200, fast: 120, 'very-fast': 80, 'extremely-fast': 40, 'incredibly-fast': 15, 'ultra-fast': 0 });
   // The lead-in is never accelerated. It gives a resumed audio output time to
   // open before the first consonant, including one-number, fastest-speed trials.

@@ -30,6 +30,7 @@ async function main() {
     const rendered = await rendering.evaluate(async () => {
       const api = window.__numberSpeechAudio, data = window.__numberSpeechData;
       if (!api || !data) throw new Error('Number speech module or shipped recordings are missing');
+      if (data.version !== 2 || data.voice !== 'Cameron (Australian English)') throw new Error('The trainer loaded the obsolete synthetic voice');
       const rates = Object.keys(api.RATES), spacingNames = Object.keys(api.GAPS);
       let sequences = 0, sampleCount = 0, maximumError = 0;
       for (const rate of rates) for (const spacing of spacingNames) for (const count of [1, 2, 3]) {

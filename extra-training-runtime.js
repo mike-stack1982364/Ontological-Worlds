@@ -6,7 +6,7 @@
   if (root && root.document) api.createTrainer(root);
 })(typeof window !== 'undefined' ? window : null, () => {
   const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  const RATES = { average: 1, 'moderately-fast': 1.3, fast: 1.65, 'very-fast': 2.1, 'extremely-fast': 2.8, 'incredibly-fast': 4, 'ultra-fast': 6 };
+  const RATES = { average: 1, 'moderately-fast': 1.12, fast: 1.25, 'very-fast': 1.4, 'extremely-fast': 1.55, 'incredibly-fast': 1.7, 'ultra-fast': 1.85 };
   const GAPS = { average: 300, 'moderately-fast': 200, fast: 120, 'very-fast': 80, 'extremely-fast': 40, 'incredibly-fast': 15, 'ultra-fast': 0 };
   const CONTROL_IDS = ['n', 'count', 'response', 'session', 'probability', 'interference', 'rate', 'spacing', 'volume', 'speak', 'audio-only', 'keyboard', 'haptic', 'test'];
   const emptyScore = () => ({ shown: 0, scored: 0, correct: 0, hits: 0, misses: 0, falseAlarms: 0, correctRejects: 0, omissions: 0 });
