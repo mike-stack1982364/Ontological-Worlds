@@ -81,7 +81,8 @@ async function loadProductionPage(t) {
   const { window } = dom;
   if (t) t.after(() => window.close());
   await waitFor(() => window.document.readyState === 'complete', 'production scripts');
-  if (window.__modeTwoV21Ready) await window.__modeTwoV21Ready;
+  if (window.__modeTwoV22Ready) await window.__modeTwoV22Ready;
+  if (window.__modeTwoFinalRuntimeReady) await window.__modeTwoFinalRuntimeReady;
   await new Promise(resolve => setTimeout(resolve, 10));
   const app = window.__ontologicalWorlds;
   const byId = id => window.document.getElementById(id);

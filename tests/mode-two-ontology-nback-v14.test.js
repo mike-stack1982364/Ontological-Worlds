@@ -5,7 +5,9 @@ global.addEventListener = global.addEventListener || (() => {});
 const assert = require('assert');
 const path = require('path');
 const core = require(path.join(__dirname, '..', 'mode-one-spatial-core.js'));
-const modeTwo = require(path.join(__dirname, '..', 'mode-two-ontology-nback-v14.js'));
+// Historical v21 spatial-only audit. Current endpoint-bound Mode 2 is covered
+// by the v22 suites and the full production-page integration tests.
+const modeTwo = require(path.join(__dirname, '..', 'mode-two-engine-v21.js'));
 
 assert.deepStrictEqual([...modeTwo.LEVELS], [1,2,3,4,5,6,7,8]);
 assert.strictEqual(modeTwo.version, 21);

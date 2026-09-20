@@ -34,7 +34,7 @@ async function main() {
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
       await page.goto(base);
-      await page.waitForFunction(() => window.__ontologicalWorlds?.__modeTwoFinalRuntimeV21);
+      await page.waitForFunction(() => window.__ontologicalWorlds?.__modeTwoFinalRuntimeV22);
       await page.locator('#premise-vol').evaluate(element => {
         element.value = '0';
         element.dispatchEvent(new Event('change', { bubbles: true }));
@@ -59,6 +59,8 @@ async function main() {
       await page.locator('#logic-mode').selectOption('1');
       await page.locator('#direction-resolution').selectOption('16');
       await page.locator('#start-btn').click();
+      await page.locator('#mode-two-warmup-continue').waitFor({ state: 'visible' });
+      await page.locator('#mode-two-warmup-continue').click();
       await page.waitForFunction(() => window.__ontologicalWorlds.awaiting);
       const match = await page.evaluate(() => window.__ontologicalWorlds.current.nBackMatch);
       assert.equal(await page.locator('#match-btn').isVisible(), true);

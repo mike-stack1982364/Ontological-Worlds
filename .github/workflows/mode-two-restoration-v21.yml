@@ -1,4 +1,4 @@
-name: Mode 2 restoration proof
+name: Mode 2 ontology and production proof
 
 on:
   push:
@@ -17,16 +17,45 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check restored Mode 2 syntax
+      - name: Check current Mode 2 syntax
         run: |
           node --check mode-two-ontology-nback-v14.js
-          node --check mode-two-engine-v21.js
-          node --check mode-two-runtime-v21.js
+          node --check mode-two-engine-v22.js
+          node --check mode-two-runtime-v22.js
           node --check tests/mode-two-restoration-v21.test.js
           node --check tests/mode-two-browser-restoration-v21.mjs
-      - name: Run 24,000 deterministic Mode 2 simulations
+      - name: Preserve historical v21 spatial restoration audit
         run: node tests/mode-two-restoration-v21.test.js
-      - name: Install browser test runtime
-        run: npm install --no-save jsdom@26
-      - name: Prove final browser routing and controls
-        run: node tests/mode-two-browser-restoration-v21.mjs
+      - name: Install test dependencies
+        run: npm ci
+      - name: Prove current v22 matching, lifecycle and production controls
+        run: |
+          node --test tests/mode-two-*v22.test.js tests/production-runtime-regression.test.js
+          node tests/mode-two-browser-restoration-v21.mjs
+
+  mode-two-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install reproducible test dependencies
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify current Mode 2 controls, layouts and practice in Chromium
+        run: npm run test:mode-two:browser
+      - name: Verify Research hub navigation and responsive layouts
+        run: RUN_RESEARCH_BROWSER=1 node --test tests/research-hub.test.js
+      - name: Save browser screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mode-two-v22-browser-screenshots
+          path: |
+            /tmp/mode2-browser-check
+            /tmp/research-browser-check
+          if-no-files-found: ignore

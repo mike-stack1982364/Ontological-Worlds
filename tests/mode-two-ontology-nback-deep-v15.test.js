@@ -3,7 +3,9 @@ global.addEventListener = global.addEventListener || (() => {});
 const assert = require('assert');
 const path = require('path');
 const core = require(path.join(__dirname,'..','mode-one-spatial-core.js'));
-const modeTwo = require(path.join(__dirname,'..','mode-two-ontology-nback-v14.js'));
+// Preserve this historical spatial-only oracle against its original v21
+// engine. Ontology-neutrality is not a claim about the current v22 engine.
+const modeTwo = require(path.join(__dirname,'..','mode-two-engine-v21.js'));
 
 function perms(values) {
   if (values.length < 2) return [values.slice()];

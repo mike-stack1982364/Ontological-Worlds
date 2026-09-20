@@ -5,6 +5,8 @@ on:
     paths:
       - 'mode-one-conflict-matrix-v20.js'
       - 'mode-two-ontology-nback-v14.js'
+      - 'mode-two-engine-v22.js'
+      - 'mode-two-runtime-v22.js'
       - 'mode-one-spatial-core.js'
       - 'index.html'
       - 'tests/mode-one-conflict-matrix-v20.test.js'
@@ -85,7 +87,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run canonical Mode 2 audit with full diagnostics
+      - name: Preserve historical v21 canonical audit with full diagnostics
         shell: bash
         run: |
           set -o pipefail
@@ -111,7 +113,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run deep Mode 2 audit with full diagnostics
+      - name: Preserve historical v21 deep audit with full diagnostics
         shell: bash
         run: |
           set -o pipefail

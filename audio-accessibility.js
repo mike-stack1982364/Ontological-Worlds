@@ -75,7 +75,10 @@ window.addEventListener('DOMContentLoaded', () => {
       utterance.onend = () => item.finish(true);
       utterance.onerror = () => item.finish(false);
       const words = text.trim().split(/\s+/).length;
-      safety = setTimeout(() => { if (active === item) this.cancelSpeech(); }, Math.min(90000, (words / utterance.rate * 700 + 1500) * 2.5));
+      // Nested Mode 2 worlds can take longer than 90 seconds at a slow rate.
+      // Scale the stall watchdog to the complete utterance instead of cutting
+      // off healthy speech at an unrelated fixed duration.
+      safety = setTimeout(() => { if (active === item) this.cancelSpeech(); }, (words / utterance.rate * 700 + 1500) * 2.5);
       poll = setInterval(() => {
         if (active === item && !allowIdle && (token !== this.sessionToken || !this.running || this.paused)) this.cancelSpeech();
       }, 100);

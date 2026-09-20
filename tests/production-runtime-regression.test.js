@@ -13,7 +13,8 @@ function choose(fixture, decision, value) {
 test('the production script chain initializes both modes without errors', async t => {
   const f = await loadProductionPage(t);
   assert.ok(f.app);
-  assert.equal(f.app.__modeTwoFinalRuntimeV21, true);
+  assert.equal(f.app.__modeTwoFinalRuntimeV22, true);
+  assert.equal(f.window.__modeTwoOntologyNBackV22.version, 22);
   assert.equal(f.byId('start-btn').disabled, true, 'a compass selection is required');
   assert.equal(f.byId('conflict-matrix').querySelectorAll('.conflict-choice').length, 10);
   assert.ok(f.byId('matching-tutorial-btn'));

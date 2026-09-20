@@ -5,6 +5,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { JSDOM } = require('jsdom');
+// Retained historical v21 lifecycle regression. The shipped v22 lifecycle is
+// covered by production integration and the dedicated v22 session suite.
 const engine = require('../mode-two-engine-v21.js');
 
 const root = path.resolve(__dirname, '..');

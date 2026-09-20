@@ -173,13 +173,18 @@ class OntologicalWorlds {
         if (this.running) return;
         (this.primeAudioFromUserGesture(),
           this.speak(
-            "Inner Division through V, from North to East. Outer Division through B, from East to South. So Archetypal Division becomes invention Z.",
+            Number($("logic-mode").value) === 1
+              ? "Outer Connection H is south of Projection D. Outer Projection D is south of Multiplication C. Candidate: Projection C is north of Inner Division H."
+              : "A is north of B. B is north of C. Candidate: A is north of C.",
           ));
       }),
       $("tutorial-btn").addEventListener("click", () =>
         this.openModal("tutorial"),
       ),
       $("history-btn").addEventListener("click", () => this.showHistory()),
+      $("research-hub-link")?.addEventListener("click", () => {
+        if (this.running && !this.paused) this.togglePause();
+      }),
       $("dismiss-tutorial").addEventListener("click", () =>
         this.closeModal("tutorial"),
       ),
@@ -936,6 +941,18 @@ class OntologicalWorlds {
         ? `${(session.elapsedMs / 60000).toFixed(1)} min`
         : "—";
       detail.textContent = `${session.n || 1}-back${session.directionResolution ? ` · ${session.directionResolution} directions` : ""} · ${session.completed || 0} scored trials · ${Number(session.mode) === 0 ? "Decision accuracy" : "Accuracy"}: ${accuracy} · ${elapsed} · ${session.stoppedEarly ? "Stopped" : "Complete"}`;
+      if (Number(session.mode) === 1) {
+        const complexityNames = {
+          entities: "One descriptor per entity",
+          facets: "Multiple aspects per entity",
+          worlds: "Worlds within worlds",
+        };
+        detail.textContent += session.modeTwoVersion >= 22
+          ? ` · ${complexityNames[session.modeTwoComplexity] || "Endpoint bindings"} · Rules ${session.modeTwoVersion}`
+          : " · Earlier rules (version not recorded)";
+        if (session.practiceChecks > 0)
+          detail.textContent += ` · Separate practice: ${session.practiceCorrect || 0}/${session.practiceChecks} first direction answers correct`;
+      }
       entry.append(title, detail);
       list.appendChild(entry);
     }
@@ -977,6 +994,12 @@ class OntologicalWorlds {
       "correctRejects",
       "timeouts",
       "stoppedEarly",
+      "modeTwoVersion",
+      "modeTwoComplexity",
+      "practiceEnabled",
+      "reflectionCount",
+      "practiceChecks",
+      "practiceCorrect",
     ];
     const cell = (value) => {
       let text = value === null || value === undefined ? "" : String(value);

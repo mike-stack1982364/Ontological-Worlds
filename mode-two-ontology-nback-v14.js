@@ -1,8 +1,8 @@
 'use strict';
 
-(function loadModeTwoV21(root) {
+(function loadModeTwoV22(root) {
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = require('./mode-two-engine-v21.js');
+    module.exports = require('./mode-two-engine-v22.js');
     return;
   }
   if (!root?.document) return;
@@ -19,12 +19,12 @@
   const start = root.document.getElementById('start-btn');
   if (start) start.disabled = true;
 
-  root.__modeTwoV21Ready = loadScript('mode-two-engine-v21.js?v=20260920-1')
-    .then(() => loadScript('mode-two-runtime-v21.js?v=20260920-1'))
+  root.__modeTwoV22Ready = root.__modeTwoV21Ready = loadScript('mode-two-engine-v22.js?v=20260920-bindings-1')
+    .then(() => loadScript('mode-two-runtime-v22.js?v=20260920-bindings-1'))
     .then(() => root.__modeTwoFinalRuntimeReady)
     .catch(error => {
       root.__modeTwoV21LoadError = error;
-      console.error('Mode 2 v21 failed to load.', error);
+      console.error('Mode 2 v22 failed to load.', error);
       const display = root.document.getElementById('premise-display');
       if (display) display.textContent = `MODE_2_LOAD_FAILED: ${error?.message || error}`;
       if (start) start.disabled = true;

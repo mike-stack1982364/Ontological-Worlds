@@ -17,13 +17,16 @@ Open `http://localhost:8000/`. Keep all JavaScript files beside the HTML files: 
 1. Choose Mode 1 or Mode 2.
 2. Select **4, 8 or 16 compass directions**. Both modes require an explicit choice before Start becomes available.
 3. Select an N-back level from **1–8**, session length and whole-triad match probability; adjust speech and display preferences as needed.
-4. Press **Start**. Both spatial modes are self-paced: there is no per-trial response deadline, but the overall session has a duration.
+4. For Mode 2, choose **One descriptor per entity**, **Multiple aspects per entity** (default) or **Worlds within worlds**. Choose whether to keep **Practice break after every 6 answers** enabled (default).
+5. Press **Start**. Both spatial modes are self-paced: there is no per-trial response deadline, but the overall session has a duration.
 
-Mode, N-back level, compass resolution and session duration are fixed during a session. **Adaptive N is unavailable**; choose a different N before the next session. Both spatial modes use **100% cognitive interference**, so that control is fixed. Pause preserves the current trial and excludes paused time from the session clock and response measurements.
+Mode, N-back level, compass resolution, session duration and Mode 2 complexity/practice settings are fixed during a session. **Adaptive N is unavailable**; choose a different N before the next session. Both spatial modes use **100% cognitive interference**, so that control is fixed. Pause preserves the current trial and excludes paused time from the session clock and response measurements. Each mode has its own expanded, visible guide below the game and a jump link above the settings.
 
 ## What counts as a match?
 
-Each spatial trial contains two premises and a conclusion involving three letters. The premises determine a spatial relation; the conclusion may or may not be entailed by them.
+Each main spatial trial contains two premises and a candidate conclusion involving three letters. The premises determine a spatial relation; the candidate may or may not be entailed by them. Build the spatial scene from the premises and treat the candidate as a claim, not an additional established fact.
+
+**Spatial inference convention:** each premise denotes an equal-length unit step, including diagonal directions. The candidate asserts only the resulting bearing, not a unit distance. The core rounds the end-to-end bearing to the nearest of sixteen compass points, choosing clockwise at an exact halfway boundary. Generated trials keep the premises, candidate and derived answer within the chosen 4/8/16-direction pool. This explicit metric convention matters: bare real-world compass statements without distances would not generally determine the same precise intermediate bearings.
 
 N-back comparisons use the trial exactly N positions earlier. Matching requires a single consistent one-to-one mapping between the historical and current letters. Letter names may change, the two premises may exchange order, and reversed wording is equivalent only when its compass direction is also reversed. The conclusion retains its conclusion role. Compass directions must match exactly: adjacent directions, an incorrect letter pair, or reversing endpoints without reversing direction do not count.
 
@@ -43,17 +46,49 @@ Buttons provide the same choices. Each answer is locked after entry and gets imm
 
 Statement matches are evaluated together under a coherent letter mapping and statement assignment, not as independent visual similarities. Current-trial entailment is a separate decision from historical matching. A complete-triad match requires all three statements to align.
 
+The alignment first maximizes the number of matching statements. If equally good alignments disagree on the three statement answers, the tie rule compares answers from Statement 1 onward and prefers **No** at the first difference. Thus `[No, Yes, Yes]` precedes `[Yes, No, Yes]`. This determines one reproducible answer vector; it does not affect current-trial entailment. Entailment requires the exact relation between the two ends of the two-premise chain. Merely repeating one premise using its own endpoint pair does not satisfy this question.
+
 After memory fill, every generated non-match preserves exactly two coherent statements and changes one relation. Controlled letter continuity retains two target letter identities, replaces one and maintains overlap with the preceding trial. These presentation constraints do not replace the structural scoring rule.
 
 The score distinguishes **decision accuracy** from **complete-trial accuracy**: a complete trial is correct only when all five answers are correct. Historical hit/miss statistics refer to the complete-triad decision.
 
 ### Mode 2 — Ontological Integration
 
-Mode 2 adds ontology categories and Inner/Outer labels to the spatial statements. Those labels do not affect scoring. Decide only whether the **complete three-statement compass structure** matches the N-back target.
+Mode 2 binds an ontology descriptor to **both endpoints of every statement**. A descriptor includes a category and its Inner, Outer or unmarked form. All these bindings now affect scoring. A match preserves the complete **entity–category–form–direction–role configuration** under one consistent entity bijection. Premises may exchange order and wording may reverse with the opposite direction, but descriptors stay attached to their endpoints and the candidate retains its role. Reversing wording never silently changes Inner to Outer.
 
-The first N trials are unscored memory fill and advance automatically. Subsequent trials wait for **Match** or **No Match** after speech completes. Non-match trials preserve exactly two coherent statements while changing one relation within the selected compass resolution. Use **F/J** for Match and **D/K** for No Match, or the on-screen buttons.
+Each letter denotes one stable entity throughout a trial. Its aspects share its spatial anchor; different descriptors do not imply movement, separate entities or time steps. The complexity setting is independent of N:
 
-For either spatial mode, **P** pauses/resumes and **Escape** stops. Keyboard response shortcuts follow the Keyboard controls option and ignore held-key repetition and text-entry fields.
+| Complexity | Required bindings |
+| --- | --- |
+| One descriptor per entity | Each entity retains one category/form across its appearances. |
+| Multiple aspects per entity | Each endpoint occurrence can express a different operational aspect of the same entity. Preserve which aspect participates in each relationship. |
+| Worlds within worlds | Each outer entity owns a complete inner triad. Match all inner structures under consistent local bijections, keep them attached to the correct outer entities, and match the outer structure. One inner layer is used. |
+
+Worlds use an explicit game rule: **If the inner candidate follows from its premises, this world projects outward; otherwise it receives inward.** The inner category/form/endpoint bindings remain part of the match identity. Equal output states do not make different inner structures equivalent. Inner entity letters are local to their containing world. This is an explicit extension of the game, not an inferred category algebra.
+
+The first N trials are unscored memory fill. They advance shortly after successful speech finishes. When speech is silent or unavailable, **Remember this world — Continue** lets the user finish reading the complete stimulus before advancing. Match/No Match remain unavailable during memory fill. Subsequent trials wait for one **Match** or **No Match** response after speech completes. Close non-matches can alter a category, form, endpoint-role binding, direction or inner-world binding. Remembering only the compass shape or the set of vocabulary words is insufficient. Use **F/J** for Match and **D/K** for No Match, or the on-screen buttons.
+
+#### Worked 1-back example: multiple aspects
+
+| Line | Trial 1 | Trial 2 |
+| --- | --- | --- |
+| Premise 1 | Outer Connection H is south of Projection D. | Multiplication Z is north of Outer Projection Y. |
+| Premise 2 | Outer Projection D is south of Multiplication C. | Projection Y is north of Outer Connection X. |
+| Candidate | Projection C is north of Inner Division H. | Inner Division X is south of Projection Z. |
+
+**Match:** H→X, D→Y, C→Z. The premises swap order and all three statements invert equivalently. Every endpoint descriptor retains its relational role.
+
+Swap only `Multiplication Z` and `Projection Z` between Trial 2's first and third lines: the result is **No Match**. The vocabulary and geometry remain the same, but two aspects have exchanged premise/candidate roles. Likewise, the candidate's logical truth and its historical match are separate: two structurally identical false candidates can form a memory match.
+
+#### Da Vinci cross-domain practice
+
+Use the category meanings to construct one integrated concrete world and reconstruct its relational pattern in a distant domain. Preserve each entity, its operational aspects and all written relationships. The domain cue and self-written stories do not change the formal match identity and are not automatically graded. Compass directions have no permanently assigned category meanings.
+
+After every six scored responses, optional practice pauses the session clock without adding or replacing an N-back trial. Derive the candidate subject's direction relative to its object from the two premises. Then reverse **both premise direction codes**, keeping their endpoints and facets fixed, and derive the new direction. This is a spatial intervention, distinct from equivalent sentence inversion. Practice feedback is separate from N-back accuracy and response-time measurements. Each question's first checked answer is retained for the separate practice metric; feedback retries remain available for learning. Optional prompts/notes support cross-domain reconstruction, an explicit causal rule, a predicted consequence and a boundary where the analogy breaks. Notes remain in the open session and are not graded or persisted to History. **Continue training** also permits skipping practice.
+
+Causal predictions need an explicit rule in the imagined model: compass position alone does not establish causation. No rule such as “Division plus Projection equals Connection” is used. The guide includes the nine-category, three-form operational glossary. In particular, Outer Connection means a connected member/endpoint of a linking medium, and unmarked Projection spans source, trajectory and destination.
+
+For either spatial mode, **P** pauses/resumes and **Escape** stops, independently of the Keyboard controls option. Response shortcuts follow that option and ignore held-key repetition and text-entry fields. During the Mode 2 practice panel, use its explicit controls to continue the paused session.
 
 ## Extra Training — Ordered Number N-back
 
@@ -69,9 +104,15 @@ Settings are fixed until the session stops. Pause preserves the sequence and rem
 
 ## Results and storage
 
-Completed or stopped spatial sessions appear under **History**. Results include mode, N, compass resolution, active duration, accuracy and response statistics. **Export CSV** downloads those summaries; **Clear** removes saved history from this browser.
+Completed or stopped spatial sessions appear under **History**. Results include mode, N, compass resolution, active duration, accuracy and response statistics. Mode 2's practice questions are excluded from N-back accuracy. **Export CSV** downloads those summaries; **Clear** removes saved history from this browser.
 
 History and preferences use browser storage on the current site and device. They are not synced across devices. If storage is unavailable, the app reports the problem and keeps new results in the current tab for export. Export before clearing browser data or leaving a tab with unsaved results.
+
+## Research hub
+
+Open **Research & Evidence** at the top right of the training page, or visit [the research hub](research.html). It maps individual Mode 1, Mode 2, ordered N-back and Da Vinci features to named research sources. Search by author or skill and filter by mode or evidence type. Selecting a source in the feature map clears filters and reveals its full study card.
+
+Every card distinguishes the reported finding, its connection to training and the limits of that connection. The custom nine-category taxonomy, multiple-facet and nested-world variations, and inner-world output rule are explicitly identified as proposed extensions rather than validated interventions. Sources are maintained in `research-relational-evidence.json` and `research-nback-evidence.json`; the page loads both collections independently and offers a retry if one is unavailable.
 
 ## Development and validation
 
@@ -102,6 +143,6 @@ node tests/extra-training-runtime.test.js
 
 Tests cover compass algebra, structural equivalence, exact N-back targets, maximum-interference lures, warm-up scoring, session timing, pause/restart, keyboard input, speech fallbacks, history and production-page integration. Physical speech output and haptics still require checks on the intended device.
 
-`index.html` and its loaded scripts define the current application. The Mode 2 loader `mode-two-ontology-nback-v14.js` loads `mode-two-engine-v21.js` and `mode-two-runtime-v21.js`. The extra screen uses `extra-training-runtime.js`. Older versioned scripts and tests remain as historical references; files absent from the production loading chain are not additional active modes.
+`index.html` and its loaded scripts define the current application. The Mode 2 loader `mode-two-ontology-nback-v14.js` loads `mode-two-engine-v22.js` and `mode-two-runtime-v22.js`. The extra screen uses `extra-training-runtime.js`. Older versioned scripts and tests remain as historical references; files absent from the production loading chain are not additional active modes.
 
 This is a theoretically motivated training design, not validated evidence that practice increases general fluid intelligence or GAMSAT performance.

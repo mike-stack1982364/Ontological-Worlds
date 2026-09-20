@@ -7,7 +7,8 @@
   <title>Ontological-Worlds</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="light-theme.css">
-  <link rel="stylesheet" href="mode-guides.css?v=20260920-guides-1">
+  <link rel="stylesheet" href="mode-guides.css?v=20260920-bindings-1">
+  <link rel="stylesheet" href="mode-two-training.css?v=20260920-bindings-1">
   <style>
     #extra-training-launcher-wrap{margin-top:10px}
     #extra-training-btn{display:flex!important;align-items:center;justify-content:space-between;gap:8px;width:50%!important;height:56px!important;min-height:56px!important;max-height:56px!important;padding:0 14px!important;margin:0 auto!important;border-radius:11px!important;border:2px solid #0b4f88!important;background:linear-gradient(135deg,#083b69,#176aa8 58%,#49aee7)!important;color:#fff!important;font-size:clamp(.74rem,1.8vw,.95rem)!important;font-weight:900!important;line-height:1.05!important;letter-spacing:.035em;text-transform:uppercase;cursor:pointer!important;box-shadow:0 6px 14px rgba(18,79,140,.26)!important;touch-action:manipulation;user-select:none;-webkit-user-select:none;position:relative;z-index:3;box-sizing:border-box!important}
@@ -62,6 +63,7 @@
   </style>
 </head>
 <body class="mode-one-conflict-active">
+  <nav class="research-hub-launcher" aria-label="Research"><a id="research-hub-link" href="research.html" target="_blank" rel="noopener" aria-label="Research hub (opens in a new tab)">Research hub <span aria-hidden="true">↗</span></a></nav>
   <div class="lion-backdrop" aria-hidden="true"></div>
   <main class="container">
     <h1>Ontological-Worlds</h1>
@@ -69,6 +71,17 @@
     <nav class="mode-guide-jump" aria-label="How to play"><a class="mode-one-guide-link" href="#mode-one-guide">New here? Read the Mode 1 guide ↓</a><a class="mode-two-guide-link" href="#mode-two-guide">New here? Read the Mode 2 guide ↓</a></nav>
     <section class="controls" aria-label="Game settings">
       <div class="control-group"><label for="logic-mode">Training mode</label><select id="logic-mode"><option value="0">Mode 1 — Relational Conflict Matrix</option><option value="1">Mode 2 — Ontological Integration</option><option value="2" disabled>Mode 3 — Released in future</option><option value="3" disabled>Mode 4 — Released in future</option><option value="4" disabled>Mode 5 — Released in future</option><option value="5" disabled>Mode 6 — Released in future</option><option value="6" disabled>Mode 7 — Released in future</option></select></div>
+      <div id="mode-two-settings" class="control-group" hidden>
+        <label for="mode-two-complexity">Mode 2 complexity</label>
+        <select id="mode-two-complexity" aria-describedby="mode-two-complexity-help">
+          <option value="entities">One descriptor per entity</option>
+          <option value="facets" selected>Multiple aspects per entity</option>
+          <option value="worlds">Worlds within worlds</option>
+        </select>
+        <p id="mode-two-complexity-help">Each letter is one entity. Match its categories, perspectives and relationships together. Start with one descriptor, then add aspects or inner worlds.</p>
+        <div class="toggle-row"><label><input id="mode-two-reflections" type="checkbox" checked> Practice break after every 6 answers</label></div>
+        <p>Practice breaks pause the clock for a deduction, a change to the map and a new imagined world. They do not affect your N-back score.</p>
+      </div>
       <div id="extra-training-launcher-wrap" class="control-group"><label for="extra-training-btn">Extra Training</label><button id="extra-training-btn" type="button" aria-expanded="false" aria-controls="extra-training-screen" onclick="window.openExtraTrainingScreenFallback && window.openExtraTrainingScreenFallback(event)"><span>Open Ordered Number N-back</span></button><p id="extra-training-launcher-help">Opens a separate full-screen number N-back trainer with 1–3 ordered numbers per trial, position-specific matching and dedicated cognitive-interference controls.</p></div>
       <div class="control-group"><label for="n-slider">N-back level: <span id="n-val">1</span></label><input id="n-slider" type="range" min="1" max="8" step="1" value="1" aria-valuemin="1" aria-valuemax="8" aria-valuetext="N-back level 1"></div>
       <div id="direction-resolution-group" class="control-group"><label for="direction-resolution">Compass directions</label><select id="direction-resolution" aria-describedby="direction-resolution-help direction-resolution-error" aria-invalid="false"><option value="">Choose direction count…</option><option value="4">4 directions</option><option value="8">8 directions</option><option value="16">16 directions — full resolution</option></select><p id="direction-resolution-help">4 uses north, east, south and west. 8 adds northeast, southeast, southwest and northwest. 16 adds the intermediate directions. Cognitive interference changes lure difficulty, not compass resolution.</p><p id="direction-resolution-error" role="alert" hidden>Select 4, 8 or 16 compass directions before starting Mode 1.</p><div id="direction-resolution-status" aria-live="polite">COMPASS RESOLUTION: NOT SELECTED</div></div>
@@ -91,6 +104,7 @@
           <p>Choose <strong>Mode 1</strong>, <strong>1-back</strong> and <strong>4 compass directions</strong>. Try a short session, such as 3 minutes. Leave <strong>Audio-only display</strong> off so you can see the words. Read this guide, then press <strong>Start</strong>.</p>
           <div class="guide-columns"><div><p>Each round has <strong>three lines</strong>, also called <strong>statements</strong>. The first two are clues. The last line makes a claim.</p><p>Think of the letters as name tags on a map. “A is north of B” means <strong>A is above B</strong>.</p></div><div class="guide-card"><div class="guide-compass" role="img" aria-label="Compass: north is up, east is right, south is down, west is left."><span class="guide-north">North<br>↑ Up</span><span class="guide-west">West<br>← Left</span><span class="guide-centre" aria-hidden="true">●</span><span class="guide-east">East<br>Right →</span><span class="guide-south">↓ Down<br>South</span></div></div></div>
           <p>Later, 8 directions add corners such as <strong>northeast: up and right</strong>. With 16, there are more directions between those. Use the exact direction shown.</p>
+          <p><strong>Use same-size steps for the two clues.</strong> In this game, each clue is one step of the same length, including diagonal steps. The last line asks for the direction between the two end letters; it does not say how many steps apart they are.</p>
         </section>
         <section class="guide-part">
           <h3>2. Pick the right old round</h3>
@@ -103,6 +117,7 @@
           <p>The letters may change. Old <strong>C</strong> might become new <strong>X</strong>. That is fine! But C must mean X in <strong>every line</strong> of this comparison. Two old letters cannot share one new name.</p>
           <p>Use one set of name changes that makes <strong>as many lines match as possible</strong>. Do not pick a different set for each line.</p>
           <ul><li>The first two clues may swap places.</li><li>The last line must match the <strong>old last line</strong>.</li><li><strong>“A is north of B” = “B is south of A.”</strong> Saying it backward is okay only when the direction flips too.</li></ul>
+          <div class="guide-note"><p><strong>What if two name keys tie?</strong> Sometimes two ways of renaming make the same number of lines match, but disagree about which lines match. The game uses a fixed tie rule: compare their Yes/No answers from line 1 onward. At the first difference, choose the set with <strong>No</strong>.</p><p>For example, <strong>No, Yes, Yes</strong> takes priority over <strong>Yes, No, Yes</strong> when both are possible. Use the winning set for all three line answers. This rule settles the memory comparison; it does not change whether today’s last line is proved.</p></div>
           <p>Remember the pattern of directions, not just the letters you see.</p>
         </section>
         <section class="guide-part">
@@ -116,6 +131,7 @@
             <tr><th scope="row">5. Do all three lines match the old round together?<br>This is the “complete triad”.</th><td><kbd>Space</kbd></td><td><kbd>N</kbd></td></tr>
           </tbody></table>
           <div class="guide-note"><p><strong>Question 4 is different.</strong> Use only the two clues on the screen now. Follow both clues from one end of the chain to the other. If they link A with B, then B with C, the two ends are <strong>A and C</strong>.</p><p>The last line must give the correct direction between those <strong>two end letters</strong>. Repeating just one clue is not enough. If the last line uses the wrong pair, is wrong, or is not proved by the clues, choose <kbd>L</kbd>.</p></div>
+          <p><strong>For 16-direction play:</strong> use the nearest named compass direction after following the two equal steps. If the result falls exactly halfway between two compass points, choose the next point clockwise. For example, north plus north-northeast gives north-northeast under this game’s rule.</p>
           <p>Each answer locks in as soon as you choose it. You get feedback straight away. Finish <strong>all five</strong>; the next round then starts by itself.</p>
         </section>
         <section class="guide-part">
@@ -133,72 +149,132 @@
         </section>
         <section class="guide-part">
           <h3>7. Take your time and learn</h3>
-          <p>There is no timer for each answer, but the <strong>session clock keeps running</strong>. <strong>Pause</strong> takes a break; <strong>Stop</strong> ends the session. With keyboard controls on, <kbd>P</kbd> pauses or resumes and <kbd>Esc</kbd> stops.</p>
+          <p>There is no timer for each answer, but the <strong>session clock keeps running</strong>. <strong>Pause</strong> takes a break; <strong>Stop</strong> ends the session. <kbd>P</kbd> pauses or resumes and <kbd>Esc</kbd> stops, even when response keyboard controls are off.</p>
           <p>A round is fully correct only when all five answers are right. Two matching lines do not make a whole match. Close-looking rounds are part of the game.</p>
-          <p>Want an easier start? Keep 1-back and 4 directions. The <strong>Cognitive interference</strong> setting is fixed; it cannot be lowered. Stop before changing your mode, N-back level or compass directions.</p>
+          <p>Want an easier start? Keep 1-back and 4 directions. The <strong>Cognitive interference</strong> setting is fixed; it cannot be lowered. <strong>Adaptive N is unavailable</strong>, so N will stay at your chosen level. Stop before changing your mode, N-back level or compass directions.</p>
         </section>
         <div class="guide-checklist"><strong>Your tiny checklist</strong><p>Right old round? → One name key? → Three line checks? → Is today’s claim proved? → Does the whole round match?</p><a class="guide-back" href="#logic-mode">Back to game settings ↑</a></div>
       </div>
     </section>
     <section id="mode-two-guide" class="mode-guide" aria-labelledby="mode-two-guide-title">
-      <header class="guide-header"><span class="guide-badge">One choice each round</span><h2 id="mode-two-guide-title">Mode 2 — How to play</h2><p>Look past the extra words. Do all three map lines repeat the pattern from the right old round?</p></header>
+      <header class="guide-header"><span class="guide-badge">Build a world · Make one choice</span><h2 id="mode-two-guide-title">Mode 2 — How to play</h2><p>Imagine a little world. Remember who does what, where they are, and how the parts fit together. Does the whole pattern match the right old round?</p></header>
       <div class="guide-body">
         <section class="guide-part">
           <h3>1. Start small</h3>
-          <p>Choose <strong>Mode 2</strong>, <strong>1-back</strong> and <strong>4 compass directions</strong>. Try a short session, such as 3 minutes. Leave <strong>Audio-only display</strong> off so you can see the words. Read this guide, then press <strong>Start</strong>.</p>
-          <div class="guide-columns"><div><p>Each round has <strong>three lines</strong>. The first two are clues. The last is a claim. The game calls the group of three a <strong>triad</strong>.</p><p>Think of letters as name tags on a map. “A is north of B” means <strong>A is above B</strong>.</p></div><div class="guide-card"><div class="guide-compass" role="img" aria-label="Compass: north is up, east is right, south is down, west is left."><span class="guide-north">North<br>↑ Up</span><span class="guide-west">West<br>← Left</span><span class="guide-centre" aria-hidden="true">●</span><span class="guide-east">East<br>Right →</span><span class="guide-south">↓ Down<br>South</span></div></div></div>
-          <p>Eight directions add corners such as northeast: up and right. Sixteen add more directions between those. <strong>A nearby direction is not the same direction.</strong></p>
+          <p>Choose <strong>Mode 2</strong>, <strong>1-back</strong>, <strong>4 compass directions</strong> and <strong>One descriptor per entity</strong> for complexity. Try 3 minutes. Leave <strong>Audio-only display</strong> off so you can see the words. Keep <strong>Practice break after every 6 answers</strong> on while learning.</p>
+          <p>When that feels clear, try <strong>Multiple aspects per entity</strong>, the usual setting. An aspect, or facet, is one side or job of something: the same robot can send a message and also separate a part of itself. <strong>Worlds within worlds</strong> adds little worlds inside the bigger one.</p>
+          <div class="guide-columns"><div><p>Each main round has <strong>three lines</strong>. The first two are clues, called <strong>premises</strong>. The last is a claim to check, called a <strong>candidate conclusion</strong>. The group is a <strong>triad</strong>.</p><p>Think of the letters as name tags on a map. “H is south of D” means <strong>H is below D</strong>.</p></div><div class="guide-card"><div class="guide-compass" role="img" aria-label="Compass: north is up, east is right, south is down, west is left."><span class="guide-north">North<br>↑ Up</span><span class="guide-west">West<br>← Left</span><span class="guide-centre" aria-hidden="true">●</span><span class="guide-east">East<br>Right →</span><span class="guide-south">↓ Down<br>South</span></div></div></div>
+          <p>Eight directions add corners such as northeast: up and right. Sixteen add directions between those. <strong>Use the exact direction.</strong> The compass and the category do different jobs: north does not always mean one kind of thing.</p>
+          <p><strong>Map rule:</strong> each of the two clues is one same-size step, including diagonal steps. The candidate gives the direction between the end letters, not their distance. In 16-direction play, use the nearest named direction; an exact halfway result goes to the next compass point clockwise.</p>
         </section>
         <section class="guide-part">
           <h3>2. Remember the right round</h3>
           <p><strong>N-back tells you how far to look back.</strong> Count whole rounds, not lines. During play, the old round is not shown beside the new one. Keep it in your memory.</p>
           <div class="guide-memory"><p><strong>1-back</strong>The round just before this one.</p><p><strong>2-back</strong>Two rounds ago.</p><p><strong>3-back</strong>Three rounds ago.</p></div>
           <p>At <strong>2-back</strong>, compare round 3 with round 1. Then compare round 4 with round 2. Keep remembering each new round for later.</p>
-          <div class="guide-note guide-warmup"><p><strong>The first N rounds are for watching and remembering.</strong> At 1-back, watch round 1. At 2-back, watch rounds 1 and 2.</p><p>Do not answer these setup rounds. The buttons stay off, the game moves on by itself, and these rounds <strong>do not count toward your score</strong>.</p></div>
+          <div class="guide-note guide-warmup"><p><strong>The first N rounds are for watching and remembering.</strong> At 1-back, watch round 1. At 2-back, watch rounds 1 and 2.</p><p>Match and No Match stay off. If speech plays, the game moves on shortly after it finishes. If speech is silent or unavailable, take time to read the whole world, then select <strong>Remember this world — Continue</strong>.</p><p>These setup rounds <strong>do not count toward your score</strong>.</p></div>
         </section>
         <section class="guide-part">
-          <h3>3. Find the little map clues</h3>
-          <div class="guide-card"><p>You might see: <span class="guide-extra-label">Inner Completion</span> <strong>A is north of B.</strong></p><p>For your answer, focus on: <strong>A is north of B.</strong></p></div>
-          <p><strong>Inner, Outer, Completion, Multiplication</strong> and the other extra words are labels. They do not change whether you should press Match. You do not need to multiply or divide anything.</p>
-          <p>The letters may change too. Make <strong>one name key for all three lines</strong>. If old A becomes new X, keep using X for A everywhere. Give each old letter its own new name.</p>
+          <h3>3. Read both ends of every line</h3>
+          <div class="guide-card"><p><strong>Outer Connection H</strong> is south of <strong>Projection D</strong>.</p><p>Read that as: “H, in its Outer Connection job, is below D, in its Projection job.”</p></div>
+          <p><strong>All the words matter for matching.</strong> Keep the category, its Inner/Outer form, its letter and its place in the line together. <strong>Projection D</strong> and <strong>Outer Projection D</strong> name different aspects, even though D is the same entity.</p>
+          <p><strong>One letter means one thing throughout a round.</strong> If H appears twice, it is still the same H in the same place. Its two jobs can differ with <strong>Multiple aspects per entity</strong>. They do not become two separate Hs, and the words do not silently make it move or change over time.</p>
+          <p>The letters can change between rounds. Use <strong>one name key for the entire comparison</strong>: if old H becomes new X, use X for H everywhere. Each old letter gets its own new name.</p>
         </section>
         <section class="guide-part">
-          <h3>4. Try a matching round</h3>
-          <p>Imagine the old round below is exactly N rounds back.</p>
-          <div class="guide-columns"><div class="guide-card"><h4>The old round</h4><ol><li><span class="guide-extra-label">Inner Completion</span> <strong>A is north of B.</strong></li><li><span class="guide-extra-label">Outer Multiplication</span> <strong>B is north of C.</strong></li><li><span class="guide-extra-label">Difference</span> <strong>A is north of C.</strong></li></ol></div><div class="guide-card guide-now"><h4>The round on screen now</h4><ol><li><span class="guide-extra-label">Outer Division</span> <strong>X is north of Y.</strong></li><li><span class="guide-extra-label">Inner Action</span> <strong>Y is north of Z.</strong></li><li><span class="guide-extra-label">Connection</span> <strong>X is north of Z.</strong></li></ol></div></div>
-          <p><strong>Our name key:</strong> A becomes X. B becomes Y. C becomes Z.</p>
-          <p>All three lines keep the same pattern. The labels changed, but the answer did not.</p>
+          <h3>4. Try this 1-back example</h3>
+          <p>This example uses <strong>Multiple aspects per entity</strong>. Watch round 1. On round 2, compare with round 1.</p>
+          <div class="guide-columns"><div class="guide-card"><h4>Round 1 — remember</h4><ol><li><strong>Outer Connection H</strong> is south of <strong>Projection D</strong>.</li><li><strong>Outer Projection D</strong> is south of <strong>Multiplication C</strong>.</li><li>Candidate: <strong>Projection C</strong> is north of <strong>Inner Division H</strong>.</li></ol></div><div class="guide-card guide-now"><h4>Round 2 — answer</h4><ol><li><strong>Multiplication Z</strong> is north of <strong>Outer Projection Y</strong>.</li><li><strong>Projection Y</strong> is north of <strong>Outer Connection X</strong>.</li><li>Candidate: <strong>Inner Division X</strong> is south of <strong>Projection Z</strong>.</li></ol></div></div>
+          <table><caption>One name key for every line</caption><thead><tr><th scope="col">Old name</th><th scope="col">New name</th></tr></thead><tbody><tr><td>H</td><td>X</td></tr><tr><td>D</td><td>Y</td></tr><tr><td>C</td><td>Z</td></tr></tbody></table>
+          <p>The clues swapped order. Each line was said from the other end, so south became north, or north became south. <strong>Every job stayed with the correct entity and relationship.</strong></p>
           <p class="guide-answer"><strong>Choose Match.</strong></p>
-          <div class="guide-note"><p><strong>Now change only the new last line:</strong> “Connection X is <strong>east</strong> of Z.”</p><p>That direction used to be north. The whole pattern no longer matches. <strong>Choose No Match.</strong> Two matching lines are not enough.</p></div>
+          <p>Check one line: old “Outer Projection D is south of Multiplication C” becomes “Outer Projection Y is south of Multiplication Z”. Saying “Multiplication Z is north of Outer Projection Y” gives exactly the same relationship.</p>
         </section>
         <section class="guide-part">
-          <h3>5. Watch for a different way of saying it</h3>
-          <ul><li>The first two clues may swap places.</li><li><strong>“A is north of B” = “B is south of A.”</strong> Both describe the same map. The direction must flip when the names swap ends.</li><li>The last line must still match the <strong>old last line</strong>. You cannot swap it with one of the first two clues.</li><li>All three lines must work with the <strong>same name key</strong>.</li></ul>
-          <div class="guide-note"><p><strong>You are checking memory, not proving the last line.</strong> A wrong claim can be repeated exactly. If the whole three-line pattern repeats, choose Match even if that last claim is not proved by the first two clues.</p></div>
+          <h3>5. The same words can be in the wrong places</h3>
+          <p>Keep round 1 above. Now change round 2 to this:</p>
+          <div class="guide-card"><ol><li><strong>Projection Z</strong> is north of <strong>Outer Projection Y</strong>.</li><li><strong>Projection Y</strong> is north of <strong>Outer Connection X</strong>.</li><li>Candidate: <strong>Inner Division X</strong> is south of <strong>Multiplication Z</strong>.</li></ol></div>
+          <p>The directions are unchanged. All the same category words still appear. But Z’s <strong>Projection</strong> and <strong>Multiplication</strong> jobs have traded places between a clue and the candidate.</p>
+          <p class="guide-answer"><strong>Choose No Match.</strong> Remember which job belongs to which link, not just a bag of words.</p>
+          <ul><li>The first two clues may swap places.</li><li>A whole line may reverse only when its direction reverses too.</li><li><strong>Inner stays Inner. Outer stays Outer.</strong> Reversing a sentence does not change its jobs.</li><li>The candidate must match the <strong>old candidate</strong>. It cannot trade places with a clue.</li><li>All directions and all endpoint jobs must fit <strong>one name key</strong>.</li></ul>
+          <div class="guide-note"><p><strong>A repeated claim can still be wrong.</strong> The first example puts C north of H. If its candidate instead said “C is west of H”, it would not follow from the clues. Yet two rounds can repeat that same wrong candidate and still be a memory Match.</p><p>Build your spatial world from the <strong>two clues</strong>. Hold the candidate as a claim to check; do not force a wrong claim to become a third fact.</p></div>
         </section>
         <section class="guide-part">
-          <h3>6. Give just one answer</h3>
+          <h3>6. Give one answer per memory round</h3>
           <p>Wait until the speech finishes and the answer buttons become available.</p>
-          <div class="guide-columns"><div class="guide-card guide-now"><h4>Match</h4><p>All three lines match the right old round together.</p><p>Tap <strong>Match</strong>.<br>Keyboard: <kbd>F</kbd> or <kbd>J</kbd>.</p></div><div class="guide-card"><h4>No Match</h4><p>The whole pattern does not match. Even one map link that does not fit means No Match.</p><p>Tap <strong>No Match</strong>.<br>Keyboard: <kbd>D</kbd> or <kbd>K</kbd>.</p></div></div>
+          <div class="guide-columns"><div class="guide-card guide-now"><h4>Match</h4><p>The complete pattern fits the right old round: names, jobs, directions and line roles, all together.</p><p>Tap <strong>Match</strong>.<br>Keyboard: <kbd>F</kbd> or <kbd>J</kbd>.</p></div><div class="guide-card"><h4>No Match</h4><p>No single name key preserves the complete pattern. One wrong binding is enough.</p><p>Tap <strong>No Match</strong>.<br>Keyboard: <kbd>D</kbd> or <kbd>K</kbd>.</p></div></div>
           <p>Keys work when <strong>Keyboard controls</strong> is on. After your answer, the game shows feedback and moves to the next round.</p>
-          <p>There is no timer for each answer, but the <strong>session clock keeps running</strong>. <strong>Pause</strong> takes a break; <strong>Stop</strong> ends the session. With keyboard controls on, <kbd>P</kbd> pauses or resumes and <kbd>Esc</kbd> stops.</p>
-          <p>Close-looking rounds are part of the game. <strong>Cognitive interference</strong> is fixed. To make learning easier, stay at 1-back and 4 directions. Stop before changing your mode, N-back level or compass directions.</p>
+          <p>There is no timer for each answer, but the <strong>session clock keeps running during the memory rounds</strong>. <strong>Pause</strong> takes a break; <strong>Stop</strong> ends the session. <kbd>P</kbd> pauses or resumes and <kbd>Esc</kbd> stops, even when response keyboard controls are off.</p>
         </section>
-        <div class="guide-checklist"><strong>Your tiny checklist</strong><p>Right old round? → Ignore extra labels. → One name key? → All three lines match together? → Match or No Match.</p><a class="guide-back" href="#logic-mode">Back to game settings ↑</a></div>
+        <section class="guide-part">
+          <h3>7. Make the words do something in your imagination</h3>
+          <p>This is the <strong>Da Vinci cross-domain practice</strong>. A domain is a kind of world: a garden, a machine, a town, or a story. Choose concrete things that can do the jobs on the card.</p>
+          <ol><li><strong>Build one scene.</strong> Keep each letter as one thing in its place. Make its different jobs work together.</li><li><strong>Give each job an action.</strong> For Projection, picture a source, a path and a destination. For Division, decide what is separated from what.</li><li><strong>Rebuild it in another kind of world.</strong> Preserve the relationships and jobs while changing their concrete form.</li><li><strong>Check a limit.</strong> Say what would have to change before the two worlds stopped sharing the same structure.</li></ol>
+          <div class="guide-columns"><div class="guide-card"><h4>A garden example</h4><p>Something creates more seeds. A carrier sends them outward. A receiving system isolates a part of itself.</p></div><div class="guide-card"><h4>A message-world example</h4><p>Something creates more message copies. A broadcaster sends them outward. A receiving group separates one subgroup from itself.</p></div></div>
+          <p>These are starting ideas, not extra rules for the card. Fit your chosen things to <strong>all</strong> its endpoint jobs and compass positions. You can picture a fantasy machine if an everyday object does not fit.</p>
+          <div class="guide-note"><p><strong>State a rule before predicting what it causes.</strong> For example: “D is the only path by which C’s outputs reach H.” If D stops, new outputs from C cannot arrive at H along that path. Things already at H can remain.</p><p>A compass direction alone does not tell you what causes what. There is also no rule that adding two category words automatically creates a third.</p></div>
+          <p>The game checks the written pattern. <strong>It cannot see or score your imagined scene.</strong> Use the practice breaks to check whether you really built and transferred a connected world.</p>
+        </section>
+        <section class="guide-part">
+          <h3>8. Choose how many things to hold together</h3>
+          <div class="guide-card"><h4>One descriptor per entity</h4><p>A letter keeps the same category and Inner/Outer/unmarked form wherever it appears. Learn the full matching rule here first.</p></div>
+          <div class="guide-card"><h4>Multiple aspects per entity</h4><p>The same letter may have different jobs in different links, as H does in the example. All its facets share the same place. Match the exact job at each end of each link.</p></div>
+          <div class="guide-card"><h4>Worlds within worlds</h4><p>Each outer letter contains its own little three-line world. Read those inner worlds as well as the three outer lines. A little world’s letter names are local to that world.</p><p><strong>The explicit rule:</strong> if an inner world’s candidate follows from its two clues, that whole world <strong>projects outward</strong>. Otherwise, it <strong>receives inward</strong>.</p><p>For a Match, the inner worlds themselves must match under their own consistent name keys, and they must stay attached to the correct outer entities. Two different inner worlds producing the same outward result are <strong>not enough</strong>.</p><p>There is one inner layer. This is an added game rule, not a claim that one category can be calculated from other categories.</p></div>
+          <p>Complexity and N-back do different jobs. <strong>Complexity</strong> changes what is inside a round. <strong>N-back</strong> changes which old round you compare with. Increase one at a time while you can still build a clear world.</p>
+        </section>
+        <section class="guide-part">
+          <h3>9. Use the short practice breaks</h3>
+          <p>With <strong>Practice break after every 6 answers</strong> on, the game and session clock pause after <strong>six answered memory rounds</strong>. Setup rounds do not count toward those six. The break is not a new N-back round and does not move your memory history forward.</p>
+          <p>First, follow the two clues. Choose the direction of the candidate’s <strong>first letter relative to its second letter</strong>. Work it out from the clues; do not just copy the candidate’s direction.</p>
+          <p>Then try a changed version: <strong>reverse both clues’ compass directions</strong>, while keeping their letters and jobs in place. North becomes south; east becomes west. Where is the same first letter relative to the same second letter now? Choose that new direction.</p>
+          <p>This really changes the map. It is different from saying an unchanged relationship backward, where you swap the two ends as well as the direction. The candidate stays as written during practice.</p>
+          <p>Use the cross-domain prompts to rebuild the world, state a rule, predict a consequence and find a limit to the comparison. These are practice checks, <strong>separate from your N-back score</strong>. Select <strong>Check practice answers</strong> for feedback, then <strong>Continue training</strong>. You can also continue without answering or writing anything. Keep the next N-back target in mind.</p>
+          <p>Your <strong>first checked answer</strong> to each practice question goes into its separate practice result. You can try again after feedback to learn. Optional writing stays in the current open session; it is not graded or saved to History.</p>
+          <p>Stop the session before changing its complexity, N-back level, compass directions or practice-break setting. Cognitive interference is fixed; the game deliberately includes close-looking alternatives. <strong>Adaptive N is unavailable</strong>, so N stays at your chosen level.</p>
+        </section>
+        <section class="guide-part">
+          <h3>10. A little dictionary of the nine jobs</h3>
+          <p><strong>Inner</strong> and <strong>Outer</strong> tell you which perspective on a job to imagine. Their exact meaning depends on the category. If neither word appears, use the <strong>plain form</strong>. All three forms are distinct for matching.</p>
+          <p>These are the operational meanings used for this game’s imagination practice. They are not arithmetic instructions or permanent meanings for compass directions.</p>
+          <div class="guide-columns">
+            <div class="guide-card"><h4>All</h4><p><strong>Plain:</strong> the whole collection.</p><p><strong>Inner:</strong> gather parts into one collection or whole.</p><p><strong>Outer:</strong> make copies or likenesses of something.</p></div>
+            <div class="guide-card"><h4>Difference</h4><p><strong>Plain:</strong> a distinction between things.</p><p><strong>Inner:</strong> locate or distinguish what is inside.</p><p><strong>Outer:</strong> locate or distinguish what is outside.</p></div>
+            <div class="guide-card"><h4>Action</h4><p><strong>Plain:</strong> doing or changing something.</p><p><strong>Inner:</strong> act upon yourself.</p><p><strong>Outer:</strong> act from yourself upon something outside.</p></div>
+            <div class="guide-card"><h4>Division</h4><p><strong>Plain:</strong> separation into parts.</p><p><strong>Inner:</strong> remove or isolate yourself, or a divided part of yourself.</p><p><strong>Outer:</strong> subdivide, mark out or make several parts of something observed.</p></div>
+            <div class="guide-card"><h4>Connection</h4><p><strong>Plain:</strong> a link joining things.</p><p><strong>Inner:</strong> the centre, hub or medium through which they connect.</p><p><strong>Outer:</strong> the connected members or ends of that link.</p></div>
+            <div class="guide-card"><h4>Multiplication</h4><p><strong>Plain:</strong> making more or increasing.</p><p><strong>Inner:</strong> support, strengthen, sustain or heal from within.</p><p><strong>Outer:</strong> unfold, grow or blossom outward.</p></div>
+            <div class="guide-card"><h4>Projection</h4><p><strong>Plain:</strong> the span from a source, along a path, to a destination.</p><p><strong>Inner:</strong> receive or converge toward yourself.</p><p><strong>Outer:</strong> send or extend away from yourself.</p></div>
+            <div class="guide-card"><h4>Encompassment</h4><p><strong>Plain:</strong> surrounding or including.</p><p><strong>Inner:</strong> push outward or expand from inside.</p><p><strong>Outer:</strong> surround or engulf from outside.</p></div>
+            <div class="guide-card"><h4>Completion</h4><p><strong>Plain:</strong> reaching a whole or complete state.</p><p><strong>Inner:</strong> become upright or sound in character within.</p><p><strong>Outer:</strong> become sturdy in outward form.</p></div>
+          </div>
+          <p>Hold these jobs as meaningful parts of the world. A word moving to the wrong endpoint, or Inner changing to Outer, can turn a Match into a No Match even when the compass map stays the same.</p>
+        </section>
+        <div class="guide-checklist"><strong>Your tiny checklist</strong><p>Right old round? → One name key? → Right job at every endpoint? → Same directions and line roles? → Inner worlds too, if selected? → Match or No Match.</p><a class="guide-back" href="#logic-mode">Back to game settings ↑</a></div>
       </div>
     </section>
   </main>
   <div id="paused-overlay" aria-live="assertive"><h2>PAUSED</h2><p>Tap anywhere or press P to continue.</p></div>
-  <section id="tutorial" class="modal" role="dialog" aria-modal="true" aria-labelledby="tutorial-title"><div class="modal-inner"><button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button><h2 id="tutorial-title">How to Train</h2><h3>Mode 1 — Relational Conflict Matrix</h3><p>Choose 4, 8 or 16 compass directions before starting Mode 1. Four uses the cardinal directions, eight adds the diagonals, and sixteen adds the intermediate directions. Finer resolution increases directional precision. Cognitive interference changes lure difficulty independently of compass resolution.</p><p><strong>Response Window (seconds per trial) has been removed.</strong> Each trial remains available until all five relevant decisions are entered. Because each trial requires several inputs, a fixed deadline could corrupt the training by mixing relational reasoning with externally imposed speed pressure. Immediate feedback after each input lets each user coordinate speed with their own processing rate, judge whether to speed up or slow down, and complete the full decision set without being rushed. The overall session-length control still determines when the session ends.</p><p>Answer five questions on every trial: whether each of the three statements matches a statement in the trial N positions earlier, whether Statement 3 is logically entailed by Statements 1 and 2, and whether the complete three-statement structure matches. Statement matches require one globally consistent mapping of letters and one-to-one statement assignment. Reversed wording counts only when the compass direction is inverted correctly. A single or partial match never makes the whole triad a match.</p><p>At high cognitive-interference settings, non-match trials are deliberately constructed as close structural lures: one or two statements may match the N-back target while a precise direction, role assignment or entailment relation prevents the complete triad from matching. At maximum, the generator strongly favours two-of-three statement near-misses across 4-, 8- and 16-direction sessions.</p><p>Keyboard mapping: Statement 1 A/S, Statement 2 D/F, Statement 3 H/J, within-trial entailment K/L, and complete-triad N-back Spacebar/N. In every pair, the left key is the positive response and the right key is the negative response. G is deliberately unused.</p><p>Best regards to all persons who helped with Brain Workshop.</p><h3>Mode 2 — Ontological Integration</h3><p>Mode 2 also requires 4, 8 or 16 compass directions. Compare the complete triad with the trial exactly N positions earlier; its first N trials are unscored setup trials. Responses are self-paced.</p><button id="dismiss-tutorial" class="small-btn" type="button">Close</button></div></section>
+  <section id="tutorial" class="modal" role="dialog" aria-modal="true" aria-labelledby="tutorial-title"><div class="modal-inner"><button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button><h2 id="tutorial-title">How to Train</h2>
+    <h3>Mode 1 — Relational Conflict Matrix</h3>
+    <p>Choose 4, 8 or 16 compass directions before starting. Four uses north, east, south and west; eight adds diagonals; sixteen adds intermediate directions. Both modes treat the two clues as equal-length steps, including diagonals. The candidate states the end-to-end direction, not a distance. At sixteen directions, a halfway result rounds clockwise to the next compass point. N-back tells you which older round to remember.</p>
+    <p>Answer five questions on every trial: three statement matches, whether the current candidate is the exact end-to-end relation proved by its two clues, and whether the whole triad matches N rounds back. Use one consistent letter key and assign each old premise only once. Premises may swap; the candidate stays the candidate. Reversed wording counts only when the direction also reverses.</p>
+    <p>For the three statement answers, choose the shared alignment with the most matches. If answer sets tie, compare them from Statement 1 onward and prefer No at the first difference. The first N rounds have no old target: all four memory answers are No, but still judge the current claim. All five answers count on those rounds.</p>
+    <p>Keys: Statement 1 A/S, Statement 2 D/F, Statement 3 H/J, current entailment K/L, complete-triad match Space/N. In each pair, the first key is Yes and the second is No. Buttons do the same job. Each choice locks immediately and gets feedback. All five choices complete the round. There is no per-trial deadline; the session clock still runs.</p>
+    <h3>Mode 2 — Ontological Integration</h3>
+    <p>Mode 2 binds a category and its Inner, Outer or plain form to each endpoint. Every descriptor matters. One letter is one stable entity; multiple aspects share its place. Match the full entity–category–form–direction–role pattern N rounds back with one consistent name key. Premises may swap and wording may invert correctly. Inner and Outer never switch just because a sentence reverses.</p>
+    <p>Start with One descriptor per entity, then try Multiple aspects per entity. Worlds within worlds adds an inner triad to each outer entity. If an inner candidate follows, that world projects outward; otherwise it receives inward. The complete inner pattern must match too, not just its output.</p>
+    <p>The first N Mode 2 rounds are unscored. They advance after speech, or wait for Remember this world — Continue if speech is silent or unavailable. Then give one Match (F/J) or No Match (D/K) response after speech finishes. A repeated false candidate can still be a memory match. Optional practice pauses after six scored answers: derive the spatial direction, change both premise directions, and rebuild the structure in a different imagined domain. Practice is separate from the N-back score.</p>
+    <p>Both modes have an expanded step-by-step guide below the game. Pause/P stops the session clock; Stop/Escape ends the session. N and complexity stay fixed for the session. Adaptive N is unavailable.</p>
+    <button id="dismiss-tutorial" class="small-btn" type="button">Close</button></div></section>
   <section id="history" class="modal" role="dialog" aria-modal="true" aria-labelledby="history-title"><div class="modal-inner"><button class="modal-close" data-close="history" aria-label="Close history">×</button><h2 id="history-title">Session History</h2><div id="history-list"></div><div class="modal-actions"><button id="export-btn" class="small-btn" type="button">Export CSV</button><button id="clear-btn" class="small-btn" type="button">Clear</button><button id="dismiss-history" class="small-btn" type="button">Close</button></div></section>
-  <script src="app.js?v=20260919-session-fixes"></script>
+  <script src="app.js?v=20260920-bindings-1"></script>
   <script src="mode-one-match-logic.js"></script>
   <script src="mode-one-spatial-core.js?v=20260919-direction-fixes"></script>
-  <script src="audio-accessibility.js?v=20260919-speech-lifecycle"></script>
+  <script src="audio-accessibility.js?v=20260920-long-premises"></script>
   <script src="extra-training.js"></script>
   <script src="mode-one-conflict-matrix-v20.js?v=20260919-session-fixes"></script>
   <script src="mode-one-letter-continuity-v1.js?v=20260726-authoritative-max-logic-2"></script>
-  <script src="mode-two-ontology-nback-v14.js?v=20260919-session-fixes"></script>
+  <script src="mode-two-ontology-nback-v14.js?v=20260920-bindings-1"></script>
   <script src="matching-tutorial.js?v=20260731-4"></script>
   <script src="response-palette-v2.js?v=20260731-2"></script>
 </body>

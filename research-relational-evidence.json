@@ -1,0 +1,281 @@
+{
+  "updated": "2026-09-20",
+  "studies": [
+    {
+      "id": "mcloughlin2022",
+      "title": "Relational Operant Skills Training Increases Standardized Matrices Scores in Adolescents: A Stratified Active-Controlled Trial",
+      "authors": "McLoughlin, S., Tyndall, I., & Pereira, A.",
+      "year": 2022,
+      "url": "https://link.springer.com/article/10.1007/s10864-020-09399-x",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2"
+      ],
+      "feature": "Derive new relations between unfamiliar symbols: reverse a comparison correctly, connect a chain of premises, and follow the relational cue instead of surface familiarity.",
+      "positiveFinding": "In a three-month school study, SMART relational training produced a larger improvement on a standardized matrix-reasoning measure than Scratch coding. The final matrix analysis included 43 SMART and 27 coding participants. The training practiced same/opposite and more/less relations using new nonsense syllables and progressively more complex networks.",
+      "limitation": "Classes were not randomly assigned; substantial missing data and different incentives constrain the inference. The programs did not differ in processing-speed improvement. Published online in 2020."
+    },
+    {
+      "id": "colbert2018",
+      "title": "Can SMART Training Really Increase Intelligence? A Replication Study",
+      "authors": "Colbert, D., Tyndall, I., Roche, B., & Cassidy, S.",
+      "year": 2018,
+      "url": "https://link.springer.com/article/10.1007/s10864-018-9302-2",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2"
+      ],
+      "feature": "Practice relational rules repeatedly across examples and test whether improved reasoning extends beyond the trained symbol sets.",
+      "positiveFinding": "Twenty-six secondary-school students were divided into groups matched on initial IQ. After 12 weeks of SMART training, assessments by testers blind to group membership found training effects on Verbal IQ, Matrix Reasoning and Vocabulary. This provides another positive controlled precedent for relational-skills practice.",
+      "limitation": "This was a small matched-group study. Its specific positive test results do not establish a universal increase across every ability or validate the app's ontology operators."
+    },
+    {
+      "id": "halford1998",
+      "title": "Processing capacity defined by relational complexity: Implications for comparative, developmental, and cognitive psychology",
+      "authors": "Halford, G. S., Wilson, W. H., & Phillips, S.",
+      "year": 1998,
+      "url": "https://www.cambridge.org/core/journals/behavioral-and-brain-sciences/article/processing-capacity-defined-by-relational-complexity-implications-for-comparative-developmental-and-cognitive-psychology/D2388E89B8614A0605D9EE55C6E47F18",
+      "evidenceType": "theory",
+      "relevance": "proposed extension",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Distinguish the number of words or premises from the relationships that must be coordinated at once; organize a complex imagined world into meaningful parts without losing their connections.",
+      "positiveFinding": "This account links reasoning demands to the dimensions of a relation processed together. It explains how segmentation and conceptual chunking can make complex structures manageable. The framework gives a principled rationale for practicing integrated relations and building larger systems from understood components.",
+      "limitation": "It is a theoretical account of processing demands, not evidence that maximum difficulty is best or that adding category labels expands cognitive capacity."
+    },
+    {
+      "id": "klauer2008",
+      "title": "Inductive Reasoning: A Training Approach",
+      "authors": "Klauer, K. J., & Phye, G. D.",
+      "year": 2008,
+      "url": "https://journals.sagepub.com/doi/10.3102/0034654307313402",
+      "evidenceType": "meta-analysis",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Learn a deliberate comparison strategy: identify what stays the same, what changes, and which relationship explains a pattern.",
+      "positiveFinding": "This review and meta-analysis combined 74 training experiments involving nearly 3,600 children. It reported positive transfer from an explicit inductive-reasoning strategy to intelligence-test performance and academic learning, with stronger transfer to academic learning. It offers substantial positive precedent for teaching a reusable reasoning procedure.",
+      "limitation": "The findings concern a specific family of child-focused instructional programs; the same effect size cannot be assumed for independent adult play."
+    },
+    {
+      "id": "mackey2011",
+      "title": "Differential effects of reasoning and speed training in children",
+      "authors": "Mackey, A. P., Hill, S. S., Stone, S. I., & Bunge, S. A.",
+      "year": 2011,
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1467-7687.2010.01005.x",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2"
+      ],
+      "feature": "Combining several relations, planning a solution, and practicing reasoning with varied problems.",
+      "positiveFinding": "After eight weeks of board and computer games, children aged 7–9 in the reasoning program improved on an untrained nonverbal reasoning test. A separate speed program preferentially improved processing speed. This is positive intervention evidence that the content of practice can matter for the ability that improves.",
+      "limitation": "The intervention combined several games in schoolchildren; it does not isolate any one feature of either mode."
+    },
+    {
+      "id": "wang2025",
+      "title": "Relational Integration Training Modulated the Frontoparietal Network for Fluid Intelligence: An EEG Microstates Study",
+      "authors": "Wang, Z., Sun, T., & Xiao, F.",
+      "year": 2025,
+      "url": "https://link.springer.com/article/10.1007/s10548-024-01099-3",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2"
+      ],
+      "feature": "Relational integration as a trainable target: holding several relationships together to answer a new question.",
+      "positiveFinding": "A randomized month-long study compared relational-integration training with an active control group (29 versus 28 participants), using matrix reasoning and resting EEG. The reported training-related changes included EEG dynamics associated with frontoparietal processing. This is a close intervention precedent for investigating relational integration, rather than only simple item memory.",
+      "limitation": "The accessible abstract emphasizes neural outcomes; it does not establish a durable behavioral effect size or validate these modes."
+    },
+    {
+      "id": "chuderski2014",
+      "title": "The relational integration task explains fluid reasoning above and beyond other working memory tasks",
+      "authors": "Chuderski, A.",
+      "year": 2014,
+      "url": "https://link.springer.com/article/10.3758/s13421-013-0366-x",
+      "evidenceType": "observational",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2"
+      ],
+      "feature": "Binding the correct entity to its relation, endpoint, category and scope; keeping several bindings available at once.",
+      "positiveFinding": "Across three studies, relational-integration performance was sensitive to the number of bindings and explained fluid-reasoning differences beyond several other memory and attention measures. The findings make accurate relation binding a well-motivated target for complex reasoning practice.",
+      "limitation": "The link to fluid reasoning is correlational. Extra words or distractors do not automatically create greater relational integration."
+    },
+    {
+      "id": "gentner2003",
+      "title": "Learning and transfer: A general role for analogical encoding",
+      "authors": "Gentner, D., Loewenstein, J., & Thompson, L.",
+      "year": 2003,
+      "url": "https://groups.psych.northwestern.edu/gentner/papers/GentnerLoewensteinThompson03.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "The Da Vinci method: explicitly compare different imagined domains while preserving who plays each role and how the relations fit together.",
+      "positiveFinding": "Learners who compared analogous negotiation cases abstracted their shared structure and transferred the principle to new problems more successfully than learners who studied the cases separately. Experiments included transfer to a subsequent face-to-face negotiation. Deliberate comparison can make a useful pattern portable across different surface stories.",
+      "limitation": "The measured transfer concerned negotiation principles. The useful ingredient was structural comparison, not simply adding an imaginative story."
+    },
+    {
+      "id": "kurtz2001",
+      "title": "Learning by Analogical Bootstrapping",
+      "authors": "Kurtz, K. J., Miao, C.-H., & Gentner, D.",
+      "year": 2001,
+      "url": "https://groups.psych.northwestern.edu/gentner/papers/KurtzMiaoGentner01.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "Build concrete embodiments of an abstract relation, then explain the corresponding objects, processes and causal links.",
+      "positiveFinding": "Comparing two partly understood heat-flow situations helped learners discover a common causal structure. Prompts that supported joint interpretation and explicit correspondences were especially useful. This supports making the cross-domain exercise an active explanation of what corresponds to what.",
+      "limitation": "These were science-comprehension experiments. Extending the method to repeated ontology-world practice is a design hypothesis."
+    },
+    {
+      "id": "gentner1983",
+      "title": "Structure-Mapping: A Theoretical Framework for Analogy",
+      "authors": "Gentner, D.",
+      "year": 1983,
+      "url": "https://onlinelibrary.wiley.com/doi/10.1207/s15516709cog0702_3",
+      "evidenceType": "theory",
+      "relevance": "proposed extension",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "Keep entity correspondences consistent and connect relations into larger systems, including relations between relations.",
+      "positiveFinding": "Structure-mapping theory explains analogy through shared relational organization across domains. Its systematicity principle favors connected higher-order structure. This gives the Da Vinci method a precise design rationale: preserve the pattern of relationships while changing the concrete world used to imagine it.",
+      "limitation": "A theory supplies design principles, not a training-effect estimate or evidence that this app's ontology categories are uniquely effective."
+    },
+    {
+      "id": "loewenstein2005",
+      "title": "Relational language and the development of relational mapping",
+      "authors": "Loewenstein, J., & Gentner, D.",
+      "year": 2005,
+      "url": "https://groups.psych.northwestern.edu/gentner/papers/LoewensteinGentner05.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2"
+      ],
+      "feature": "Use meaningful relational labels and explicit definitions to make spatial positions, category roles and scope easier to distinguish.",
+      "positiveFinding": "In five experiments, spatial relational language helped preschool children map corresponding positions between structures. The meanings of the terms mattered, and one experiment found an advantage two days later without additional labels. Language can help a learner notice a relational organization that surface appearances obscure.",
+      "limitation": "The studies used children's spatial vocabulary. Applying this scaffold to Inner/Outer or other custom operators requires clear operational definitions."
+    },
+    {
+      "id": "gentner1999",
+      "title": "Comparison in the Development of Categories",
+      "authors": "Gentner, D., & Namy, L. L.",
+      "year": 1999,
+      "url": "https://groups.psych.northwestern.edu/gentner/papers/GentnerNamy99.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "Recognize a common category across different embodiments and resist a tempting match based only on appearance.",
+      "positiveFinding": "Four-year-olds who compared multiple examples with a shared label were more likely to choose a taxonomic category match over a perceptually similar alternative. Comparison helped them move beyond obvious surface resemblance. This supports using contrasting embodiments to teach what an operator means.",
+      "limitation": "This is evidence about category learning in children, not a test of an adult ontology-training curriculum."
+    },
+    {
+      "id": "madore2014",
+      "title": "An episodic specificity induction enhances means-end problem solving in young and older adults",
+      "authors": "Madore, K. P., & Schacter, D. L.",
+      "year": 2014,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/25365688/",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "Make an imagined world specific: identify the entities, setting, event sequence and relevant steps connecting a situation to a goal.",
+      "positiveFinding": "A brief induction encouraging detailed recollection increased relevant solution steps and episodic detail during means-end problem solving in both young and older adults. The improvement was selective rather than a general increase in irrelevant content. Detailed mental simulation can contribute useful material to solving a problem.",
+      "limitation": "The study tested a short-term induction; repeated self-directed Da Vinci practice and lasting intelligence transfer remain separate questions."
+    },
+    {
+      "id": "madore2015",
+      "title": "Creativity and Memory: Effects of an Episodic-Specificity Induction on Divergent Thinking",
+      "authors": "Madore, K. P., Addis, D. R., & Schacter, D. L.",
+      "year": 2015,
+      "url": "https://journals.sagepub.com/doi/10.1177/0956797615591863",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "Generate fresh concrete interpretations of the same abstract structure instead of recycling one familiar story.",
+      "positiveFinding": "In two experiments, a brief induction focused on episodic detail improved divergent thinking on an unusual-uses task. The selective result supports a connection between detailed memory construction and generating alternative ideas—a useful component of varied cross-domain imagination.",
+      "limitation": "Benefits did not extend to all comparison tasks. Divergent idea generation is a different outcome from convergent reasoning or fluid intelligence."
+    },
+    {
+      "id": "gerstenberg2021",
+      "title": "A counterfactual simulation model of causal judgments for physical events",
+      "authors": "Gerstenberg, T., Goodman, N. D., Lagnado, D. A., & Tenenbaum, J. B.",
+      "year": 2021,
+      "url": "https://cicl.stanford.edu/publication/gerstenberg2021csm/",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "Give the imagined world a stated mechanism, then ask what would change if an entity or interaction were altered.",
+      "positiveFinding": "Across experiments with physical events, a model that simulated alternative possibilities explained causal judgments better than accounts based only on what actually happened. Identical actual events could receive different judgments when their counterfactual possibilities differed. This supports making imagined alternatives precise enough to reason about.",
+      "limitation": "The experiments explain causal judgment, not training gains. A compass relation alone does not establish a causal mechanism."
+    },
+    {
+      "id": "needham1991",
+      "title": "Problem-oriented training promotes spontaneous analogical transfer: Memory-oriented training promotes memory for training",
+      "authors": "Needham, D. R., & Begg, I. M.",
+      "year": 1991,
+      "url": "https://link.springer.com/article/10.3758/BF03197150",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Try to reconstruct or explain the relationship before checking the answer, then use the correct explanation to improve the next attempt.",
+      "positiveFinding": "Across five experiments, attempting to solve a problem or explain a situation before seeing its solution promoted spontaneous analogical transfer more than approaching the material mainly as something to remember. Even initially unsuccessful attempts could help when followed by the solution.",
+      "limitation": "The experiments measured transfer between problems over short intervals; they support an active learning routine rather than a general IQ claim."
+    },
+    {
+      "id": "butler2008",
+      "title": "Feedback enhances the positive effects and reduces the negative effects of multiple-choice testing",
+      "authors": "Butler, A. C., & Roediger, H. L., III",
+      "year": 2008,
+      "url": "https://link.springer.com/article/10.3758/MC.36.3.604",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
+      "feature": "After a response, review the correct relationship and identify the misleading alternative, especially when lures look almost right.",
+      "positiveFinding": "Both immediate and delayed corrective feedback improved later recall and reduced intrusion of incorrect multiple-choice alternatives compared with testing without feedback. Feedback can therefore help practice strengthen correct knowledge while preventing attractive errors from being rehearsed.",
+      "limitation": "This was factual learning, not intelligence training. Its strongest application here is to explanatory correction, beyond a correct/incorrect signal alone."
+    }
+  ]
+}

@@ -18,9 +18,9 @@ function setup() {
   };
   const callbacks = new Map();
   let timerId = 0;
-  const setTimer = (callback, repeat) => {
+  const setTimer = (callback, repeat, delay) => {
     const id = ++timerId;
-    callbacks.set(id, { callback, repeat });
+    callbacks.set(id, { callback, repeat, delay });
     return id;
   };
   const utterances = [];
@@ -46,8 +46,8 @@ function setup() {
   const context = vm.createContext({
     window,
     document: { getElementById: () => premise },
-    setTimeout: callback => setTimer(callback, false),
-    setInterval: callback => setTimer(callback, true),
+    setTimeout: (callback, delay) => setTimer(callback, false, delay),
+    setInterval: (callback, delay) => setTimer(callback, true, delay),
     clearTimeout: id => callbacks.delete(id),
     clearInterval: id => callbacks.delete(id)
   });
@@ -108,5 +108,17 @@ test("a voice that never emits completion falls back instead of stranding the re
   fire(false);
   assert.equal(await speech, false);
   assert.equal(classes.has("hidden-mode"), false);
+  assert.equal(callbacks.size, 0);
+});
+
+test("slow nested-world speech is allowed to finish beyond ninety seconds", async () => {
+  const { app, settings, callbacks, utterances } = setup();
+  settings.rate = 0.4;
+  const speech = app.speak(new Array(240).fill("projection").join(" "));
+  const watchdog = [...callbacks.values()].find(timer => !timer.repeat);
+  assert.ok(watchdog.delay > 240 / settings.rate * 700,
+    "the safety timeout must exceed the estimated full speech duration");
+  utterances[0].onend();
+  assert.equal(await speech, true);
   assert.equal(callbacks.size, 0);
 });

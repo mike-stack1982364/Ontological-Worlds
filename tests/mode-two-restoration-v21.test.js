@@ -1,7 +1,9 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const modeTwo = require('../mode-two-ontology-nback-v14.js');
+// Historical v21 restoration proof; v22 has separate engine and production
+// integration coverage for its endpoint-bound ontology matching rules.
+const modeTwo = require('../mode-two-engine-v21.js');
 
 assert.equal(modeTwo.version, 21);
 assert.deepEqual([...modeTwo.RESOLUTIONS], [4, 8, 16]);
