@@ -7,6 +7,7 @@
   <title>Ontological-Worlds</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="light-theme.css">
+  <link rel="stylesheet" href="mode-guides.css?v=20260920-guides-1">
   <style>
     #extra-training-launcher-wrap{margin-top:10px}
     #extra-training-btn{display:flex!important;align-items:center;justify-content:space-between;gap:8px;width:50%!important;height:56px!important;min-height:56px!important;max-height:56px!important;padding:0 14px!important;margin:0 auto!important;border-radius:11px!important;border:2px solid #0b4f88!important;background:linear-gradient(135deg,#083b69,#176aa8 58%,#49aee7)!important;color:#fff!important;font-size:clamp(.74rem,1.8vw,.95rem)!important;font-weight:900!important;line-height:1.05!important;letter-spacing:.035em;text-transform:uppercase;cursor:pointer!important;box-shadow:0 6px 14px rgba(18,79,140,.26)!important;touch-action:manipulation;user-select:none;-webkit-user-select:none;position:relative;z-index:3;box-sizing:border-box!important}
@@ -65,6 +66,7 @@
   <main class="container">
     <h1>Ontological-Worlds</h1>
     <div id="session-countdown" class="session-countdown idle" role="timer" aria-label="Session time remaining">00:00</div>
+    <nav class="mode-guide-jump" aria-label="How to play"><a class="mode-one-guide-link" href="#mode-one-guide">New here? Read the Mode 1 guide ↓</a><a class="mode-two-guide-link" href="#mode-two-guide">New here? Read the Mode 2 guide ↓</a></nav>
     <section class="controls" aria-label="Game settings">
       <div class="control-group"><label for="logic-mode">Training mode</label><select id="logic-mode"><option value="0">Mode 1 — Relational Conflict Matrix</option><option value="1">Mode 2 — Ontological Integration</option><option value="2" disabled>Mode 3 — Released in future</option><option value="3" disabled>Mode 4 — Released in future</option><option value="4" disabled>Mode 5 — Released in future</option><option value="5" disabled>Mode 6 — Released in future</option><option value="6" disabled>Mode 7 — Released in future</option></select></div>
       <div id="extra-training-launcher-wrap" class="control-group"><label for="extra-training-btn">Extra Training</label><button id="extra-training-btn" type="button" aria-expanded="false" aria-controls="extra-training-screen" onclick="window.openExtraTrainingScreenFallback && window.openExtraTrainingScreenFallback(event)"><span>Open Ordered Number N-back</span></button><p id="extra-training-launcher-help">Opens a separate full-screen number N-back trainer with 1–3 ordered numbers per trial, position-specific matching and dedicated cognitive-interference controls.</p></div>
@@ -81,6 +83,110 @@
       <div class="button-group"><button id="tutorial-btn" class="small-btn" type="button">Tutorial</button><button id="history-btn" class="small-btn" type="button">History</button></div>
     </section>
     <section class="game-area" aria-label="Training trial"><div id="countdown-box" aria-live="assertive"></div><div id="premise-display" class="premise-display" role="status" aria-live="polite" aria-atomic="true">SYSTEM_READY</div><div id="feedback" role="status" aria-live="assertive"></div><div id="trial-explanation" role="status" aria-live="polite" style="min-height:2.8em;margin:10px auto 14px;max-width:900px;font-size:.88rem;line-height:1.45;color:#30465d"></div><div class="response-stage"><div class="response-buttons"><button id="match-btn" type="button" disabled aria-label="Match">Match</button><button id="no-match-btn" type="button" disabled aria-label="No Match">No Match</button></div><div id="conflict-matrix" aria-label="Relational conflict response matrix"><div class="conflict-heading">Relational Conflict Matrix</div><div class="conflict-grid"><div class="conflict-row" data-decision="0"><div class="conflict-label">Statement 1 — N-back</div><button class="conflict-choice" data-value="1" type="button">A</button><button class="conflict-choice" data-value="0" type="button">S</button></div><div class="conflict-row" data-decision="1"><div class="conflict-label">Statement 2 — N-back</div><button class="conflict-choice" data-value="1" type="button">D</button><button class="conflict-choice" data-value="0" type="button">F</button></div><div class="conflict-row" data-decision="2"><div class="conflict-label">Statement 3 — N-back</div><button class="conflict-choice" data-value="1" type="button">H</button><button class="conflict-choice" data-value="0" type="button">J</button></div><div class="conflict-row" data-decision="3"><div class="conflict-label">Statement 3 — entailed?</div><button class="conflict-choice" data-value="1" type="button">K</button><button class="conflict-choice" data-value="0" type="button">L</button></div><div class="conflict-row" data-decision="4"><div class="conflict-label">Complete triad — N-back</div><button class="conflict-choice" data-value="1" type="button">SPACEBAR</button><button class="conflict-choice" data-value="0" type="button">N</button></div></div><button id="conflict-submit" type="button" hidden>Submit</button><div id="conflict-progress"></div><div id="conflict-score"></div></div><div class="timer-container"><div id="timer-bar"></div></div></div><div id="score-line"><span id="score"></span></div><div id="session-progress"></div><div id="n-current"></div><div id="kbd-hint"></div></section>
+    <section id="mode-one-guide" class="mode-guide" aria-labelledby="mode-one-guide-title">
+      <header class="guide-header"><span class="guide-badge">Five choices each round</span><h2 id="mode-one-guide-title">Mode 1 — How to play</h2><p>Make a little map in your mind. Remember an old round. Then answer five questions.</p></header>
+      <div class="guide-body">
+        <section class="guide-part">
+          <h3>1. Start small</h3>
+          <p>Choose <strong>Mode 1</strong>, <strong>1-back</strong> and <strong>4 compass directions</strong>. Try a short session, such as 3 minutes. Leave <strong>Audio-only display</strong> off so you can see the words. Read this guide, then press <strong>Start</strong>.</p>
+          <div class="guide-columns"><div><p>Each round has <strong>three lines</strong>, also called <strong>statements</strong>. The first two are clues. The last line makes a claim.</p><p>Think of the letters as name tags on a map. “A is north of B” means <strong>A is above B</strong>.</p></div><div class="guide-card"><div class="guide-compass" role="img" aria-label="Compass: north is up, east is right, south is down, west is left."><span class="guide-north">North<br>↑ Up</span><span class="guide-west">West<br>← Left</span><span class="guide-centre" aria-hidden="true">●</span><span class="guide-east">East<br>Right →</span><span class="guide-south">↓ Down<br>South</span></div></div></div>
+          <p>Later, 8 directions add corners such as <strong>northeast: up and right</strong>. With 16, there are more directions between those. Use the exact direction shown.</p>
+        </section>
+        <section class="guide-part">
+          <h3>2. Pick the right old round</h3>
+          <p><strong>N-back tells you how far to look back.</strong> Count whole rounds, not the lines inside them. During play, the old round is not shown beside the new one. Keep it in your memory.</p>
+          <div class="guide-memory"><p><strong>1-back</strong>The round just before this one.</p><p><strong>2-back</strong>Two rounds ago.</p><p><strong>3-back</strong>Three rounds ago.</p></div>
+          <p>At <strong>2-back</strong>, round 3 goes with round 1. Then round 4 goes with round 2. Remember the newest round too: you will need it later.</p>
+        </section>
+        <section class="guide-part">
+          <h3>3. Keep one set of name tags</h3>
+          <p>The letters may change. Old <strong>C</strong> might become new <strong>X</strong>. That is fine! But C must mean X in <strong>every line</strong> of this comparison. Two old letters cannot share one new name.</p>
+          <p>Use one set of name changes that makes <strong>as many lines match as possible</strong>. Do not pick a different set for each line.</p>
+          <ul><li>The first two clues may swap places.</li><li>The last line must match the <strong>old last line</strong>.</li><li><strong>“A is north of B” = “B is south of A.”</strong> Saying it backward is okay only when the direction flips too.</li></ul>
+          <p>Remember the pattern of directions, not just the letters you see.</p>
+        </section>
+        <section class="guide-part">
+          <h3>4. Give all five answers</h3>
+          <p>The buttons show letters. <strong>Tap the button</strong>, or press its key if <strong>Keyboard controls</strong> is on.</p>
+          <table class="guide-five"><caption>Your five questions and buttons</caption><thead><tr><th scope="col">Question</th><th scope="col">Yes</th><th scope="col">No</th></tr></thead><tbody>
+            <tr><th scope="row">1. Does line 1 match one of the old first two clues?</th><td><kbd>A</kbd></td><td><kbd>S</kbd></td></tr>
+            <tr><th scope="row">2. Does line 2 match the other old clue, using the same name changes?</th><td><kbd>D</kbd></td><td><kbd>F</kbd></td></tr>
+            <tr><th scope="row">3. Does line 3 match the old last line?</th><td><kbd>H</kbd></td><td><kbd>J</kbd></td></tr>
+            <tr><th scope="row">4. Do both clues prove line 3’s direction between the two end letters?<br>This is “entailed”.</th><td><kbd>K</kbd></td><td><kbd>L</kbd></td></tr>
+            <tr><th scope="row">5. Do all three lines match the old round together?<br>This is the “complete triad”.</th><td><kbd>Space</kbd></td><td><kbd>N</kbd></td></tr>
+          </tbody></table>
+          <div class="guide-note"><p><strong>Question 4 is different.</strong> Use only the two clues on the screen now. Follow both clues from one end of the chain to the other. If they link A with B, then B with C, the two ends are <strong>A and C</strong>.</p><p>The last line must give the correct direction between those <strong>two end letters</strong>. Repeating just one clue is not enough. If the last line uses the wrong pair, is wrong, or is not proved by the clues, choose <kbd>L</kbd>.</p></div>
+          <p>Each answer locks in as soon as you choose it. You get feedback straight away. Finish <strong>all five</strong>; the next round then starts by itself.</p>
+        </section>
+        <section class="guide-part">
+          <h3>5. Let’s solve one together</h3>
+          <p>Imagine this old round is the one you need to remember.</p>
+          <div class="guide-columns"><div class="guide-card"><h4>The old round</h4><ol><li>A is north of B.</li><li>B is north of C.</li><li>A is north of C.</li></ol></div><div class="guide-card guide-now"><h4>The round on screen now</h4><ol><li>A is north of B.</li><li>B is north of X.</li><li>A is <strong>south</strong> of X.</li></ol></div></div>
+          <p><strong>Our name key:</strong> A stays A. B stays B. C becomes X.</p>
+          <ol><li>Line 1 matches. Choose <strong>Yes: <kbd>A</kbd></strong>.</li><li>Line 2 matches after C becomes X. Choose <strong>Yes: <kbd>D</kbd></strong>.</li><li>Line 3 changed from north to south. Choose <strong>No: <kbd>J</kbd></strong>.</li><li>Start at X. Go up to B, then up again to A. A is <strong>north</strong> of X, so the last line is wrong. Choose <strong>No: <kbd>L</kbd></strong>.</li><li>Only two lines match. The whole round does not. Choose <strong>No: <kbd>N</kbd></strong>.</li></ol>
+          <p class="guide-answer"><strong>All five answers: A, D, J, L, N.</strong></p>
+          <div class="guide-note"><p><strong>“Same as before” does not mean “true”.</strong> Suppose the old last line also said “A is south of C”. Both rounds would now have the same wrong claim. The whole round would match, but the claim would still not follow from the clues. You would choose <kbd>L</kbd> for question 4 and <kbd>Space</kbd> for question 5.</p></div>
+        </section>
+        <section class="guide-part">
+          <h3>6. What about the first few rounds?</h3>
+          <div class="guide-note guide-warmup"><p>During the <strong>first N rounds</strong>, there is no old target yet. At 1-back, that means round 1. At 2-back, it means rounds 1 and 2.</p><p>Choose <kbd>S</kbd>, <kbd>F</kbd>, <kbd>J</kbd> and <kbd>N</kbd> for the four memory questions. Still check today’s clues and choose <kbd>K</kbd> or <kbd>L</kbd> for question 4.</p><p><strong>These answers count. You must finish all five even on the first round.</strong></p></div>
+        </section>
+        <section class="guide-part">
+          <h3>7. Take your time and learn</h3>
+          <p>There is no timer for each answer, but the <strong>session clock keeps running</strong>. <strong>Pause</strong> takes a break; <strong>Stop</strong> ends the session. With keyboard controls on, <kbd>P</kbd> pauses or resumes and <kbd>Esc</kbd> stops.</p>
+          <p>A round is fully correct only when all five answers are right. Two matching lines do not make a whole match. Close-looking rounds are part of the game.</p>
+          <p>Want an easier start? Keep 1-back and 4 directions. The <strong>Cognitive interference</strong> setting is fixed; it cannot be lowered. Stop before changing your mode, N-back level or compass directions.</p>
+        </section>
+        <div class="guide-checklist"><strong>Your tiny checklist</strong><p>Right old round? → One name key? → Three line checks? → Is today’s claim proved? → Does the whole round match?</p><a class="guide-back" href="#logic-mode">Back to game settings ↑</a></div>
+      </div>
+    </section>
+    <section id="mode-two-guide" class="mode-guide" aria-labelledby="mode-two-guide-title">
+      <header class="guide-header"><span class="guide-badge">One choice each round</span><h2 id="mode-two-guide-title">Mode 2 — How to play</h2><p>Look past the extra words. Do all three map lines repeat the pattern from the right old round?</p></header>
+      <div class="guide-body">
+        <section class="guide-part">
+          <h3>1. Start small</h3>
+          <p>Choose <strong>Mode 2</strong>, <strong>1-back</strong> and <strong>4 compass directions</strong>. Try a short session, such as 3 minutes. Leave <strong>Audio-only display</strong> off so you can see the words. Read this guide, then press <strong>Start</strong>.</p>
+          <div class="guide-columns"><div><p>Each round has <strong>three lines</strong>. The first two are clues. The last is a claim. The game calls the group of three a <strong>triad</strong>.</p><p>Think of letters as name tags on a map. “A is north of B” means <strong>A is above B</strong>.</p></div><div class="guide-card"><div class="guide-compass" role="img" aria-label="Compass: north is up, east is right, south is down, west is left."><span class="guide-north">North<br>↑ Up</span><span class="guide-west">West<br>← Left</span><span class="guide-centre" aria-hidden="true">●</span><span class="guide-east">East<br>Right →</span><span class="guide-south">↓ Down<br>South</span></div></div></div>
+          <p>Eight directions add corners such as northeast: up and right. Sixteen add more directions between those. <strong>A nearby direction is not the same direction.</strong></p>
+        </section>
+        <section class="guide-part">
+          <h3>2. Remember the right round</h3>
+          <p><strong>N-back tells you how far to look back.</strong> Count whole rounds, not lines. During play, the old round is not shown beside the new one. Keep it in your memory.</p>
+          <div class="guide-memory"><p><strong>1-back</strong>The round just before this one.</p><p><strong>2-back</strong>Two rounds ago.</p><p><strong>3-back</strong>Three rounds ago.</p></div>
+          <p>At <strong>2-back</strong>, compare round 3 with round 1. Then compare round 4 with round 2. Keep remembering each new round for later.</p>
+          <div class="guide-note guide-warmup"><p><strong>The first N rounds are for watching and remembering.</strong> At 1-back, watch round 1. At 2-back, watch rounds 1 and 2.</p><p>Do not answer these setup rounds. The buttons stay off, the game moves on by itself, and these rounds <strong>do not count toward your score</strong>.</p></div>
+        </section>
+        <section class="guide-part">
+          <h3>3. Find the little map clues</h3>
+          <div class="guide-card"><p>You might see: <span class="guide-extra-label">Inner Completion</span> <strong>A is north of B.</strong></p><p>For your answer, focus on: <strong>A is north of B.</strong></p></div>
+          <p><strong>Inner, Outer, Completion, Multiplication</strong> and the other extra words are labels. They do not change whether you should press Match. You do not need to multiply or divide anything.</p>
+          <p>The letters may change too. Make <strong>one name key for all three lines</strong>. If old A becomes new X, keep using X for A everywhere. Give each old letter its own new name.</p>
+        </section>
+        <section class="guide-part">
+          <h3>4. Try a matching round</h3>
+          <p>Imagine the old round below is exactly N rounds back.</p>
+          <div class="guide-columns"><div class="guide-card"><h4>The old round</h4><ol><li><span class="guide-extra-label">Inner Completion</span> <strong>A is north of B.</strong></li><li><span class="guide-extra-label">Outer Multiplication</span> <strong>B is north of C.</strong></li><li><span class="guide-extra-label">Difference</span> <strong>A is north of C.</strong></li></ol></div><div class="guide-card guide-now"><h4>The round on screen now</h4><ol><li><span class="guide-extra-label">Outer Division</span> <strong>X is north of Y.</strong></li><li><span class="guide-extra-label">Inner Action</span> <strong>Y is north of Z.</strong></li><li><span class="guide-extra-label">Connection</span> <strong>X is north of Z.</strong></li></ol></div></div>
+          <p><strong>Our name key:</strong> A becomes X. B becomes Y. C becomes Z.</p>
+          <p>All three lines keep the same pattern. The labels changed, but the answer did not.</p>
+          <p class="guide-answer"><strong>Choose Match.</strong></p>
+          <div class="guide-note"><p><strong>Now change only the new last line:</strong> “Connection X is <strong>east</strong> of Z.”</p><p>That direction used to be north. The whole pattern no longer matches. <strong>Choose No Match.</strong> Two matching lines are not enough.</p></div>
+        </section>
+        <section class="guide-part">
+          <h3>5. Watch for a different way of saying it</h3>
+          <ul><li>The first two clues may swap places.</li><li><strong>“A is north of B” = “B is south of A.”</strong> Both describe the same map. The direction must flip when the names swap ends.</li><li>The last line must still match the <strong>old last line</strong>. You cannot swap it with one of the first two clues.</li><li>All three lines must work with the <strong>same name key</strong>.</li></ul>
+          <div class="guide-note"><p><strong>You are checking memory, not proving the last line.</strong> A wrong claim can be repeated exactly. If the whole three-line pattern repeats, choose Match even if that last claim is not proved by the first two clues.</p></div>
+        </section>
+        <section class="guide-part">
+          <h3>6. Give just one answer</h3>
+          <p>Wait until the speech finishes and the answer buttons become available.</p>
+          <div class="guide-columns"><div class="guide-card guide-now"><h4>Match</h4><p>All three lines match the right old round together.</p><p>Tap <strong>Match</strong>.<br>Keyboard: <kbd>F</kbd> or <kbd>J</kbd>.</p></div><div class="guide-card"><h4>No Match</h4><p>The whole pattern does not match. Even one map link that does not fit means No Match.</p><p>Tap <strong>No Match</strong>.<br>Keyboard: <kbd>D</kbd> or <kbd>K</kbd>.</p></div></div>
+          <p>Keys work when <strong>Keyboard controls</strong> is on. After your answer, the game shows feedback and moves to the next round.</p>
+          <p>There is no timer for each answer, but the <strong>session clock keeps running</strong>. <strong>Pause</strong> takes a break; <strong>Stop</strong> ends the session. With keyboard controls on, <kbd>P</kbd> pauses or resumes and <kbd>Esc</kbd> stops.</p>
+          <p>Close-looking rounds are part of the game. <strong>Cognitive interference</strong> is fixed. To make learning easier, stay at 1-back and 4 directions. Stop before changing your mode, N-back level or compass directions.</p>
+        </section>
+        <div class="guide-checklist"><strong>Your tiny checklist</strong><p>Right old round? → Ignore extra labels. → One name key? → All three lines match together? → Match or No Match.</p><a class="guide-back" href="#logic-mode">Back to game settings ↑</a></div>
+      </div>
+    </section>
   </main>
   <div id="paused-overlay" aria-live="assertive"><h2>PAUSED</h2><p>Tap anywhere or press P to continue.</p></div>
   <section id="tutorial" class="modal" role="dialog" aria-modal="true" aria-labelledby="tutorial-title"><div class="modal-inner"><button class="modal-close" data-close="tutorial" aria-label="Close tutorial">×</button><h2 id="tutorial-title">How to Train</h2><h3>Mode 1 — Relational Conflict Matrix</h3><p>Choose 4, 8 or 16 compass directions before starting Mode 1. Four uses the cardinal directions, eight adds the diagonals, and sixteen adds the intermediate directions. Finer resolution increases directional precision. Cognitive interference changes lure difficulty independently of compass resolution.</p><p><strong>Response Window (seconds per trial) has been removed.</strong> Each trial remains available until all five relevant decisions are entered. Because each trial requires several inputs, a fixed deadline could corrupt the training by mixing relational reasoning with externally imposed speed pressure. Immediate feedback after each input lets each user coordinate speed with their own processing rate, judge whether to speed up or slow down, and complete the full decision set without being rushed. The overall session-length control still determines when the session ends.</p><p>Answer five questions on every trial: whether each of the three statements matches a statement in the trial N positions earlier, whether Statement 3 is logically entailed by Statements 1 and 2, and whether the complete three-statement structure matches. Statement matches require one globally consistent mapping of letters and one-to-one statement assignment. Reversed wording counts only when the compass direction is inverted correctly. A single or partial match never makes the whole triad a match.</p><p>At high cognitive-interference settings, non-match trials are deliberately constructed as close structural lures: one or two statements may match the N-back target while a precise direction, role assignment or entailment relation prevents the complete triad from matching. At maximum, the generator strongly favours two-of-three statement near-misses across 4-, 8- and 16-direction sessions.</p><p>Keyboard mapping: Statement 1 A/S, Statement 2 D/F, Statement 3 H/J, within-trial entailment K/L, and complete-triad N-back Spacebar/N. In every pair, the left key is the positive response and the right key is the negative response. G is deliberately unused.</p><p>Best regards to all persons who helped with Brain Workshop.</p><h3>Mode 2 — Ontological Integration</h3><p>Mode 2 also requires 4, 8 or 16 compass directions. Compare the complete triad with the trial exactly N positions earlier; its first N trials are unscored setup trials. Responses are self-paced.</p><button id="dismiss-tutorial" class="small-btn" type="button">Close</button></div></section>
