@@ -112,6 +112,8 @@ History and preferences use browser storage on the current site and device. They
 
 Open **Research & Evidence** at the top right of the training page, or visit [the research hub](research.html). It maps individual Mode 1, Mode 2, ordered N-back and Da Vinci features to named research sources. Search by author or skill and filter by mode or evidence type. Selecting a source in the feature map clears filters and reveals its full study card.
 
+The collection includes distant-analogy generation, relational category learning, spatial-to-verbal transfer, self-explanation, structured manipulation, item–context binding, interference and distributed practice. Three worked practice examples show how to apply these connections while preserving each mode's scoring rules. The feature map separates intervention findings, immediate task effects, mechanism evidence and proposed applications.
+
 Every card distinguishes the reported finding, its connection to training and the limits of that connection. The custom nine-category taxonomy, multiple-facet and nested-world variations, and inner-world output rule are explicitly identified as proposed extensions rather than validated interventions. Sources are maintained in `research-relational-evidence.json` and `research-nback-evidence.json`; the page loads both collections independently and offers a retry if one is unavailable.
 
 ## Development and validation

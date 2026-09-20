@@ -276,6 +276,322 @@
       "feature": "After a response, review the correct relationship and identify the misleading alternative, especially when lures look almost right.",
       "positiveFinding": "Both immediate and delayed corrective feedback improved later recall and reduced intrusion of incorrect multiple-choice alternatives compared with testing without feedback. Feedback can therefore help practice strengthen correct knowledge while preventing attractive errors from being rehearsed.",
       "limitation": "This was factual learning, not intelligence training. Its strongest application here is to explanatory correction, beyond a correct/incorrect signal alone."
+    },
+    {
+      "id": "goldwater2015",
+      "title": "On the acquisition of abstract knowledge: Structural alignment and explication in learning causal system categories",
+      "authors": "Goldwater, M. B., & Gentner, D.",
+      "year": 2015,
+      "url": "https://www.sciencedirect.com/science/article/pii/S0010027714002698",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "Explain a concrete world, then explicitly map its roles and relations onto a different domain. Use a category to express a repeatable system pattern rather than merely memorizing its name.",
+      "positiveFinding": "Explaining individual examples improved their representation; comparing analogous examples improved recognition of causal patterns across new domains. Combining explanation with explicit correspondence mapping produced the strongest generalization. This is a close positive precedent for the explanation-and-transfer steps of Da Vinci practice.",
+      "limitation": "The outcomes concerned recognizing causal system categories such as common cause and feedback. The app's nine ontology categories and spatial directions are different; they do not establish causation by themselves."
+    },
+    {
+      "id": "goldwater2016",
+      "title": "Learning of role-governed and thematic categories",
+      "authors": "Goldwater, M. B., Bainbridge, R., & Murphy, G. L.",
+      "year": 2016,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26796790/",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "Identify what an entity does within a relationship. For example, distinguish a connecting hub from a connected endpoint, then embody that role with different objects while retaining the game's category definitions.",
+      "positiveFinding": "Across five experiments using short action films, people formed categories around shared roles even with few perceptual or linguistic cues. Comparison helped them recognize more abstract roles across different actions that they had not grouped together spontaneously.",
+      "limitation": "This demonstrates relational category learning, not intelligence gains. Reading or matching category words alone does not reproduce the comparison and role interpretation used in these experiments."
+    },
+    {
+      "id": "goldwater2018",
+      "title": "Relational discovery in category learning",
+      "authors": "Goldwater, M. B., Don, H. J., Krusche, M. J. F., & Livesey, E. J.",
+      "year": 2018,
+      "url": "https://worthylab.org/wp-content/uploads/2021/08/goldwater_etal2018_relationaldiscovery_jepg.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Actively infer the missing relationship before checking it. In a practice break, reconstruct the endpoint direction and explain the pattern that stays fixed when the imagined domain changes.",
+      "positiveFinding": "Experiments separated surface features from the relations defining artificial categories. Learning by inferring missing parts helped learners discover the relational rule and apply it to perceptually different examples, including learners not initially inclined to discover rules.",
+      "limitation": "The transfer phase included corrective feedback, so the result also concerns preparation for further learning. Benefits of other task manipulations depended on learners' strategies; this was not a test of broad intelligence change."
+    },
+    {
+      "id": "vendetti2014",
+      "title": "Far-Out Thinking: Generating Solutions to Distant Analogies Promotes Relational Thinking",
+      "authors": "Vendetti, M. S., Wu, A., & Holyoak, K. J.",
+      "year": 2014,
+      "url": "https://journals.sagepub.com/doi/10.1177/0956797613518079",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Actively generate a structurally correct analogy in a different domain, then return to the exact entity-to-role mapping. Producing the correspondence is a more specific exercise than merely recognizing a supplied story.",
+      "positiveFinding": "Generating solutions to distant verbal analogies increased relational choices on a later, unrelated picture-mapping task, even after accounting for fluid intelligence and response time. Evaluating supplied analogies and solving near analogies did not produce the same transfer. This closely supports the generative, cross-domain part of the Da Vinci method.",
+      "limitation": "The outcome was a short-term shift toward relational mapping. The study did not show a lasting intelligence gain or test ontology labels, nested worlds or n-back memory."
+    },
+    {
+      "id": "du2022",
+      "title": "Generating distant analogies facilitates relational integration: Intermediary role of relational mindset and cognitive load",
+      "authors": "Du, X., & Sun, P.",
+      "year": 2022,
+      "url": "https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2022.1012081/full",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Use a brief, actively constructed distant analogy before integrating several premises. In the practice break, say which objects correspond and why their relationships match before solving the combined world.",
+      "positiveFinding": "Laboratory experiments connected distant-analogy generation with better subsequent relational integration. Benefits included higher scores than near-analogy generation on premise-integration and Latin-square tasks, and higher multidimensional reasoning scores than analogy evaluation. In a statistics-learning experiment, the generation group responded faster and showed better concept mastery without a significant accuracy difference.",
+      "limitation": "The two initial tasks did not show significant generation advantages over their control groups in the reported overall comparisons. These are immediate priming and learning effects; persistence, the mediation mechanism and this app's combined training remain open questions."
+    },
+    {
+      "id": "du2026",
+      "title": "Effects of generating versus evaluating distant analogies on subsequent relational integration: mediating and moderating mechanisms",
+      "authors": "Du, X., & Sun, P.",
+      "year": 2026,
+      "url": "https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2026.1902439/full",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "A second close precedent for generating a distant analogy before a demanding relationship problem: build the mapping yourself, then test the world using its actual premises.",
+      "positiveFinding": "In a randomized study of 120 Chinese college students, the analogy-generation group outperformed the analogy-evaluation group on a subsequent multidimensional relational reasoning task. The generation group also reported lower cognitive load. The advantage was more evident among participants with lower measured working-memory capacity.",
+      "limitation": "Published in August 2026 by the same authors as the 2022 study. This is an immediate effect with an active comparison, not a longitudinal training trial or evidence of increased fluid intelligence. Cognitive-load mediation used self-reports and remains a proposed explanation."
+    },
+    {
+      "id": "george2025",
+      "title": "Generating distant analogies increases metaphor production",
+      "authors": "George, T., Christofalos, A. L., & Pambuccian, F. S.",
+      "year": 2025,
+      "url": "https://link.springer.com/article/10.3758/s13423-024-02628-8",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "Invent a compact metaphor that preserves several relevant features of a world. Explain the shared relations so that a creative label does real representational work.",
+      "positiveFinding": "After solving cross-domain rather than within-domain analogies, participants more often used metaphors to summarize new topics. Metaphors were also more frequent when the topic supplied several features to integrate. The result provides an additional bridge from distant analogy to flexible, abstract expression.",
+      "limitation": "The outcome was metaphor production, not a fluid-intelligence score or a test of the correctness of every generated analogy. Creativity still needs the app's separate structural checks."
+    },
+    {
+      "id": "gick1983",
+      "title": "Schema induction and analogical transfer",
+      "authors": "Gick, M. L., & Holyoak, K. J.",
+      "year": 1983,
+      "url": "https://www.sciencedirect.com/science/article/pii/0010028583900026",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Compare two concrete worlds with the same organization and state their common rule. Preserve one consistent mapping when names, wording and imagined domains change.",
+      "positiveFinding": "Learners who described similarities between two analogous stories often extracted a general solution structure that supported transfer to a different problem. The quality of that extracted structure predicted transfer. Verbal principles and diagrams became useful supports when paired with two examples, even though they had achieved little with only one.",
+      "limitation": "The experiments concerned transfer of a particular problem-solving schema. Repeatedly changing a story's surface without comparing its underlying relations does not reproduce this learning procedure."
+    },
+    {
+      "id": "bisra2018",
+      "title": "Inducing Self-Explanation: a Meta-Analysis",
+      "authors": "Bisra, K., Liu, Q., Nesbit, J. C., Salimi, F., & Winne, P. H.",
+      "year": 2018,
+      "url": "https://link.springer.com/article/10.1007/s10648-018-9434-x",
+      "evidenceType": "meta-analysis",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Explain why a conclusion follows, which endpoint carries each aspect, and why a tempting alternative fails. Use the guide or practice feedback to check the explanation rather than merely repeating the answer.",
+      "positiveFinding": "Across 64 research reports contributing 69 effect sizes, prompts to explain causal or conceptual relationships improved learning with a weighted mean effect of g = 0.55. Benefits across instructional conditions support making explanatory reasoning an active part of practice.",
+      "limitation": "This average describes learning outcomes from varied instructional studies, not an expected effect on IQ or on this app. The content and support of an explanation prompt matter."
+    },
+    {
+      "id": "li2024global",
+      "title": "Forests or trees? The effect of generating solutions to distant analogies on global–local processing",
+      "authors": "Li, J., Shi, K., Cui, T., Gao, J., & Wei, X.",
+      "year": 2024,
+      "url": "https://link.springer.com/article/10.1007/s00426-023-01897-7",
+      "evidenceType": "experiment",
+      "relevance": "proposed extension",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "Consider the organization of the whole world as well as its individual endpoint details. A proposed practice extension is to describe the overall pattern first, then verify every local binding.",
+      "positiveFinding": "In two experiments, generating distant rather than near analogies increased global-pattern choices on the Kimchi–Palmer task and accelerated responses to global letters on the Navon task. This suggests that distant-analogy work can influence how later visual information is organized.",
+      "limitation": "Global visual processing is different from coordinating nested semantic worlds, and a global preference is not always better than attention to detail. The paper was published online in 2023 and appeared in a 2024 issue."
+    },
+    {
+      "id": "mccaffrey2012",
+      "title": "Innovation Relies on the Obscure: A Key to Overcoming the Classic Problem of Functional Fixedness",
+      "authors": "McCaffrey, T.",
+      "year": 2012,
+      "url": "https://journals.sagepub.com/doi/10.1177/0956797611429580",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode2",
+        "method"
+      ],
+      "feature": "When imagining a new embodiment, look beyond an object's familiar name or use. Consider its parts and relevant properties so the same entity can play a different, explicitly justified role.",
+      "positiveFinding": "Training in a generic-parts technique helped participants notice overlooked features and solve more insight problems than a control group. The finding supplies a concrete positive precedent for deliberately changing an object's representation to overcome functional fixedness.",
+      "limitation": "The tested strategy addressed object-use insight problems. Merely assigning two ontology descriptors to a letter does not itself implement this technique or establish general intelligence transfer."
+    },
+    {
+      "id": "uttal2013-spatial-training",
+      "title": "The malleability of spatial skills: A meta-analysis of training studies",
+      "authors": "Uttal, D. H., Meadow, N. G., Tipton, E., Hand, L. L., Alden, A. R., Warren, C., & Newcombe, N. S.",
+      "year": 2013,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/22663761/",
+      "evidenceType": "meta-analysis",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Build a spatial model of the premises, preserve relative positions when letters change, and compare layouts. The cross-domain method can use this spatial scaffold to make a relation explicit.",
+      "positiveFinding": "Across 217 studies, spatial training improved spatial skills relative to controls; the average effect after removing outliers was g = 0.47. Benefits transferred to spatial tasks that had not been directly practiced, and the authors found no reduction associated with the studied delays before testing. This is substantial evidence that spatial reasoning skills can improve with experience.",
+      "limitation": "The synthesis covers varied spatial interventions. Transfer to other spatial tasks is not equivalent to general fluid-intelligence transfer, and its average effect cannot be assigned to these modes."
+    },
+    {
+      "id": "cortes2022-spatial-verbal-transfer",
+      "title": "Transfer from spatial education to verbal reasoning and prediction of transfer from learning-related neural change",
+      "authors": "Cortes, R. A., Peterson, E. G., Kraemer, D. J. M., Kolvoord, R. A., Uttal, D. H., Dinh, N., Weinberger, A. B., Daker, R. J., Lyons, I. M., Goldman, D., & Green, A. E.",
+      "year": 2022,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35947663/",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Use spatial relationships as a reusable representation for reasoning, including relations expressed with nonspatial words. This offers a bridge between compass-based worlds and reasoning about systems in other domains.",
+      "positiveFinding": "A school-year geospatial curriculum was associated with greater improvement in verbal deductive reasoning than a matched comparison group. Transfer included problems with nonspatial relations, such as better/worse. Improvements in spatial cognition statistically predicted and mediated reasoning gains; longitudinal brain measures supplied converging evidence for a spatial route to this transfer.",
+      "limitation": "This was a quasi-experiment in high-school classrooms, not random assignment. It tested extensive geographical-data education, not a short compass game, category-binding drill or general IQ increase."
+    },
+    {
+      "id": "cortes2023-mental-models-training",
+      "title": "The Mental Models Training App: Enhancing verbal reasoning through a cognitive training mobile application",
+      "authors": "Cortes, R. A., Weinberger, A. B., & Green, A. E.",
+      "year": 2023,
+      "url": "https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2023.1150210/full",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2"
+      ],
+      "feature": "Repeatedly combine verbal premises, judge the derived conclusion, and increase challenge while checking answers. Its spatial-modeling tool also resembles drawing a world to learn the rules before doing the reasoning mentally.",
+      "positiveFinding": "In a preregistered randomized study with 301 analyzed adults, app-based reasoning practice improved immediate deductive-reasoning accuracy and response time compared with no intervention. During training, an external spatial-modeling tool helped participants pass difficult three-premise problems in fewer attempts. This is a close positive precedent for practicing the modes' inference component.",
+      "limitation": "The modeling app did not outperform active reasoning-practice controls on the posttest. The study tested one session and immediate outcomes, so it supports reasoning practice without establishing an additional visualization benefit, lasting gains or transfer to general intelligence."
+    },
+    {
+      "id": "cortes2021-mrrt",
+      "title": "What Makes Mental Modeling Difficult? Normative Data for the Multidimensional Relational Reasoning Task",
+      "authors": "Cortes, R. A., Weinberger, A. B., Colaizzi, G. A., Porter, G. F., Dyke, E. L., Keaton, H. O., Walker, D. L., & Green, A. E.",
+      "year": 2021,
+      "url": "https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.668256/full",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2"
+      ],
+      "feature": "Distinguish genuine reasoning demands—integrating premises and coordinating more than one spatial axis—from extra wording. Use this distinction when comparing 4-, 8- and 16-direction settings or adding nested structures.",
+      "positiveFinding": "In 310 adults, systematically varying relational problems showed that additional premises and multidimensional relations made reasoning more difficult. The authors released the problems and normative data, providing a useful empirical benchmark for identifying which parts of a task demand more relational processing.",
+      "limitation": "This is task-design evidence, not a training-benefit trial: harder does not automatically mean more effective. The study did not compare this game's direction resolutions, N-back delays or equal-step vector convention."
+    },
+    {
+      "id": "krawczyk2011-relational-hierarchy",
+      "title": "A hierarchy for relational reasoning in the prefrontal cortex",
+      "authors": "Krawczyk, D. C., McClelland, M. M., & Donovan, C. M.",
+      "year": 2011,
+      "url": "https://pubmed.ncbi.nlm.nih.gov/20537619/",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Coordinate several relationships into one structure and compare that structure across formats. In Mode 2, nested worlds add relations between whole substructures; cross-domain imagination changes the objects while retaining relational organization.",
+      "positiveFinding": "An fMRI experiment compared visuospatial reasoning and verbal analogies within one study. Integrating more visuospatial relations recruited progressively anterior prefrontal regions, and analogical reasoning recruited overlapping regions more strongly than semantic and perceptual controls. This supplies converging mechanism evidence that different-looking reasoning tasks can share relational-integration processes.",
+      "limitation": "Shared brain recruitment is not evidence of training transfer or increased intelligence. The study did not test nested ontology worlds, and their mapping to its integration demands is an experimental extension."
+    },
+    {
+      "id": "kroger2022-structured-manipulation",
+      "title": "Frontopolar Cortex Specializes for Manipulation of Structured Information",
+      "authors": "Kroger, J., & Kim, C.",
+      "year": 2022,
+      "url": "https://www.frontiersin.org/journals/systems-neuroscience/articles/10.3389/fnsys.2022.788395/full",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Keep each property attached to its correct entity, then deliberately transform the structured model. This relates to Mode 2's endpoint bindings and practice question that changes premise directions while retaining the entities and descriptors.",
+      "positiveFinding": "The article reports an fMRI experiment with 15 adults that separated maintaining bound information from changing it. Manipulating letters whose identities, colors and locations were linked recruited frontopolar cortex more than maintaining a larger bound set. The result supports treating structured transformation as a distinct cognitive demand rather than merely adding more items to remember.",
+      "limitation": "This small mechanism experiment was not a training intervention. Brain activation does not measure benefit, and colors/locations are not equivalent to the game's semantic ontology categories."
+    },
+    {
+      "id": "andrews2019-belief-transitive",
+      "title": "Solving distant analogies reduces belief-based responding in transitive inference",
+      "authors": "Andrews, G., & Vann, D. M.",
+      "year": 2019,
+      "url": "https://www.tandfonline.com/doi/full/10.1080/20445911.2019.1657432",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Follow the given relationships even when familiar meanings suggest a different answer. Cross-domain comparison can serve as a cue to check structure; in Mode 2, an evocative category name must stay attached to the exact endpoint specified by the problem.",
+      "positiveFinding": "After generating solutions to distant rather than near analogies, participants showed less belief-based responding on subsequent transitive-inference problems. The authors reported elimination of the observed belief-based response pattern and better relational responding when a valid conclusion conflicted with familiar real-world beliefs. This connects cross-domain analogy with resisting a specific reasoning lure.",
+      "limitation": "This was an immediate effect on a particular reasoning task, not evidence that repeated play permanently reduces bias. General inhibitory-control improvement was a possible interpretation, not an independently established training outcome."
+    },
+    {
+      "id": "knauff2002-visual-spatial",
+      "title": "Visual imagery can impede reasoning",
+      "authors": "Knauff, M., & Johnson-Laird, P. N.",
+      "year": 2002,
+      "url": "https://link.springer.com/article/10.3758/BF03194937",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Make an imagined scene's spatial relations easy to track. In cross-domain practice, choose images that preserve who relates to whom, the direction and the ordering; extra pictorial detail should support that structure.",
+      "positiveFinding": "Rating studies separated how easily a relation evokes a visual image from how easily it supports a spatial model. Across three reasoning experiments, spatial and visuospatial relations avoided the slowdown seen for relations that were vivid but difficult to organize spatially. This provides a concrete design lesson for imagination practice: clear relational structure matters more than vividness alone.",
+      "limitation": "Spatial and visuospatial relations performed comparably to controls, not better. This was not a training study and does not show that increasing imagery vividness or elaborating stories improves intelligence."
     }
   ]
 }

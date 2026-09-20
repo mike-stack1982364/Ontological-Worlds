@@ -9,7 +9,11 @@
       "url": "https://www.nature.com/articles/s41562-022-01384-w",
       "evidenceType": "experiment",
       "relevance": "component task",
-      "modes": ["mode1", "mode2", "nback"],
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
       "feature": "All modes require updating and retrieval at the exact N-back interval. This work motivates checking progress on unfamiliar updating tasks as well as on the practised game.",
       "positiveFinding": "Across three randomized trials involving 460 people, performance on an untrained N-back task statistically mediated transfer to matrix reasoning. The third trial also found an intervention effect on a working-memory composite.",
       "limitation": "Two of the three trials did not show an overall intervention effect on matrix reasoning. A mediation result does not mean every participant, or this game, gains intelligence. The publisher's corrected article is linked."
@@ -22,7 +26,10 @@
       "url": "https://www.nature.com/articles/s41598-021-82663-w",
       "evidenceType": "experiment",
       "relevance": "related paradigm",
-      "modes": ["nback", "method"],
+      "modes": [
+        "nback",
+        "method"
+      ],
       "feature": "Relevant to active memory updating and to distinguishing a mnemonic strategy from N-back practice. Spoken and displayed digits offer different presentations of the ordered task here.",
       "positiveFinding": "In a study of 148 young adults, dual N-back and method-of-loci groups improved on their trained tasks and digit span. The N-back group also showed faster responses on the highest-load change-detection condition; this was a response-speed result rather than a training-specific accuracy gain.",
       "limitation": "The outcomes were memory tasks, not a demonstrated general-intelligence gain. Dual audiovisual N-back differs from ordered digits, and method-of-loci training is not the same as the Da Vinci method."
@@ -35,7 +42,11 @@
       "url": "https://link.springer.com/article/10.3758/s13423-016-1217-0",
       "evidenceType": "meta-analysis",
       "relevance": "component task",
-      "modes": ["mode1", "mode2", "nback"],
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
       "feature": "Supports N-back as a trainable updating skill and the value of testing an unpractised N-back format. It helps distinguish better game performance from broader transfer.",
       "positiveFinding": "A synthesis of 33 randomized controlled studies found a medium-sized benefit on untrained N-back tasks. Smaller benefits appeared on other working-memory measures. The main analysis also found a small positive fluid-intelligence effect (g = 0.16); its significance depended on the analysis, as described below.",
       "limitation": "Transfer to fluid intelligence and cognitive control was very small; fluid-intelligence transfer was not significant after the reported control-group adjustment. Most transfer was specific to N-back-like tasks."
@@ -48,7 +59,11 @@
       "url": "https://link.springer.com/article/10.3758/s13423-014-0699-x",
       "evidenceType": "meta-analysis",
       "relevance": "component task",
-      "modes": ["mode1", "mode2", "nback"],
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
       "feature": "Provides a positive research rationale for exploring whether repeated N-back updating can support reasoning beyond the exact trained stimuli.",
       "positiveFinding": "Across 20 N-back training studies in healthy adults, the authors found a small, statistically significant average benefit on fluid-intelligence tests.",
       "limitation": "This pooled estimate is not a promised IQ increase. Study design and analysis choices matter, and later syntheses such as Soveri et al. found much stronger near transfer than far transfer. No included study tested Ontological Worlds."
@@ -61,7 +76,11 @@
       "url": "https://www.frontiersin.org/journals/human-neuroscience/articles/10.3389/fnhum.2012.00166/full",
       "evidenceType": "experiment",
       "relevance": "related paradigm",
-      "modes": ["mode1", "mode2", "nback"],
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
       "feature": "Relates to replacing old information, selecting the correct remembered trial and maintaining task rules despite competing stimuli. The studied task combined auditory letters and visual locations.",
       "positiveFinding": "After 14 sessions of dual N-back practice, young adults improved on a separate updating task, aspects of task switching and attentional processing.",
       "limitation": "This small study used a passive control group. It found no transfer to its reasoning measure or separate dual-task test. Its auditory and visual streams are not equivalent to the game's multiple ordered digits."
@@ -74,7 +93,9 @@
       "url": "https://www.pnas.org/doi/10.1073/pnas.1103228108",
       "evidenceType": "experiment",
       "relevance": "component task",
-      "modes": ["nback"],
+      "modes": [
+        "nback"
+      ],
       "feature": "Motivates attending to the quality of learning during adaptive practice, rather than assuming that completing sessions alone guarantees transfer.",
       "positiveFinding": "In children given game-like working-memory practice, those with substantial training improvement also improved on untrained reasoning tests relative to an active comparison group. The pattern remained at a three-month follow-up.",
       "limitation": "The positive result depended on training-gain subgroups rather than a universal benefit. It does not establish the best difficulty threshold, predict a particular user's outcome, or validate this ordered-digit task."
@@ -87,7 +108,11 @@
       "url": "https://www.frontiersin.org/journals/aging-neuroscience/articles/10.3389/fnagi.2010.00027/full",
       "evidenceType": "experiment",
       "relevance": "related paradigm",
-      "modes": ["mode1", "mode2", "nback"],
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
       "feature": "Supports evaluating progress across several different tasks and ability measures. Varied assessment is more informative than a single personal-best game score.",
       "positiveFinding": "Younger and older adults completed an extensive programme combining perceptual-speed, working-memory and episodic-memory practice. Positive transfer was found on untrained tests and on broader ability factors.",
       "limitation": "The programme involved more than 100 one-hour sessions and many tasks. It cannot show that short N-back sessions, one isolated component, or this particular game produce the same changes."
@@ -100,7 +125,11 @@
       "url": "https://pubmed.ncbi.nlm.nih.gov/18556560/",
       "evidenceType": "experiment",
       "relevance": "related paradigm",
-      "modes": ["mode1", "mode2", "nback"],
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
       "feature": "Relevant to the updating operation shared by the modes: keep the relevant information available, replace outdated information and retrieve from the correct temporal position.",
       "positiveFinding": "Five weeks of updating practice transferred to an untrained 3-back task. The trained and transfer tasks shared a training-related change in striatal activity.",
       "limitation": "Transfer did not extend to a task lacking the shared updating demand, and age-related differences constrained it. Shared brain activity is a mechanism clue, not proof of broad intelligence improvement."
@@ -113,10 +142,114 @@
       "url": "https://pubmed.ncbi.nlm.nih.gov/18443283/",
       "evidenceType": "experiment",
       "relevance": "component task",
-      "modes": ["nback"],
+      "modes": [
+        "nback"
+      ],
       "feature": "An early positive test of adaptive N-back practice using simultaneous auditory letters and visual positions. It motivates the possibility of updating-based transfer while preserving the need to test it independently.",
       "positiveFinding": "The authors reported gains on fluid-reasoning measures after dual N-back training, with larger reported gains in groups assigned more training.",
       "limitation": "This early finding does not settle the wider mixed literature or establish benefits for ordered digits. The game's spoken sequence and position rule differ from the dual audiovisual task used in the study."
+    },
+    {
+      "id": "kessler-2023-item-context",
+      "title": "Updating, Fast and Slow: Items, but Not Item-Context Bindings, are Quickly Updated Into Working Memory as Part of Response Selection",
+      "authors": "Yoav Kessler, Nitzan Zilberman & Shalva Kvitelashvili",
+      "year": 2023,
+      "url": "https://journalofcognition.org/articles/10.5334/joc.257",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
+      "feature": "Remember both the content and its place: which digit belongs in each ordered slot, which trial is N steps back, and which descriptor belongs to which entity or endpoint. These are bindings, not simply a bag of familiar items.",
+      "positiveFinding": "Experiments distinguished rapidly updating a single item from updating two items tied to different contexts. The latter incurred a response-time cost; the single-item updating benefit was replicated. This provides a precise mechanism rationale for practicing item-to-context associations, including the current-versus-previous roles required even in 1-back.",
+      "limitation": "This was a laboratory mechanism study, not a training intervention. It does not establish that increasing item count or ontology complexity produces greater intelligence gains. The extension from screen-position bindings to semantic endpoint roles is a design inference."
+    },
+    {
+      "id": "pappa-2020-updating-plasticity",
+      "title": "Working memory updating training promotes plasticity & behavioural gains: A systematic review & meta-analysis",
+      "authors": "Katerina Pappa, Viveka Biswas, Kristin E. Flegal, Jonathan J. Evans & Satu Baylan",
+      "year": 2020,
+      "url": "https://strathprints.strath.ac.uk/83154/1/Pappa_etal_NBR_2020_Working_memory_updating_training_promotes_plasticity.pdf",
+      "evidenceType": "meta-analysis",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
+      "feature": "All three areas repeatedly replace outdated information while retaining the relevant trial. This synthesis connects that updating practice to measurable learning, related-task transfer and neural plasticity.",
+      "positiveFinding": "A review of adult updating-training studies with brain imaging found large improvements on trained tasks. In the eligible neuroimaging-study subset, transfer to related tasks was moderate (Hedges' g = 0.63). The neural review found recurring decreases in frontoparietal task activity, consistent with changes in how practiced processing is implemented.",
+      "limitation": "Far transfer was small and not statistically significant (g = 0.15). Study quality was generally modest, and the synthesis selected studies with imaging. A brain-activity change is not itself an IQ increase or evidence that lower activity is always better."
+    },
+    {
+      "id": "ecker-2014-item-removal",
+      "title": "Working memory updating involves item-specific removal",
+      "authors": "Ullrich K. H. Ecker, Klaus Oberauer & Stephan Lewandowsky",
+      "year": 2014,
+      "url": "https://research-repository.uwa.edu.au/en/publications/working-memory-updating-involves-item-specific-removal/",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
+      "feature": "As the remembered sequence advances, retire the obsolete trial while retaining the trials still needed. In Mode 2, keep separate the operation of updating a remembered world and the operation of comparing its stable internal bindings.",
+      "positiveFinding": "Three experiments provided evidence for active removal of outdated working-memory information. Removal operated on particular items, and updating only part of a memory set involved switching between maintenance and updating. This identifies a useful control operation to practice: replacing what has become irrelevant without losing what remains relevant.",
+      "limitation": "The study tested how updating works, not whether a training course improves it. N-back advances a temporal sequence rather than using the study's exact partial-update procedure; training transfer is a proposed application."
+    },
+    {
+      "id": "wang-2014-spaced-training",
+      "title": "Spaced cognitive training promotes training transfer",
+      "authors": "Zuowei Wang, Renlai Zhou & Priti Shah",
+      "year": 2014,
+      "url": "https://www.frontiersin.org/journals/human-neuroscience/articles/10.3389/fnhum.2014.00217/full",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
+      "feature": "A rationale for returning to practice across days. The running-span task required continuously updating the latest three items and preserving their order, closely connecting scheduling to ordered-memory practice.",
+      "positiveFinding": "The researchers randomized 115 fifth-graders, with 95 included in analysis, to equal amounts of updating practice distributed over 2, 5, 10 or 20 days, or to extra mathematics instruction. The 20-day training group improved on Raven's matrices more than the active control. This supplies positive evidence that practice distribution can matter beyond total minutes.",
+      "limitation": "The 20-day advantage used a selected follow-up comparison and a one-tailed test; the overall spacing trend was marginal in a two-tailed test. Training groups also received rewards absent from the mathematics control. This does not establish an optimal adult schedule or how to space individual spoken digits."
+    },
+    {
+      "id": "vonbastian-2013-training-facets",
+      "title": "Distinct transfer effects of training different facets of working memory capacity",
+      "authors": "Claudia C. von Bastian & Klaus Oberauer",
+      "year": 2013,
+      "url": "https://www.psychologie.uzh.ch/dam/jcr:ffffffff-bd53-4653-0000-00003e720815/vonBastian_Oberauer_Distinct_transfer_effects.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
+      "feature": "The modes combine remembering with active processing, and Mode 2 also requires selecting the relevant level and role. This study motivates identifying those operations separately when examining what improves.",
+      "positiveFinding": "In a randomized study with an active perceptual-matching control and 121 analyzed adults, participants practiced one working-memory component for 20 sessions. Storage-plus-processing training improved reasoning, with some evidence of working-memory transfer; supervisory task-switching training transferred to switching and reasoning. Different practiced operations produced different patterns of benefit.",
+      "limitation": "The relational-integration group did not show comparable broad transfer. The study therefore supports specific storage/processing and control ingredients, rather than proving that all relational complexity helps. Its three-task training packages differ from the modes, and switching world scope is not identical to experimentally switching task rules."
+    },
+    {
+      "id": "szmalec-2011-context-interference",
+      "title": "Control of interference during working memory updating",
+      "authors": "Arnaud Szmalec, Frederick Verbruggen, André Vandierendonck & Eva Kemps",
+      "year": 2011,
+      "url": "https://doi.org/10.1037/a0020365",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback"
+      ],
+      "feature": "Reject a familiar item from the wrong trial or slot. In Mode 2, the analogous challenge is rejecting familiar category words when their endpoint attachments are wrong; in Mode 1, a familiar direction must still belong to the correctly aligned relation.",
+      "positiveFinding": "Four N-back experiments distinguished familiarity from recollection of an item's correct context. Even semantically related, previously unseen items could create interference. Encountering interference prompted immediate behavioral adjustments favoring context-sensitive recollection. This gives a concrete rationale for lures that require checking precise bindings instead of answering from familiarity alone.",
+      "limitation": "These were immediate task effects, not evidence of lasting training transfer. The study's temporal and semantic lures differ from the game's slot and ontology-role lures; more interference is not automatically better practice."
     }
   ]
 }

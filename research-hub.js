@@ -118,7 +118,7 @@
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 12000);
     try {
-      const response = await fetch(path + '?v=20260920-research-1', {signal: controller.signal});
+      const response = await fetch(path + '?v=20260920-research-2', {signal: controller.signal});
       if (!response.ok) throw new Error('Collection unavailable');
       const collection = await response.json();
       if (!collection || !Array.isArray(collection.studies) || !collection.studies.length || !collection.studies.every(validStudy)) throw new Error('Collection format unavailable');
