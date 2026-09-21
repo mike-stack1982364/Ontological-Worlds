@@ -550,6 +550,261 @@
       "feature": "Follow the given relationships even when familiar meanings suggest a different answer. Cross-domain comparison can serve as a cue to check structure; in Mode 2, an evocative category name must stay attached to the exact endpoint specified by the problem.",
       "positiveFinding": "After generating solutions to distant rather than near analogies, participants showed less belief-based responding on subsequent transitive-inference problems. The authors reported elimination of the observed belief-based response pattern and better relational responding when a valid conclusion conflicted with familiar real-world beliefs. This connects cross-domain analogy with resisting a specific reasoning lure.",
       "limitation": "An immediate effect on belief-sensitive transitive inference. A broader inhibitory-control explanation was proposed; the measured result concerned responding on that particular reasoning task."
+    },
+    {
+      "id": "kotovsky1996-progressive-alignment",
+      "title": "Comparison and Categorization in the Development of Relational Similarity",
+      "authors": "Kotovsky, L., & Gentner, D.",
+      "year": 1996,
+      "url": "https://groups.psych.northwestern.edu/gentner/papers/KotovskyGentner96.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Build a bridge toward distant analogies: first make the shared relationship clear in familiar examples, then preserve that relationship across increasingly different domains.",
+      "positiveFinding": "Across four developmental experiments, comparison and category learning helped children recognize abstract relational commonalities. Four-year-olds who successfully compared patterns within both size and colour dimensions subsequently recognized corresponding relations across those dimensions; practice confined to size comparisons offered less support. A further training study improved cross-dimensional matching after children learned the component comparisons.",
+      "limitation": "The learning studies involved small samples of four-year-olds and immediate pattern-matching outcomes. Successful alignment of the easier relations was an important condition for the benefit."
+    },
+    {
+      "id": "goldstone2005-concreteness-fading",
+      "title": "The Transfer of Scientific Principles Using Concrete and Idealized Simulations",
+      "authors": "Goldstone, R. L., & Son, J. Y.",
+      "year": 2005,
+      "url": "https://doi.org/10.1207/s15327809jls1401_4",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Use a vivid imagined example to understand the roles, then express its rule compactly before rebuilding it in a different domain: concrete example → relational rule → new example.",
+      "positiveFinding": "In two experiments with interactive scientific simulations, participants transferred understanding of the same competitive-specialization principle between different settings. Starting with concrete elements and then simplifying their appearance produced the best transfer, outperforming consistently concrete, consistently abstract and reverse-order presentations. Both changing-format conditions outperformed keeping one format throughout.",
+      "limitation": "The measured benefit concerned learning and transfer between two simulations with a shared scientific principle. Applying that progression to self-generated imagination is a practice-design inference."
+    },
+    {
+      "id": "kurtz2007-target-comparison",
+      "title": "Converging on a new role for analogy in problem solving and retrieval: When two problems are better than one",
+      "authors": "Kurtz, K. J., & Loewenstein, J.",
+      "year": 2007,
+      "url": "https://loewenstein.web.illinois.edu/papers/Kurtz%26Loewenstein%20Mem%26Cog07.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "When a relationship feels hard to interpret, compare two unfinished situations with the same constraints; their common structure can help retrieve a useful earlier example.",
+      "positiveFinding": "Three experiments found that comparing two unsolved problems helped participants retrieve and apply a previously studied analogous solution. In the first experiment, 54% produced the convergence solution after target comparison, versus 15% after one target. The second experiment separated genuine comparison from simply solving two problems; explicit comparison improved solutions over separate attempts.",
+      "limitation": "These were immediate undergraduate problem-solving experiments using convergence stories. The third experiment specifically supported retrieval of a prior example as part of the effect."
+    },
+    {
+      "id": "gentner2009-relational-retrieval",
+      "title": "Reviving Inert Knowledge: Analogical Abstraction Supports Relational Retrieval of Past Events",
+      "authors": "Gentner, D., Loewenstein, J., Thompson, L., & Forbus, K. D.",
+      "year": 2009,
+      "url": "https://groups.psych.northwestern.edu/gentner/papers/Gentner%2CLoewenstein%2CThompson%26Forbus_2009.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "After comparing your two imagined domains, state their common rule and search your own experience for a third situation with that structure.",
+      "positiveFinding": "Five experiments showed that comparing analogous cases improved retrieval of structurally matching examples. The effect appeared both in memories from participants' own lives and in controlled laboratory material. Management consultants and students who compared negotiation cases retrieved better matching experiences than those studying cases separately. The first experiment also found improved use of the principle in a later negotiation.",
+      "limitation": "The experiments assessed prompted retrieval and specific problem transfer. The life-experience studies relied on participants' reported memories, alongside later experiments with controlled memory sets."
+    },
+    {
+      "id": "rittlejohnson2007-solution-comparison",
+      "title": "Does Comparing Solution Methods Facilitate Conceptual and Procedural Knowledge? An Experimental Study on Learning to Solve Equations",
+      "authors": "Rittle-Johnson, B., & Star, J. R.",
+      "year": 2007,
+      "url": "https://doi.org/10.1037/0022-0663.99.3.561",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Compare two valid ways to reach the same conclusion. Explain which relations each method uses and when one makes the reasoning easier to follow.",
+      "positiveFinding": "Seventy seventh-grade students were randomly assigned to compare alternative algebra solutions or study the same methods separately. Comparison produced greater gains in procedural knowledge and flexibility, including applying methods to unfamiliar equations. The advantage concerned explicitly examining similarities and differences between methods, beyond exposure to multiple solutions.",
+      "limitation": "Students attended one selective private school. Conceptual-knowledge gains were comparable between groups; the clearest advantage concerned procedures and flexible strategy use."
+    },
+    {
+      "id": "williams2010-explanation-discovery",
+      "title": "The Role of Explanation in Discovery and Generalization: Evidence From Category Learning",
+      "authors": "Williams, J. J., & Lombrozo, T.",
+      "year": 2010,
+      "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1551-6709.2010.01113.x",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "After creating examples, explain which common rule makes them belong together. Use the explanation to notice a relation that survives changes in objects and setting.",
+      "positiveFinding": "Across three category-learning experiments, explaining category membership made adults more likely to discover the broad rule than describing examples, thinking aloud, or studying freely. Results also suggested a role for explaining unusual cases when revising an initial rule.",
+      "limitation": "The experiments measured discovery and generalization of artificial category rules. Describing examples better preserved individual details in the first experiment, making a separate detail check useful alongside abstraction."
+    },
+    {
+      "id": "edwards2019-explanation-comparison",
+      "title": "Explanation recruits comparison in a category-learning task",
+      "authors": "Edwards, B. J., Williams, J. J., Gentner, D., & Lombrozo, T.",
+      "year": 2019,
+      "url": "https://cognition.princeton.edu/document/249",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Compare a small family of examples for a proposed relation. Ask what explains every member, then test the proposed rule against a contrasting case.",
+      "positiveFinding": "Three experiments with adults learning artificial robot categories connected explanation with stronger rule discovery. In the second experiment, comparing whole groups of category members supported rule learning better than comparing isolated pairs. Self-reported group comparison partly accounted for the explanation benefit in the third experiment.",
+      "limitation": "Study periods were brief and time-matched within experiments. The proposed mediation used self-report; the central outcome was identifying the category rule."
+    },
+    {
+      "id": "brockbank2023-explain-relations",
+      "title": "Ask me why, don’t tell me why: Asking children for explanations facilitates relational thinking",
+      "authors": "Brockbank, E., Lombrozo, T., Gopnik, A., & Walker, C. M.",
+      "year": 2023,
+      "url": "https://cognition.princeton.edu/document/397",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Explain why two examples share a relationship before comparing their appearance. In Mode 2, give each category role a plain-language reason and preserve that role in the second imagined domain.",
+      "positiveFinding": "Forty-six 5- and 6-year-olds were randomly assigned to explain demonstrated matches or report the observed choice. Explainers reliably chose relational matches over look-alike object matches across subsequent trials, while the reporting group favored the object matches.",
+      "limitation": "This was a single-session developmental study using same-relation shape pairs. The article appeared online in 2022 and in the 2023 journal volume."
+    },
+    {
+      "id": "walker2017-story-abstraction",
+      "title": "Explaining the moral of the story",
+      "authors": "Walker, C. M., & Lombrozo, T.",
+      "year": 2017,
+      "url": "https://cognition.princeton.edu/document/131",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Build an imagined scene around a rule, explain why events illustrate that rule, then carry the rule into a new scene with different characters and objects.",
+      "positiveFinding": "Two experiments with 5- and 6-year-olds found that explaining story events helped children extract an underlying lesson and recognize it in new contexts despite distracting surface similarities. In some comparisons, generating the explanation was more effective than being explicitly told the lesson.",
+      "limitation": "The randomized experiments involved 48 and 96 children and immediate story-comprehension tasks. The measured transfer concerned the story lesson and its application to new vignettes."
+    },
+    {
+      "id": "bascandziev2024-thought-experiments",
+      "title": "Thought Experiments as an Error Detection and Correction Tool",
+      "authors": "Bascandziev, I.",
+      "year": 2024,
+      "url": "https://onlinelibrary.wiley.com/doi/full/10.1111/cogs.13401",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Use a thought experiment to expose incompatible predictions. Compare the imagined result with the rule you first proposed, then repair the explanation that caused the conflict.",
+      "positiveFinding": "In an adult experiment with 575 analyzed participants, bodily thought experiments paired with comparison or argument prompts improved immediate force-and-motion judgments; the baseline sequence of thought experiments showed no significant improvement. The prompts connected familiar experiences with participants’ earlier answers.",
+      "limitation": "A second experiment with 574 adults used external-object versions: improvement was smaller and the conditions did not differ significantly. The findings favor carefully chosen scenarios plus explicit comparison; both experiments used immediate repeated-item assessments."
+    },
+    {
+      "id": "ruggeri2019-explanation-questions",
+      "title": "Effects of explanation on children’s question asking",
+      "authors": "Ruggeri, A., Xu, F., & Lombrozo, T.",
+      "year": 2019,
+      "url": "https://cognition.princeton.edu/document/274",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Turn an explanation into a useful next question: which relationship or shared feature would distinguish several possible interpretations? Apply this when checking an imagined analogy or category role.",
+      "positiveFinding": "Across two randomized experiments involving 168 children, explaining examples before a 20-questions game helped the older children, aged 6–7, solve it with fewer questions. They shifted away from asking about individual objects toward questions about shared features.",
+      "limitation": "The benefit was age-dependent and concerned subsequent information search within the same domain. Questioning improved without consistently shifting to the mathematically most efficient question at every step."
+    },
+    {
+      "id": "butler2010-crossdomain-retrieval",
+      "title": "Repeated Testing Produces Superior Transfer of Learning Relative to Repeated Studying",
+      "authors": "Butler, A. C.",
+      "year": 2010,
+      "url": "https://doi.org/10.1037/a0019902",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Retrieve a relational principle, explain it, then apply it to a new imagined domain. In Da Vinci reflection, reconstruct the relationship before checking the example or inventing its counterpart.",
+      "positiveFinding": "Across four experiments, repeated testing with feedback improved retention and transfer relative to restudying. One week later, benefits extended to new inferential questions; the final experiment transferred concepts between knowledge domains. This supports a practice sequence that combines remembering a principle with using it in a different setting.",
+      "limitation": "Prose-learning experiments; cross-domain questions explicitly cued the relevant earlier concept. The demonstrated outcome was delayed application of learned knowledge. Feedback was part of the retrieval condition."
+    },
+    {
+      "id": "eglington2018-integrated-retrieval",
+      "title": "Retrieval Practice Benefits Deductive Inference",
+      "authors": "Eglington, L. G., & Kang, S. H. K.",
+      "year": 2018,
+      "url": "https://link.springer.com/article/10.1007/s10648-016-9386-y",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Build the connected model before rehearsing its pieces. For Mode 1, connect the premises before recalling the triad; for Mode 2, reconstruct who occupies each category role and how the roles relate.",
+      "positiveFinding": "Across three experiments, retrieval practice improved deductive inference two days later when related sentences were available together during study and practice. Both fill-in-the-blank retrieval and free recall outperformed rereading under this format. The findings connect memory practice with integration: learners benefit when practice allows relationships among facts to be processed.",
+      "limitation": "Participants learned sets of seven to nine related sentences. The benefit depended on presentation supporting relational processing; one-at-a-time presentation showed no inference advantage. Journal issue 2018; first published online in 2016."
+    },
+    {
+      "id": "hinze2013-constructive-retrieval",
+      "title": "The importance of constructive comprehension processes in learning from tests",
+      "authors": "Hinze, S. R., Wiley, J., & Pellegrino, J. W.",
+      "year": 2013,
+      "url": "https://www.sciencedirect.com/science/article/pii/S0749596X13000211",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "During Da Vinci reflection, reconstruct why the relationships hold. Explain the connection between the two premises and the candidate, then explain how the same organization appears in another domain.",
+      "positiveFinding": "Experiments with science texts found that directing retrieval toward explanations produced more coherent responses and better performance one week later than rereading. Explanation quality predicted later learning beyond response length. This supports adding a meaningful why-and-how explanation to recalled relationships, rather than treating recall as a list of disconnected details.",
+      "limitation": "Delayed detail and inference tests assessed science-text learning. Experiment 3 included 93 students; explanation comparisons used one-tailed tests, including the smaller advantage over free recall. Application to game reflection is a design inference."
+    },
+    {
+      "id": "carvalho2014-category-contrast",
+      "title": "Putting category learning in order: Category structure and temporal arrangement affect the benefit of interleaved over blocked study",
+      "authors": "Carvalho, P. F., & Goldstone, R. L.",
+      "year": 2014,
+      "url": "https://link.springer.com/article/10.3758/s13421-013-0371-0",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Use two complementary comparisons in Da Vinci practice: varied examples sharing one relational rule, followed by a close alternative with a changed role. For Mode 2, this suggests contrasting easily confused category forms after finding examples of each.",
+      "positiveFinding": "Three category-learning experiments showed that practice order shaped generalization. Interleaving helped distinguish highly similar categories; blocked practice helped discover commonalities in less similar categories. This supplies a constructive rationale for choosing examples around the particular distinction being learned.",
+      "limitation": "The experiments used perceptual categories. Applying their commonality-versus-contrast principle to semantic ontology roles is a proposed learning strategy; the useful order depended on category structure."
     }
   ]
 }

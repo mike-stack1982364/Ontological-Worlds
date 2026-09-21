@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-20",
+  "updated": "2026-09-21",
   "studies": [
     {
       "id": "pahor-2022-near-transfer",
@@ -250,6 +250,36 @@
       "feature": "Reject a familiar item from the wrong trial or slot. In Mode 2, the analogous challenge is rejecting familiar category words when their endpoint attachments are wrong; in Mode 1, a familiar direction must still belong to the correctly aligned relation.",
       "positiveFinding": "Four N-back experiments distinguished familiarity from recollection of an item's correct context. Even semantically related, previously unseen items could create interference. Encountering interference prompted immediate behavioral adjustments favoring context-sensitive recollection. This gives a concrete rationale for lures that require checking precise bindings instead of answering from familiarity alone.",
       "limitation": "These were immediate task effects, not evidence of lasting training transfer. The study's temporal and semantic lures differ from the game's slot and ontology-role lures; more interference is not automatically better practice."
+    },
+    {
+      "id": "lilienthal2013-attentional-focus",
+      "title": "Dual n-back training increases the capacity of the focus of attention",
+      "authors": "Lilienthal, L., Tamez, E., Shelton, J. T., Myerson, J., & Hale, S.",
+      "year": 2013,
+      "url": "https://link.springer.com/article/10.3758/s13423-012-0335-6",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "nback"
+      ],
+      "feature": "Keep recent items available while the comparison window advances. The N-back level changes how far back the relevant trial lies; this study connects performance-adjusted practice with a separate measure of retaining an updating sequence.",
+      "positiveFinding": "Adaptive dual N-back training improved an untrained running-span task, whereas fixed-load N-back practice and a no-contact control did not. The authors interpreted this selective transfer as increased capacity of the focus of attention. The result gives a specific positive target beyond a better score on the practised N-back task.",
+      "limitation": "Other measures of the proposed working-memory mechanisms showed no differential improvement. The comparison concerned adaptive dual N-back; this game's user-selected level and multiple ordered digits use a different format."
+    },
+    {
+      "id": "buschkuehl2014-crossmodal-nback",
+      "title": "Neural effects of short-term training on working memory",
+      "authors": "Buschkuehl, M., Hernandez-Garcia, L., Jaeggi, S. M., Bernard, J. A., & Jonides, J.",
+      "year": 2014,
+      "url": "https://link.springer.com/article/10.3758/s13415-013-0244-9",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "nback"
+      ],
+      "feature": "Preserve the update-and-compare operation when presentation changes. The game's displayed and spoken digits offer a practical connection: check the same exact-N and same-slot rule using different sensory access to the sequence.",
+      "positiveFinding": "After approximately twenty minutes of adaptive visual-location N-back practice daily for seven days, the training group improved on an untrained auditory-letter N-back task relative to an active vocabulary/general-knowledge control. This cross-modal result supports investigating whether practiced updating can remain useful when the stimulus format changes.",
+      "limitation": "Fifty-five participants were analyzed; group allocation was largely sequential rather than random. Auditory transfer was strongest at 3-back, the only separately significant load. The demonstrated transfer concerned the N-back update-and-compare operation across visual-location and auditory-letter stimuli."
     }
   ]
 }
