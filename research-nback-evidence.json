@@ -280,6 +280,51 @@
       "feature": "Preserve the update-and-compare operation when presentation changes. The game's displayed and spoken digits offer a practical connection: check the same exact-N and same-slot rule using different sensory access to the sequence.",
       "positiveFinding": "After approximately twenty minutes of adaptive visual-location N-back practice daily for seven days, the training group improved on an untrained auditory-letter N-back task relative to an active vocabulary/general-knowledge control. This cross-modal result supports investigating whether practiced updating can remain useful when the stimulus format changes.",
       "limitation": "Fifty-five participants were analyzed; group allocation was largely sequential rather than random. Auditory transfer was strongest at 3-back, the only separately significant load. The demonstrated transfer concerned the N-back update-and-compare operation across visual-location and auditory-letter stimuli."
+    },
+    {
+      "id": "laine2018-strategy-updating",
+      "title": "The early effects of external and internal strategies on working memory updating training",
+      "authors": "Laine, M., Fellman, D., Waris, O., & Nyman, T. J.",
+      "year": 2018,
+      "url": "https://www.nature.com/articles/s41598-018-22396-5",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "nback"
+      ],
+      "feature": "Practice an explicit way to organize and compare the sequence, preserving which item belongs to which remembered position. Then examine whether that strategy works with unfamiliar stimuli.",
+      "positiveFinding": "In a preregistered randomized trial with 116 adults, one thirty-minute digit N-back session with strategy instruction improved subsequent letter and color 3-back discrimination compared with identical practice without instruction and passive controls.",
+      "limitation": "Benefits concerned accuracy on harder N-back variants; reaction times and structurally different memory tasks showed no reliable advantage. The experiment studied single-item N-back, while this game's ordered trials can contain several digits."
+    },
+    {
+      "id": "kattner2021-auditory-distraction",
+      "title": "Transfer of working memory training to the inhibitory control of auditory distraction",
+      "authors": "Kattner, F.",
+      "year": 2021,
+      "url": "https://link.springer.com/article/10.1007/s00426-020-01468-0",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "nback"
+      ],
+      "feature": "Distinguish updating from controlling a competing response. This provides a research direction for the game's interference settings: identify the particular control operation being challenged.",
+      "positiveFinding": "In a randomized study of 74 analyzed participants, eight sessions of inhibitory dual N-back reduced disruption from irrelevant speech during serial recall more than standard dual N-back and a passive control. The modified task required withholding frequent responses when an N-back match appeared.",
+      "limitation": "Training lasted up to eighty minutes per session. Its reversed response rule differs from this game's lures. Transfer did not extend to Simon-task interference, task switching or fluid-intelligence scores."
+    },
+    {
+      "id": "waris2015-updating-overlap",
+      "title": "Transfer after Working Memory Updating Training",
+      "authors": "Waris, O., Soveri, A., & Laine, M.",
+      "year": 2015,
+      "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0138734",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "nback"
+      ],
+      "feature": "Identify the operations shared across practice formats: maintaining order, replacing outdated contents and checking an earlier item. These provide concrete links between ordered N-back and other updating exercises.",
+      "positiveFinding": "Thirty-one adults were randomized to three updating tasks or commercial-game practice for five weeks. Updating training improved an untrained numerical N-back task, a running-memory composite and backward-span performance. The authors linked the transfer pattern to operations shared across tasks.",
+      "limitation": "The small study combined selective updating, moving-object tracking and dual N-back, so individual contributions cannot be isolated. Passive storage, dual-task performance and fluid-intelligence scores showed no reliable transfer."
     }
   ]
 }

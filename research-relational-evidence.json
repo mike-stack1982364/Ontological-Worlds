@@ -805,6 +805,192 @@
       "feature": "Use two complementary comparisons in Da Vinci practice: varied examples sharing one relational rule, followed by a close alternative with a changed role. For Mode 2, this suggests contrasting easily confused category forms after finding examples of each.",
       "positiveFinding": "Three category-learning experiments showed that practice order shaped generalization. Interleaving helped distinguish highly similar categories; blocked practice helped discover commonalities in less similar categories. This supplies a constructive rationale for choosing examples around the particular distinction being learned.",
       "limitation": "The experiments used perceptual categories. Applying their commonality-versus-contrast principle to semantic ontology roles is a proposed learning strategy; the useful order depended on category structure."
+    },
+    {
+      "id": "tise2023-generated-analogy-quality",
+      "title": "Teaching Postsecondary Students to Use Analogies as a Cognitive Learning Strategy: An Intervention",
+      "authors": "Tise, J. C., Sperling, R. A., Dann, M. S., & Young, T. M.",
+      "year": 2023,
+      "url": "https://doi.org/10.1187/cbe.22-05-0084",
+      "evidenceType": "observational",
+      "relevance": "related learning intervention",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Review the quality of a generated analogy: identify the corresponding roles, explain the shared relationship, and improve an unclear mapping using a worked example.",
+      "positiveFinding": "Among 179 analyzed biology students, generated-analogy quality improved across four instructional activities, with a small first-to-last gain. Higher analogy quality also predicted later analogical-reasoning performance after accounting for baseline performance. The study brings analogy generation into ordinary course learning.",
+      "limitation": "Single-group classroom intervention with complete-case analysis and no control group. Reported metacognitive knowledge did not increase, and analogy quality did not independently predict course grades."
+    },
+    {
+      "id": "son2010-relational-labels",
+      "title": "When Do Words Promote Analogical Transfer?",
+      "authors": "Son, J. Y., Doumas, L. A. A., & Goldstone, R. L.",
+      "year": 2010,
+      "url": "https://docs.lib.purdue.edu/jps/vol3/iss1/4/",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Use category names as stable handles for understood roles: explain what each name means in both imagined domains, then check that the correspondences agree.",
+      "positiveFinding": "Across four undergraduate experiments on signal-detection concepts, relational labels supported transfer between readily alignable scenarios, even when the transfer questions omitted those labels. This identifies vocabulary as one useful support for carrying relational knowledge into another context.",
+      "limitation": "Benefits depended on case alignment; conflicting meanings produced no advantage or a disadvantage. These were immediate tutorial-transfer tests."
+    },
+    {
+      "id": "richland2010-analogy-cues",
+      "title": "Learning by analogy: Discriminating between potential analogs",
+      "authors": "Richland, L. E., & McDonough, I. M.",
+      "year": 2010,
+      "url": "https://www.sciencedirect.com/science/article/pii/S0361476X09000381",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Make corresponding roles and relationships explicit while comparing examples; check which crucial relationship makes an appealing alternative analogy fail.",
+      "positiveFinding": "Two randomized undergraduate experiments compared mathematics instruction with stronger or weaker support for analogy. Keeping corresponding examples visibly aligned and using comparative gestures improved later problem solving and reduced misleading surface-based mappings. Experiment 2 also found benefits after one week.",
+      "limitation": "The intervention bundled several instructional supports. Learners remained susceptible to surface similarities; the findings concern mathematics transfer."
+    },
+    {
+      "id": "clement1991-systematicity",
+      "title": "Systematicity as a selection constraint in analogical mapping",
+      "authors": "Clement, C. A., & Gentner, D.",
+      "year": 1991,
+      "url": "https://onlinelibrary.wiley.com/doi/10.1207/s15516709cog1501_3",
+      "evidenceType": "experiment",
+      "relevance": "proposed extension",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "In nested worlds and Da Vinci models, explain how relationships constrain one another; justify a prediction using the connected system shared by both domains.",
+      "positiveFinding": "Three experiments found that people favored analogical matches belonging to a larger shared relational system. Their predictions also favored consequences supported by shared causal structure over equally plausible isolated similarities. The experiments identify a mechanism for selecting informative analogies and inferences.",
+      "limitation": "These were analogy interpretation and prediction experiments. Applying this mechanism as a repeated practice routine is a design extension."
+    },
+    {
+      "id": "gentner2006-relational-meaning",
+      "title": "Relations, Objects, and the Composition of Analogies",
+      "authors": "Gentner, D., & Kurtz, K. J.",
+      "year": 2006,
+      "url": "https://onlinelibrary.wiley.com/doi/10.1207/s15516709cog0000_60",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Describe the precise shared relationship when imagined domains use different actions or vocabulary; preserve that common meaning while identifying differences that limit the analogy.",
+      "positiveFinding": "Sentence-comparison experiments found that matching relationships influenced analogical acceptance much more than matching objects. People also accepted some nonsynonymous relationships with shared meaning, taking longer to evaluate them; subsequent explanations often redescribed the common relational component.",
+      "limitation": "These findings concern analogy judgments and processing, rather than training gains. Later explanations do not directly reveal the earlier mental process."
+    },
+    {
+      "id": "schwartz1998-time-for-telling",
+      "title": "A Time for Telling",
+      "authors": "Schwartz, D. L., & Bransford, J. D.",
+      "year": 1998,
+      "url": "https://aaalab.stanford.edu/papers/time_for_telling.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Examine contrasting relational cases and state their decisive difference before checking an explanation. In Mode 2, compare examples differing in one category or endpoint role.",
+      "positiveFinding": "Across three classroom experiments, students who analyzed contrasting cases before a lecture or reading made better predictions about a new psychology experiment roughly a week later. Combining analysis with explanation outperformed both repeated analysis and summarizing followed by explanation.",
+      "limitation": "The tested sequence used supplied cases and subsequent instruction. Self-generating Da Vinci contrasts is a proposed extension of that sequence."
+    },
+    {
+      "id": "schwartz2004-inventing-future-learning",
+      "title": "Inventing to Prepare for Future Learning: The Hidden Efficiency of Encouraging Original Student Production in Statistics Instruction",
+      "authors": "Schwartz, D. L., & Martin, T.",
+      "year": 2004,
+      "url": "https://aaalab.stanford.edu/assets/papers/2004/Inventing_to_prepare_for_future_learning.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Try constructing your own relational representation, then compare it with a checked example and use the correction on a fresh case. Track what you learn from feedback.",
+      "positiveFinding": "In two ninth-grade statistics studies, inventing representations prepared students to learn from a worked example embedded in a later transfer assessment. Students receiving both invention practice and that learning resource solved the transfer problem most successfully.",
+      "limitation": "The advantage depended on the available learning resource and concerned topic-specific preparation; instructional conditions were assigned to intact classes."
+    },
+    {
+      "id": "sobel2006-intervention-decisions",
+      "title": "The importance of decision making in causal learning from interventions",
+      "authors": "Sobel, D. M., & Kushnir, T.",
+      "year": 2006,
+      "url": "https://link.springer.com/article/10.3758/BF03193418",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "For a Da Vinci causal analogy, propose two explicit rules and choose the change that would make them predict different outcomes. Explain why that test distinguishes them.",
+      "positiveFinding": "Adults identified causal networks more accurately when choosing interventions themselves than when observing, or being required to perform, the same interventions. A third experiment improved observational learning by arranging evidence around informative causal distinctions.",
+      "limitation": "Computerized networks supplied outcome evidence. Applying this to imagined worlds trains reasoning from stated assumptions; empirical testing requires observed outcomes."
+    },
+    {
+      "id": "brod2025-own-predictions",
+      "title": "Do it yourself: discerning the effects of self-directed activity on conceptual learning",
+      "authors": "Brod, G., Holstein, E., Weindorf, L., Colantonio, J., Bonawitz, E., & Theobald, M.",
+      "year": 2025,
+      "url": "https://www.nature.com/articles/s41539-025-00364-9",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Make your own prediction before revealing a checked outcome. For a self-created analogy, first state what your rule predicts; then compare it with the example's actual constraints.",
+      "positiveFinding": "Ninety-five children aged 5–7 learned water displacement through prediction and feedback. Generating predictions produced higher combined transfer scores than observing predictions matched to prior beliefs, despite identical outcome evidence.",
+      "limitation": "The clearest transfer subtask involved choosing answers for new objects. Productive and explicit-concept subtests were individually nonsignificant; the preregistered transfer comparison used a one-tailed test."
+    },
+    {
+      "id": "rebok2014-active-tenyear",
+      "title": "Ten-Year Effects of the Advanced Cognitive Training for Independent and Vital Elderly Cognitive Training Trial on Cognition and Everyday Functioning in Older Adults",
+      "authors": "Rebok, G. W., Ball, K., Guey, L. T., Jones, R. N., Kim, H.-Y., King, J. W., Marsiske, M., Morris, J. N., Tennstedt, S. L., Unverzagt, F. W., & Willis, S. L.",
+      "year": 2014,
+      "url": "https://agsjournals.onlinelibrary.wiley.com/doi/10.1111/jgs.12607",
+      "evidenceType": "experiment",
+      "relevance": "long-term related intervention",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Track whether a learned reasoning strategy can be reconstructed later and used on unfamiliar examples. Retention is a separate target from a high score today.",
+      "positiveFinding": "At ten years, ACTIVE reasoning training retained a targeted reasoning advantage over control (effect size 0.23). Booster training added a further advantage; the reasoning group also reported less everyday difficulty.",
+      "limitation": "Older-adult randomized trial of inductive letter/word-pattern practice, with a no-contact control. Forty-four percent returned at ten years; missing-data analyses supported the main findings. Objective everyday-function measures showed no training benefit."
+    },
+    {
+      "id": "bergmannutley2011-reasoning-training",
+      "title": "Gains in fluid intelligence after training non-verbal reasoning in 4-year-old children: a controlled, randomized study",
+      "authors": "Bergman Nutley, S., Söderqvist, S., Bryde, S., Thorell, L. B., Humphreys, K., & Klingberg, T.",
+      "year": 2011,
+      "url": "https://www.klingberglab.se/pub/BergmanNutley_fluid_intelligence_2011.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related reasoning intervention",
+      "modes": [
+        "mode1",
+        "mode2"
+      ],
+      "feature": "Practise identifying, applying and checking relationships at a manageable difficulty. This supports treating relational reconstruction as its own training target alongside memory.",
+      "positiveFinding": "In a randomized study of four-year-olds, adaptive non-verbal reasoning practice improved a fluid-reasoning factor derived from untrained Raven and Block Design measures relative to low-difficulty control practice. Training included changing patterns, sequences and classification rules with corrective feedback.",
+      "limitation": "101 children completed sufficient training and post-testing. The programme scheduled 25 sessions of about 15 minutes. Outcomes were measured immediately; working-memory-only practice improved memory without corresponding reasoning transfer."
     }
   ]
 }
