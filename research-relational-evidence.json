@@ -1162,6 +1162,159 @@
       "feature": "When applying a learned rule, specify what changes in the problem or setting and what knowledge must carry over. Record these separately from the game's score.",
       "positiveFinding": "This review organizes transfer across nine content and context dimensions. It identifies substantial evidence under some conditions and shows how specifying the kind of transfer makes otherwise conflicting findings easier to interpret.",
       "limitation": "The framework classifies transfer outcomes; it does not test a training programme or identify an optimal practice schedule. The hub's practice examples apply this organizing idea."
+    },
+    {
+      "id": "snoddy2021-category-retrieval",
+      "title": "Preventing Inert Knowledge: Category Status Promotes Spontaneous Structure-Based Retrieval of Prior Knowledge",
+      "authors": "Snoddy, S., & Kurtz, K. J.",
+      "year": 2021,
+      "url": "https://doi.org/10.1037/xlm0000974",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Build a family of imagined cases around the same relational principle, then decide whether a new case belongs and explain why.",
+      "positiveFinding": "Guided category-building improved spontaneous transfer over single comparison. A second experiment found more structure-based retrieval than either single or repeated comparison.",
+      "limitation": "The intervention combined summarization with categorization supports. The proposed practice uses this structured learning procedure to develop usable relational categories."
+    },
+    {
+      "id": "trench2026-deliberate-analogy-search",
+      "title": "Deliberate Search for Analogous Cases Aids the Retrieval and Transfer of Suboptimally-Encoded Memory Items",
+      "authors": "Trench, M., Martínez Frontera, L., & Rivas, L. E.",
+      "year": 2026,
+      "url": "https://doi.org/10.1177/17470218241311203",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Deliberately search for a remembered situation with the same relationship, then use the correspondence to explain an imagined world's behavior.",
+      "positiveFinding": "Explicit analogy-search instructions increased distant retrieval during persuasive argumentation. A second experiment extended the retrieval advantage to generating explanatory hypotheses for a counterintuitive phenomenon.",
+      "limitation": "Benefits concern prompted retrieval during these activities. Applying the search procedure during reflection on the modes is a proposed extension."
+    },
+    {
+      "id": "minervino2017-inventing-analogous-problems",
+      "title": "Promoting Interdomain Analogical Transfer: When Creating a Problem Helps to Solve a Problem",
+      "authors": "Minervino, R. A., Olguín, V., & Trench, M.",
+      "year": 2017,
+      "url": "https://doi.org/10.3758/s13421-016-0655-2",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Invent another domain's version of the current problem before solving it. Preserve its roles, constraints and relationships, then bring the insight back.",
+      "positiveFinding": "In Experiment 2, 210 undergraduates were randomly assigned. Inventing an analogous problem increased transfer of a previously learned solution from 10% to 25.7%.",
+      "limitation": "This was an immediate laboratory problem-solving task. Transfer was associated with how well the invented problem preserved the target’s structure."
+    },
+    {
+      "id": "kurtz2025-relational-encoding-insight",
+      "title": "Relational encoding promotes creative insight for problem-solving",
+      "authors": "Kurtz, K. J., Haley, L., Longo, A., Astra, S., Meltzer, H., Suwara, G., & Patterson, J. D.",
+      "year": 2025,
+      "url": "https://link.springer.com/article/10.3758/s13421-025-01685-1",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Give imagined entities meaningful interactions. For each pair, explain how one could act on, support or transform the other; then connect those interactions into a coherent Da Vinci model.",
+      "positiveFinding": "Across two randomized experiments, generating relationships between problem elements improved insight solutions versus an unsupported baseline or a memory-task control. The second experiment also found more unconventional uses contributing to solutions.",
+      "limitation": "These were immediate problem-solving outcomes with exclusions for task compliance; preparation time was not matched across conditions."
+    },
+    {
+      "id": "madore2019-imagination-specificity",
+      "title": "Selective effects of specificity inductions on episodic details: Evidence for an event construction account",
+      "authors": "Madore, K. P., Jing, H. G., & Schacter, D. L.",
+      "year": 2019,
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6339596/",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Recombine a familiar person, setting and object from different experiences into one new event. In Da Vinci practice, make their actions instantiate the required relationships.",
+      "positiveFinding": "In 24 young adults, a six-minute imagination exercise increased event-specific details in subsequent remembering and future imagining compared with a math control. A memory exercise produced similar benefits.",
+      "limitation": "The counterbalanced experiment measured immediate event construction; picture descriptions showed no corresponding increase. Applying this preparation to relational models extends the tested exercise."
+    },
+    {
+      "id": "branchini2025-opposites-hypothesis-testing",
+      "title": "Thinking in opposites improves hypothesis testing performance in Wason’s rule-discovery task",
+      "authors": "Branchini, E., Bianchi, I., & Burro, R.",
+      "year": 2025,
+      "url": "https://link.springer.com/article/10.3758/s13421-025-01691-3",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Generate a contrasting condition for a proposed rule, predict its consequence, and check it. Use opposites to begin exploring alternative models and boundary cases.",
+      "positiveFinding": "Among 180 randomly assigned adults, training to identify properties and test their opposites yielded 78% successful rule discovery, versus 38% with property analysis and 37% without training. Participants repeated the same hypothesis less often.",
+      "limitation": "One numerical rule-discovery task with external feedback; extending the strategy to Da Vinci causal worlds is a practice proposal."
+    },
+    {
+      "id": "kessler2023-causal-category-operations",
+      "title": "Promoting Complex Problem Solving by Introducing Schema-Governed Categories of Key Causal Models",
+      "authors": "Kessler, F., Proske, A., Urbas, L., Goldwater, M., Krieger, F., Greiff, S., & Narciss, S.",
+      "year": 2023,
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10525087/",
+      "evidenceType": "experiment",
+      "relevance": "related category-learning intervention",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "For each imagined category-role, explain its structure, predict its behavior, and describe how an action changes it; then compare another domain.",
+      "positiveFinding": "Combined analogy instruction and a systems tutorial showed larger recognition gains than either alone. Among tutorial recipients, successful causal classifiers controlled unfamiliar systems better than untreated controls.",
+      "limitation": "Adults chose session duration, affecting assignment; baseline groups differed. Recognition had no retested control. System-control findings were subgroup associations, with nonsignificant whole-group effects."
+    },
+    {
+      "id": "klauer2002-inductive-strategy-retention",
+      "title": "Inducing Inductive Reasoning: Does It Transfer to Fluid Intelligence?",
+      "authors": "Klauer, K. J., Willmes, K., & Phye, G. D.",
+      "year": 2002,
+      "url": "https://doi.org/10.1006/ceps.2001.1079",
+      "evidenceType": "experiment",
+      "relevance": "related reasoning intervention",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Compare similarities and differences, choose a rule-finding strategy for the problem type, and check that the proposed rule fits new examples.",
+      "positiveFinding": "Ten small-group lessons improved first-graders’ matrix reasoning relative to regular lessons. At six months, transfer remained stronger for inductive than noninductive subtests.",
+      "limitation": "Twelve classes were assigned within school pairs, with child-level analyses. Follow-up included 219 of 279 children. Controls continued normal lessons without matched small-group attention."
+    },
+    {
+      "id": "chen1999-control-variables",
+      "title": "All Other Things Being Equal: Acquisition and Transfer of the Control of Variables Strategy",
+      "authors": "Chen, Z., & Klahr, D.",
+      "year": 1999,
+      "url": "https://doi.org/10.1111/1467-8624.00081",
+      "evidenceType": "experiment",
+      "relevance": "related reasoning intervention",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Test a proposed explanation by changing one relevant condition while holding others fixed. Explain which comparison isolates the relationship you want to understand.",
+      "positiveFinding": "Among 87 children aged 7–10, explicit instruction combined with probe questions improved learning and transfer of a strategy for designing unconfounded experiments. Better strategy use also supported understanding of the tested domains.",
+      "limitation": "Transfer to remote situations improved with age. The intervention included instruction and experiments; controlled changes to imagined worlds are a proposed application."
     }
   ]
 }

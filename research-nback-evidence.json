@@ -371,6 +371,37 @@
       "feature": "Pair memory practice with planning, monitoring mistakes and evaluating which strategy helped. Use that reflection to plan the next session.",
       "positiveFinding": "Ninety-five children entered a randomized trial of memory training, memory training plus metacognitive workbooks, or adaptive visual-search practice. Added metacognitive training produced greater working-memory gains three months later than memory training alone.",
       "limitation": "Participants were aged 9–14; 77 completed follow-up. Training included coaching and workbooks alongside computerized memory exercises. Added metacognition produced no additional academic benefits."
+    },
+    {
+      "id": "jaeggi2020-durable-nback-discrimination",
+      "title": "Investigating the Effects of Spacing on Working Memory Training Outcome: A Randomized, Controlled, Multisite Trial in Older Adults",
+      "authors": "Susanne M. Jaeggi, Martin Buschkuehl, Chelsea M. Parlett-Pelleriti, Seung Min Moon, Michelle Evans, Alexandra Kritzmacher, Patricia A. Reuter-Lorenz, Priti Shah & John Jonides",
+      "year": 2020,
+      "url": "https://doi.org/10.1093/geronb/gbz090",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "nback"
+      ],
+      "feature": "Track correct rejection of familiar but wrong-trial items alongside hits. Check accuracy again after a delay and with unfamiliar stimuli.",
+      "positiveFinding": "Picture N-back training with lures improved discrimination and reduced false alarms on an untrained N-back variant relative to adaptive knowledge training; advantages remained after three months.",
+      "limitation": "Older adults; approximately twenty sessions. No reliable schedule difference emerged. Lures were not isolated experimentally; episodic and everyday-memory tasks showed no additional improvement. Follow-up attrition was substantial."
+    },
+    {
+      "id": "souza2018-guided-refreshing",
+      "title": "Where to attend next: guiding refreshing of visual, spatial, and verbal representations in working memory",
+      "authors": "Alessandra S. Souza, Evie Vergauwe & Klaus Oberauer",
+      "year": 2018,
+      "url": "https://doi.org/10.1111/nyas.13621",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode2",
+        "nback"
+      ],
+      "feature": "During available task time, revisit still-relevant trial-and-slot contents. Mode 2 similarly requires keeping remembered endpoint–category relations accessible.",
+      "positiveFinding": "Combined evidence from six experiments showed better recall for refreshed contents than unrefreshed contents, spanning locations, colors and words. This supports selective attentional maintenance across different kinds of information.",
+      "limitation": "Immediate cued-recall experiments. Word effects were smaller; cueing did not improve average word recall over free maintenance. External cues guided attention; self-directed N-back and relational-model applications are proposed extensions."
     }
   ]
 }
