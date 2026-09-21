@@ -16,7 +16,7 @@ const DIRS = ["N", "E", "S", "W"],
   FORMS = { I: "Inner", O: "Outer", A: "Archetypal" },
   FORM_ORDERS = ["IOA", "OIA", "IAO", "OAI", "AIO", "AOI"],
   MODE_NAMES = [
-    "Relational Conflict Matrix",
+    "Relational reasoning",
     "Ontological Integration",
     "Triadic Composition",
     "Topological Equivalence",

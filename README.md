@@ -1,6 +1,6 @@
 # Ontological Worlds
 
-A browser-based spatial reasoning and N-back trainer. The main screen provides two spatial modes; **Extra Training** opens a separate ordered-number N-back screen. Modes 3–7 are unreleased and cannot be selected.
+A browser-based relational reasoning and N-back trainer using the Da Vinci cross-domain method. The main screen provides two relational reasoning modes; **Extra Training** opens a separate ordered-number N-back screen. Modes 3–7 are unreleased and cannot be selected.
 
 ## Run locally
 
@@ -12,25 +12,27 @@ python3 -m http.server 8000
 
 Open `http://localhost:8000/`. Keep all JavaScript files beside the HTML files: Mode 2 loads its engine and runtime dynamically. Speech, available voices and haptics depend on the browser and device.
 
-## Start a spatial session
+## Start a relational reasoning session
 
 1. Choose Mode 1 or Mode 2.
 2. Select **4, 8 or 16 compass directions**. Both modes require an explicit choice before Start becomes available.
 3. Select an N-back level from **1–8**, session length and whole-triad match probability; adjust speech and display preferences as needed.
 4. For Mode 2, choose **One descriptor per entity**, **Multiple aspects per entity** (default) or **Worlds within worlds**. Choose whether to keep **Practice break after every 6 answers** enabled (default).
-5. Press **Start**. Both spatial modes are self-paced: there is no per-trial response deadline, but the overall session has a duration.
+5. Press **Start**. Both main modes are self-paced: there is no per-trial response deadline, but the overall session has a duration.
 
-Mode, N-back level, compass resolution, session duration and Mode 2 complexity/practice settings are fixed during a session. **Adaptive N is unavailable**; choose a different N before the next session. Both spatial modes use **100% cognitive interference**, so that control is fixed. Pause preserves the current trial and excludes paused time from the session clock and response measurements. Each mode has its own expanded, visible guide below the game and a jump link above the settings.
+Mode, N-back level, compass resolution, session duration and Mode 2 complexity/practice settings are fixed during a session. **Adaptive N is unavailable**; choose a different N before the next session. Both main modes use **100% cognitive interference**, so that control is fixed. Pause preserves the current trial and excludes paused time from the session clock and response measurements. Each mode has its own expanded, visible guide below the game and a jump link above the settings.
 
 ## What counts as a match?
 
-Each main spatial trial contains two premises and a candidate conclusion involving three letters. The premises determine a spatial relation; the candidate may or may not be entailed by them. Build the spatial scene from the premises and treat the candidate as a claim, not an additional established fact.
+Each main reasoning trial contains two premises and a candidate conclusion involving three letters. The premises determine a spatial relation; the candidate may or may not be entailed by them. Build the spatial scene from the premises and treat the candidate as a claim, not an additional established fact.
 
 **Spatial inference convention:** each premise denotes an equal-length unit step, including diagonal directions. The candidate asserts only the resulting bearing, not a unit distance. The core rounds the end-to-end bearing to the nearest of sixteen compass points, choosing clockwise at an exact halfway boundary. Generated trials keep the premises, candidate and derived answer within the chosen 4/8/16-direction pool. This explicit metric convention matters: bare real-world compass statements without distances would not generally determine the same precise intermediate bearings.
 
 N-back comparisons use the trial exactly N positions earlier. Matching requires a single consistent one-to-one mapping between the historical and current letters. Letter names may change, the two premises may exchange order, and reversed wording is equivalent only when its compass direction is also reversed. The conclusion retains its conclusion role. Compass directions must match exactly: adjacent directions, an incorrect letter pair, or reversing endpoints without reversing direction do not count.
 
-### Mode 1 — Relational Conflict Matrix
+### Mode 1 — Relational reasoning
+
+Apply the **Da Vinci cross-domain method**: build a concrete world from the two clues, then reconstruct the same relationships in a different domain. Preserve directions and entity roles while changing what the letters represent. Evaluate the candidate as a claim; it does not become a fact merely because it is part of the imagined scene.
 
 Answer all five decisions on **every trial**, including the initial N memory-fill trials:
 
@@ -88,7 +90,7 @@ After every six scored responses, optional practice pauses the session clock wit
 
 Causal predictions need an explicit rule in the imagined model: compass position alone does not establish causation. No rule such as “Division plus Projection equals Connection” is used. The guide includes the nine-category, three-form operational glossary. In particular, Outer Connection means a connected member/endpoint of a linking medium, and unmarked Projection spans source, trajectory and destination.
 
-For either spatial mode, **P** pauses/resumes and **Escape** stops, independently of the Keyboard controls option. Response shortcuts follow that option and ignore held-key repetition and text-entry fields. During the Mode 2 practice panel, use its explicit controls to continue the paused session.
+For either main mode, **P** pauses/resumes and **Escape** stops, independently of the Keyboard controls option. Response shortcuts follow that option and ignore held-key repetition and text-entry fields. During the Mode 2 practice panel, use its explicit controls to continue the paused session.
 
 ## Extra Training — Ordered Number N-back
 
@@ -100,11 +102,11 @@ The first N trials are unscored memory fill and advance automatically. Thereafte
 
 Number speech uses studio recordings of a human Australian English speaker. Complete digits and the selected gaps are assembled into one continuous audio sequence, with a protected startup lead-in and ending. Average uses the original recording with volume normalization and quiet padding; faster settings accelerate the whole word without changing pitch or splicing individual phonemes. The seven tempos run from 1× to 1.85×, keeping pronunciation intact instead of compressing the middle of a word up to 6×. No network speech service or installed system voice is required. The response timer waits for the full audio sequence and output latency. A session ending automatically finishes its current spoken sequence; Pause or Stop interrupts it immediately, and Resume replays an interrupted sequence from the beginning. See [voice attribution and build details](NUMBER-SPEECH-ASSETS.md).
 
-Settings are fixed until the session stops. Pause preserves the sequence and remaining response time; returning from a pause never inserts a replacement trial. If audio is unavailable, audio-only mode reveals the sequence so the trial remains usable. Switching away from this screen automatically pauses it. Number-session results are shown on this screen and are not saved to the main spatial-session history.
+Settings are fixed until the session stops. Pause preserves the sequence and remaining response time; returning from a pause never inserts a replacement trial. If audio is unavailable, audio-only mode reveals the sequence so the trial remains usable. Switching away from this screen automatically pauses it. Number-session results are shown on this screen and are not saved to the main training-session history.
 
 ## Results and storage
 
-Completed or stopped spatial sessions appear under **History**. Results include mode, N, compass resolution, active duration, accuracy and response statistics. Mode 2's practice questions are excluded from N-back accuracy. **Export CSV** downloads those summaries; **Clear** removes saved history from this browser.
+Completed or stopped reasoning sessions appear under **History**. Results include mode, N, compass resolution, active duration, accuracy and response statistics. Mode 2's practice questions are excluded from N-back accuracy. **Export CSV** downloads those summaries; **Clear** removes saved history from this browser.
 
 History and preferences use browser storage on the current site and device. They are not synced across devices. If storage is unavailable, the app reports the problem and keeps new results in the current tab for export. Export before clearing browser data or leaving a tab with unsaved results.
 
