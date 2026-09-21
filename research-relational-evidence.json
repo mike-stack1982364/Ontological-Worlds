@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-20",
+  "updated": "2026-09-21",
   "studies": [
     {
       "id": "mcloughlin2022",
@@ -124,6 +124,7 @@
       "evidenceType": "experiment",
       "relevance": "related paradigm",
       "modes": [
+        "mode1",
         "mode2",
         "method"
       ],
@@ -140,6 +141,7 @@
       "evidenceType": "experiment",
       "relevance": "related paradigm",
       "modes": [
+        "mode1",
         "mode2",
         "method"
       ],
@@ -156,6 +158,7 @@
       "evidenceType": "theory",
       "relevance": "proposed extension",
       "modes": [
+        "mode1",
         "mode2",
         "method"
       ],
@@ -175,7 +178,7 @@
         "mode1",
         "mode2"
       ],
-      "feature": "Use meaningful relational labels and explicit definitions to make spatial positions, category roles and scope easier to distinguish.",
+      "feature": "Identify a corresponding relational role even when an object match is tempting. This supplies a component precedent for keeping role correspondence separate from surface resemblance; applying it to the meanings of a Da Vinci world or ontology label is an extension.",
       "positiveFinding": "In five experiments, spatial relational language helped preschool children map corresponding positions between structures. The meanings of the terms mattered, and one experiment found an advantage two days later without additional labels. Language can help a learner notice a relational organization that surface appearances obscure.",
       "limitation": "The studies used children's spatial vocabulary. Applying this scaffold to Inner/Outer or other custom operators requires clear operational definitions."
     },
@@ -188,6 +191,7 @@
       "evidenceType": "experiment",
       "relevance": "related paradigm",
       "modes": [
+        "mode1",
         "mode2",
         "method"
       ],
@@ -204,6 +208,7 @@
       "evidenceType": "experiment",
       "relevance": "related paradigm",
       "modes": [
+        "mode1",
         "mode2",
         "method"
       ],
@@ -220,6 +225,7 @@
       "evidenceType": "experiment",
       "relevance": "related paradigm",
       "modes": [
+        "mode1",
         "mode2",
         "method"
       ],
@@ -236,6 +242,7 @@
       "evidenceType": "experiment",
       "relevance": "related paradigm",
       "modes": [
+        "mode1",
         "mode2",
         "method"
       ],
@@ -286,6 +293,7 @@
       "evidenceType": "experiment",
       "relevance": "related paradigm",
       "modes": [
+        "mode1",
         "mode2",
         "method"
       ],
@@ -386,6 +394,7 @@
       "evidenceType": "experiment",
       "relevance": "related paradigm",
       "modes": [
+        "mode1",
         "mode2",
         "method"
       ],
@@ -466,15 +475,14 @@
       "year": 2013,
       "url": "https://pubmed.ncbi.nlm.nih.gov/22663761/",
       "evidenceType": "meta-analysis",
-      "relevance": "related paradigm",
+      "relevance": "supporting component",
       "modes": [
         "mode1",
-        "mode2",
-        "method"
+        "mode2"
       ],
-      "feature": "Build a spatial model of the premises, preserve relative positions when letters change, and compare layouts. The cross-domain method can use this spatial scaffold to make a relation explicit.",
+      "feature": "Supporting component only: organizing the supplied compass relations in a spatial representation. This paper informs that representation demand; it does not test constructing analogies, mapping roles between domains or explaining a shared mechanism.",
       "positiveFinding": "Across 217 studies, spatial training improved spatial skills relative to controls; the average effect after removing outliers was g = 0.47. Benefits transferred to spatial tasks that had not been directly practiced, and the authors found no reduction associated with the studied delays before testing. This is substantial evidence that spatial reasoning skills can improve with experience.",
-      "limitation": "The synthesis covers varied spatial interventions. Transfer to other spatial tasks is not equivalent to general fluid-intelligence transfer, and its average effect cannot be assigned to these modes."
+      "limitation": "The interventions and transfer outcomes concern spatial skills. Their average effect cannot be assigned to these modes, to the Da Vinci method or to fluid intelligence. The combined cross-domain training remains a separate hypothesis."
     },
     {
       "id": "cortes2022-spatial-verbal-transfer",
@@ -483,15 +491,14 @@
       "year": 2022,
       "url": "https://pubmed.ncbi.nlm.nih.gov/35947663/",
       "evidenceType": "experiment",
-      "relevance": "related paradigm",
+      "relevance": "indirect transfer evidence",
       "modes": [
         "mode1",
-        "mode2",
-        "method"
+        "mode2"
       ],
-      "feature": "Use spatial relationships as a reusable representation for reasoning, including relations expressed with nonspatial words. This offers a bridge between compass-based worlds and reasoning about systems in other domains.",
+      "feature": "An indirect precedent for transfer across representations: spatial education was followed by better verbal deduction. This motivates investigating whether representation skills help the modes’ inference component. It does not test learners generating or comparing distant analogies.",
       "positiveFinding": "A school-year geospatial curriculum was associated with greater improvement in verbal deductive reasoning than a matched comparison group. Transfer included problems with nonspatial relations, such as better/worse. Improvements in spatial cognition statistically predicted and mediated reasoning gains; longitudinal brain measures supplied converging evidence for a spatial route to this transfer.",
-      "limitation": "This was a quasi-experiment in high-school classrooms, not random assignment. It tested extensive geographical-data education, not a short compass game, category-binding drill or general IQ increase."
+      "limitation": "A quasi-experiment in high-school classrooms, not random assignment. The intervention was extensive geospatial education, not the Da Vinci method. Transfer to a verbal reasoning test is not evidence that inventing cross-domain worlds produces the same gain or raises general intelligence."
     },
     {
       "id": "cortes2023-mental-models-training",
@@ -505,7 +512,7 @@
         "mode1",
         "mode2"
       ],
-      "feature": "Repeatedly combine verbal premises, judge the derived conclusion, and increase challenge while checking answers. Its spatial-modeling tool also resembles drawing a world to learn the rules before doing the reasoning mentally.",
+      "feature": "Supports the inference component: combine the given premises and check whether a conclusion follows. It does not test the added Da Vinci operations of constructing another domain, explaining corresponding roles or checking an imagined mechanism.",
       "positiveFinding": "In a preregistered randomized study with 301 analyzed adults, app-based reasoning practice improved immediate deductive-reasoning accuracy and response time compared with no intervention. During training, an external spatial-modeling tool helped participants pass difficult three-premise problems in fewer attempts. This is a close positive precedent for practicing the modes' inference component.",
       "limitation": "The modeling app did not outperform active reasoning-practice controls on the posttest. The study tested one session and immediate outcomes, so it supports reasoning practice without establishing an additional visualization benefit, lasting gains or transfer to general intelligence."
     },
@@ -521,7 +528,7 @@
         "mode1",
         "mode2"
       ],
-      "feature": "Distinguish genuine reasoning demands—integrating premises and coordinating more than one spatial axis—from extra wording. Use this distinction when comparing 4-, 8- and 16-direction settings or adding nested structures.",
+      "feature": "Use premise count and the relations that must be integrated to describe task demands. Its spatial-dimension manipulation is not the same as conceptual distance between domains, additional compass labels or nested ontology worlds; those extensions require separate evaluation.",
       "positiveFinding": "In 310 adults, systematically varying relational problems showed that additional premises and multidimensional relations made reasoning more difficult. The authors released the problems and normative data, providing a useful empirical benchmark for identifying which parts of a task demand more relational processing.",
       "limitation": "This is task-design evidence, not a training-benefit trial: harder does not automatically mean more effective. The study did not compare this game's direction resolutions, N-back delays or equal-step vector convention."
     },
@@ -589,9 +596,9 @@
         "mode2",
         "method"
       ],
-      "feature": "Make an imagined scene's spatial relations easy to track. In cross-domain practice, choose images that preserve who relates to whom, the direction and the ordering; extra pictorial detail should support that structure.",
+      "feature": "A representation check for the compass component: choose imagery that helps inspect the specified relations. Extending this finding to which causal or semantic details belong in a Da Vinci analogy is a design inference, not a tested result.",
       "positiveFinding": "Rating studies separated how easily a relation evokes a visual image from how easily it supports a spatial model. Across three reasoning experiments, spatial and visuospatial relations avoided the slowdown seen for relations that were vivid but difficult to organize spatially. This provides a concrete design lesson for imagination practice: clear relational structure matters more than vividness alone.",
-      "limitation": "Spatial and visuospatial relations performed comparably to controls, not better. This was not a training study and does not show that increasing imagery vividness or elaborating stories improves intelligence."
+      "limitation": "Spatial and visuospatial relations performed comparably to controls, not better. The experiments tested reasoning representations, not cross-domain imagination training, and do not establish a benefit from increased vividness or story elaboration."
     }
   ]
 }
