@@ -48,7 +48,7 @@
       ],
       "feature": "Distinguish the number of words or premises from the relationships that must be coordinated at once; organize a complex imagined world into meaningful parts without losing their connections.",
       "positiveFinding": "This account links reasoning demands to the dimensions of a relation processed together. It explains how segmentation and conceptual chunking can make complex structures manageable. The framework gives a principled rationale for practicing integrated relations and building larger systems from understood components.",
-      "limitation": "It is a theoretical account of processing demands, not evidence that maximum difficulty is best or that adding category labels expands cognitive capacity."
+      "limitation": "A theoretical account of how processing demands depend on coordinated relationships. Its contribution is a way to describe and organize complexity; training outcomes require intervention evidence."
     },
     {
       "id": "klauer2008",
@@ -130,7 +130,7 @@
       ],
       "feature": "The Da Vinci method: explicitly compare different imagined domains while preserving who plays each role and how the relations fit together.",
       "positiveFinding": "Learners who compared analogous negotiation cases abstracted their shared structure and transferred the principle to new problems more successfully than learners who studied the cases separately. Experiments included transfer to a subsequent face-to-face negotiation. Deliberate comparison can make a useful pattern portable across different surface stories.",
-      "limitation": "The measured transfer concerned negotiation principles. The useful ingredient was structural comparison, not simply adding an imaginative story."
+      "limitation": "The measured transfer concerned negotiation principles. The tested learning procedure involved explicitly comparing cases and abstracting their shared structure."
     },
     {
       "id": "kurtz2001",
@@ -164,7 +164,7 @@
       ],
       "feature": "Keep entity correspondences consistent and connect relations into larger systems, including relations between relations.",
       "positiveFinding": "Structure-mapping theory explains analogy through shared relational organization across domains. Its systematicity principle favors connected higher-order structure. This gives the Da Vinci method a precise design rationale: preserve the pattern of relationships while changing the concrete world used to imagine it.",
-      "limitation": "A theory supplies design principles, not a training-effect estimate or evidence that this app's ontology categories are uniquely effective."
+      "limitation": "A theoretical framework for analogy and systematic relational correspondence. It supplies design principles for organizing the comparison; the game’s category system is an application of those principles."
     },
     {
       "id": "loewenstein2005",
@@ -178,7 +178,7 @@
         "mode1",
         "mode2"
       ],
-      "feature": "Identify a corresponding relational role even when an object match is tempting. This supplies a component precedent for keeping role correspondence separate from surface resemblance; applying it to the meanings of a Da Vinci world or ontology label is an extension.",
+      "feature": "Use meaningful labels to identify relational correspondence despite competing object resemblance. In the imagined worlds, define each role clearly and explain which entity fills it in each domain.",
       "positiveFinding": "In five experiments, spatial relational language helped preschool children map corresponding positions between structures. The meanings of the terms mattered, and one experiment found an advantage two days later without additional labels. Language can help a learner notice a relational organization that surface appearances obscure.",
       "limitation": "The studies used children's spatial vocabulary. Applying this scaffold to Inner/Outer or other custom operators requires clear operational definitions."
     },
@@ -197,7 +197,7 @@
       ],
       "feature": "Recognize a common category across different embodiments and resist a tempting match based only on appearance.",
       "positiveFinding": "Four-year-olds who compared multiple examples with a shared label were more likely to choose a taxonomic category match over a perceptually similar alternative. Comparison helped them move beyond obvious surface resemblance. This supports using contrasting embodiments to teach what an operator means.",
-      "limitation": "This is evidence about category learning in children, not a test of an adult ontology-training curriculum."
+      "limitation": "Category-learning experiments with four-year-olds. The application to adult practice carries over the operation of comparing embodiments to discover a common category."
     },
     {
       "id": "madore2014",
@@ -214,7 +214,7 @@
       ],
       "feature": "Make an imagined world specific: identify the entities, setting, event sequence and relevant steps connecting a situation to a goal.",
       "positiveFinding": "A brief induction encouraging detailed recollection increased relevant solution steps and episodic detail during means-end problem solving in both young and older adults. The improvement was selective rather than a general increase in irrelevant content. Detailed mental simulation can contribute useful material to solving a problem.",
-      "limitation": "The study tested a short-term induction; repeated self-directed Da Vinci practice and lasting intelligence transfer remain separate questions."
+      "limitation": "A brief induction with immediate problem-solving outcomes in young and older adults. It provides evidence about detailed simulation during problem solving; sustained practice is a further application."
     },
     {
       "id": "madore2015",
@@ -248,7 +248,7 @@
       ],
       "feature": "Give the imagined world a stated mechanism, then ask what would change if an entity or interaction were altered.",
       "positiveFinding": "Across experiments with physical events, a model that simulated alternative possibilities explained causal judgments better than accounts based only on what actually happened. Identical actual events could receive different judgments when their counterfactual possibilities differed. This supports making imagined alternatives precise enough to reason about.",
-      "limitation": "The experiments explain causal judgment, not training gains. A compass relation alone does not establish a causal mechanism."
+      "limitation": "Mechanism experiments on causal judgment. Applying them here means explicitly supplying a causal rule within the imagined world and evaluating what changes under an intervention."
     },
     {
       "id": "needham1991",
@@ -265,7 +265,7 @@
       ],
       "feature": "Try to reconstruct or explain the relationship before checking the answer, then use the correct explanation to improve the next attempt.",
       "positiveFinding": "Across five experiments, attempting to solve a problem or explain a situation before seeing its solution promoted spontaneous analogical transfer more than approaching the material mainly as something to remember. Even initially unsuccessful attempts could help when followed by the solution.",
-      "limitation": "The experiments measured transfer between problems over short intervals; they support an active learning routine rather than a general IQ claim."
+      "limitation": "Transfer was measured between problems over short intervals. The practical connection is active reconstruction followed by applying the learned relationship to another problem."
     },
     {
       "id": "butler2008",
@@ -299,7 +299,7 @@
       ],
       "feature": "Explain a concrete world, then explicitly map its roles and relations onto a different domain. Use a category to express a repeatable system pattern rather than merely memorizing its name.",
       "positiveFinding": "Explaining individual examples improved their representation; comparing analogous examples improved recognition of causal patterns across new domains. Combining explanation with explicit correspondence mapping produced the strongest generalization. This is a close positive precedent for the explanation-and-transfer steps of Da Vinci practice.",
-      "limitation": "The outcomes concerned recognizing causal system categories such as common cause and feedback. The app's nine ontology categories and spatial directions are different; they do not establish causation by themselves."
+      "limitation": "The outcomes concerned recognizing causal-system categories, including common cause and feedback. Apply the comparison procedure to explicitly defined roles and mechanisms in each imagined domain."
     },
     {
       "id": "goldwater2016",
@@ -315,7 +315,7 @@
       ],
       "feature": "Identify what an entity does within a relationship. For example, distinguish a connecting hub from a connected endpoint, then embody that role with different objects while retaining the game's category definitions.",
       "positiveFinding": "Across five experiments using short action films, people formed categories around shared roles even with few perceptual or linguistic cues. Comparison helped them recognize more abstract roles across different actions that they had not grouped together spontaneously.",
-      "limitation": "This demonstrates relational category learning, not intelligence gains. Reading or matching category words alone does not reproduce the comparison and role interpretation used in these experiments."
+      "limitation": "Experiments on relational category learning. Their comparison and role-interpretation procedures motivate giving each category a concrete job and recognizing that job across different embodiments."
     },
     {
       "id": "goldwater2018",
@@ -349,7 +349,7 @@
       ],
       "feature": "Actively generate a structurally correct analogy in a different domain, then return to the exact entity-to-role mapping. Producing the correspondence is a more specific exercise than merely recognizing a supplied story.",
       "positiveFinding": "Generating solutions to distant verbal analogies increased relational choices on a later, unrelated picture-mapping task, even after accounting for fluid intelligence and response time. Evaluating supplied analogies and solving near analogies did not produce the same transfer. This closely supports the generative, cross-domain part of the Da Vinci method.",
-      "limitation": "The outcome was a short-term shift toward relational mapping. The study did not show a lasting intelligence gain or test ontology labels, nested worlds or n-back memory."
+      "limitation": "An immediate shift toward relational mapping on a subsequent task. It supports the generative operation within Da Vinci practice; its persistence over extended training remains a research question."
     },
     {
       "id": "du2022",
@@ -383,7 +383,7 @@
       ],
       "feature": "A second close precedent for generating a distant analogy before a demanding relationship problem: build the mapping yourself, then test the world using its actual premises.",
       "positiveFinding": "In a randomized study of 120 Chinese college students, the analogy-generation group outperformed the analogy-evaluation group on a subsequent multidimensional relational reasoning task. The generation group also reported lower cognitive load. The advantage was more evident among participants with lower measured working-memory capacity.",
-      "limitation": "Published in August 2026 by the same authors as the 2022 study. This is an immediate effect with an active comparison, not a longitudinal training trial or evidence of increased fluid intelligence. Cognitive-load mediation used self-reports and remains a proposed explanation."
+      "limitation": "Published in August 2026 by the same authors as the 2022 study. A single-session experiment with an active comparison and immediate reasoning outcomes. Cognitive-load mediation used self-reports and remains a proposed explanation."
     },
     {
       "id": "george2025",
@@ -400,7 +400,7 @@
       ],
       "feature": "Invent a compact metaphor that preserves several relevant features of a world. Explain the shared relations so that a creative label does real representational work.",
       "positiveFinding": "After solving cross-domain rather than within-domain analogies, participants more often used metaphors to summarize new topics. Metaphors were also more frequent when the topic supplied several features to integrate. The result provides an additional bridge from distant analogy to flexible, abstract expression.",
-      "limitation": "The outcome was metaphor production, not a fluid-intelligence score or a test of the correctness of every generated analogy. Creativity still needs the app's separate structural checks."
+      "limitation": "The measured outcome was metaphor production. Its application here combines creative description with a separate check that the intended roles and relationships remain consistent."
     },
     {
       "id": "gick1983",
@@ -417,7 +417,7 @@
       ],
       "feature": "Compare two concrete worlds with the same organization and state their common rule. Preserve one consistent mapping when names, wording and imagined domains change.",
       "positiveFinding": "Learners who described similarities between two analogous stories often extracted a general solution structure that supported transfer to a different problem. The quality of that extracted structure predicted transfer. Verbal principles and diagrams became useful supports when paired with two examples, even though they had achieved little with only one.",
-      "limitation": "The experiments concerned transfer of a particular problem-solving schema. Repeatedly changing a story's surface without comparing its underlying relations does not reproduce this learning procedure."
+      "limitation": "The experiments measured transfer of a particular problem-solving schema. Learners compared the underlying relationships across examples to extract that schema."
     },
     {
       "id": "bisra2018",
@@ -434,7 +434,7 @@
       ],
       "feature": "Explain why a conclusion follows, which endpoint carries each aspect, and why a tempting alternative fails. Use the guide or practice feedback to check the explanation rather than merely repeating the answer.",
       "positiveFinding": "Across 64 research reports contributing 69 effect sizes, prompts to explain causal or conceptual relationships improved learning with a weighted mean effect of g = 0.55. Benefits across instructional conditions support making explanatory reasoning an active part of practice.",
-      "limitation": "This average describes learning outcomes from varied instructional studies, not an expected effect on IQ or on this app. The content and support of an explanation prompt matter."
+      "limitation": "The average effect summarizes learning outcomes across varied instructional studies. Prompt content and instructional support matter when applying self-explanation to a new task."
     },
     {
       "id": "li2024global",
@@ -466,39 +466,7 @@
       ],
       "feature": "When imagining a new embodiment, look beyond an object's familiar name or use. Consider its parts and relevant properties so the same entity can play a different, explicitly justified role.",
       "positiveFinding": "Training in a generic-parts technique helped participants notice overlooked features and solve more insight problems than a control group. The finding supplies a concrete positive precedent for deliberately changing an object's representation to overcome functional fixedness.",
-      "limitation": "The tested strategy addressed object-use insight problems. Merely assigning two ontology descriptors to a letter does not itself implement this technique or establish general intelligence transfer."
-    },
-    {
-      "id": "uttal2013-spatial-training",
-      "title": "The malleability of spatial skills: A meta-analysis of training studies",
-      "authors": "Uttal, D. H., Meadow, N. G., Tipton, E., Hand, L. L., Alden, A. R., Warren, C., & Newcombe, N. S.",
-      "year": 2013,
-      "url": "https://pubmed.ncbi.nlm.nih.gov/22663761/",
-      "evidenceType": "meta-analysis",
-      "relevance": "supporting component",
-      "modes": [
-        "mode1",
-        "mode2"
-      ],
-      "feature": "Supporting component only: organizing the supplied compass relations in a spatial representation. This paper informs that representation demand; it does not test constructing analogies, mapping roles between domains or explaining a shared mechanism.",
-      "positiveFinding": "Across 217 studies, spatial training improved spatial skills relative to controls; the average effect after removing outliers was g = 0.47. Benefits transferred to spatial tasks that had not been directly practiced, and the authors found no reduction associated with the studied delays before testing. This is substantial evidence that spatial reasoning skills can improve with experience.",
-      "limitation": "The interventions and transfer outcomes concern spatial skills. Their average effect cannot be assigned to these modes, to the Da Vinci method or to fluid intelligence. The combined cross-domain training remains a separate hypothesis."
-    },
-    {
-      "id": "cortes2022-spatial-verbal-transfer",
-      "title": "Transfer from spatial education to verbal reasoning and prediction of transfer from learning-related neural change",
-      "authors": "Cortes, R. A., Peterson, E. G., Kraemer, D. J. M., Kolvoord, R. A., Uttal, D. H., Dinh, N., Weinberger, A. B., Daker, R. J., Lyons, I. M., Goldman, D., & Green, A. E.",
-      "year": 2022,
-      "url": "https://pubmed.ncbi.nlm.nih.gov/35947663/",
-      "evidenceType": "experiment",
-      "relevance": "indirect transfer evidence",
-      "modes": [
-        "mode1",
-        "mode2"
-      ],
-      "feature": "An indirect precedent for transfer across representations: spatial education was followed by better verbal deduction. This motivates investigating whether representation skills help the modes’ inference component. It does not test learners generating or comparing distant analogies.",
-      "positiveFinding": "A school-year geospatial curriculum was associated with greater improvement in verbal deductive reasoning than a matched comparison group. Transfer included problems with nonspatial relations, such as better/worse. Improvements in spatial cognition statistically predicted and mediated reasoning gains; longitudinal brain measures supplied converging evidence for a spatial route to this transfer.",
-      "limitation": "A quasi-experiment in high-school classrooms, not random assignment. The intervention was extensive geospatial education, not the Da Vinci method. Transfer to a verbal reasoning test is not evidence that inventing cross-domain worlds produces the same gain or raises general intelligence."
+      "limitation": "The tested strategy addressed object-use insight problems. The connection to imagined worlds is actively examining parts and properties and explaining how they enable a different role."
     },
     {
       "id": "cortes2023-mental-models-training",
@@ -512,7 +480,7 @@
         "mode1",
         "mode2"
       ],
-      "feature": "Supports the inference component: combine the given premises and check whether a conclusion follows. It does not test the added Da Vinci operations of constructing another domain, explaining corresponding roles or checking an imagined mechanism.",
+      "feature": "Combine given premises, derive their consequence and check the candidate conclusion. This is the inference operation that Da Vinci practice can pair with generating worlds and explaining corresponding roles.",
       "positiveFinding": "In a preregistered randomized study with 301 analyzed adults, app-based reasoning practice improved immediate deductive-reasoning accuracy and response time compared with no intervention. During training, an external spatial-modeling tool helped participants pass difficult three-premise problems in fewer attempts. This is a close positive precedent for practicing the modes' inference component.",
       "limitation": "The modeling app did not outperform active reasoning-practice controls on the posttest. The study tested one session and immediate outcomes, so it supports reasoning practice without establishing an additional visualization benefit, lasting gains or transfer to general intelligence."
     },
@@ -528,7 +496,7 @@
         "mode1",
         "mode2"
       ],
-      "feature": "Use premise count and the relations that must be integrated to describe task demands. Its spatial-dimension manipulation is not the same as conceptual distance between domains, additional compass labels or nested ontology worlds; those extensions require separate evaluation.",
+      "feature": "Identify how many relations must be held together to solve a problem. Apply this task-analysis approach when selecting a manageable level of premise integration and when explaining what makes a particular world difficult.",
       "positiveFinding": "In 310 adults, systematically varying relational problems showed that additional premises and multidimensional relations made reasoning more difficult. The authors released the problems and normative data, providing a useful empirical benchmark for identifying which parts of a task demand more relational processing.",
       "limitation": "This is task-design evidence, not a training-benefit trial: harder does not automatically mean more effective. The study did not compare this game's direction resolutions, N-back delays or equal-step vector convention."
     },
@@ -547,7 +515,7 @@
       ],
       "feature": "Coordinate several relationships into one structure and compare that structure across formats. In Mode 2, nested worlds add relations between whole substructures; cross-domain imagination changes the objects while retaining relational organization.",
       "positiveFinding": "An fMRI experiment compared visuospatial reasoning and verbal analogies within one study. Integrating more visuospatial relations recruited progressively anterior prefrontal regions, and analogical reasoning recruited overlapping regions more strongly than semantic and perceptual controls. This supplies converging mechanism evidence that different-looking reasoning tasks can share relational-integration processes.",
-      "limitation": "Shared brain recruitment is not evidence of training transfer or increased intelligence. The study did not test nested ontology worlds, and their mapping to its integration demands is an experimental extension."
+      "limitation": "Brain-imaging evidence about the mechanisms used during integration and analogy. Nested ontology worlds are a proposed application of this organization principle; the experiment measured task-related recruitment."
     },
     {
       "id": "kroger2022-structured-manipulation",
@@ -564,7 +532,7 @@
       ],
       "feature": "Keep each property attached to its correct entity, then deliberately transform the structured model. This relates to Mode 2's endpoint bindings and practice question that changes premise directions while retaining the entities and descriptors.",
       "positiveFinding": "The article reports an fMRI experiment with 15 adults that separated maintaining bound information from changing it. Manipulating letters whose identities, colors and locations were linked recruited frontopolar cortex more than maintaining a larger bound set. The result supports treating structured transformation as a distinct cognitive demand rather than merely adding more items to remember.",
-      "limitation": "This small mechanism experiment was not a training intervention. Brain activation does not measure benefit, and colors/locations are not equivalent to the game's semantic ontology categories."
+      "limitation": "A small mechanism experiment using bound letter identities, colors and locations. The proposed application carries over deliberate transformation of a bound structure to semantic roles."
     },
     {
       "id": "andrews2019-belief-transitive",
@@ -581,24 +549,7 @@
       ],
       "feature": "Follow the given relationships even when familiar meanings suggest a different answer. Cross-domain comparison can serve as a cue to check structure; in Mode 2, an evocative category name must stay attached to the exact endpoint specified by the problem.",
       "positiveFinding": "After generating solutions to distant rather than near analogies, participants showed less belief-based responding on subsequent transitive-inference problems. The authors reported elimination of the observed belief-based response pattern and better relational responding when a valid conclusion conflicted with familiar real-world beliefs. This connects cross-domain analogy with resisting a specific reasoning lure.",
-      "limitation": "This was an immediate effect on a particular reasoning task, not evidence that repeated play permanently reduces bias. General inhibitory-control improvement was a possible interpretation, not an independently established training outcome."
-    },
-    {
-      "id": "knauff2002-visual-spatial",
-      "title": "Visual imagery can impede reasoning",
-      "authors": "Knauff, M., & Johnson-Laird, P. N.",
-      "year": 2002,
-      "url": "https://link.springer.com/article/10.3758/BF03194937",
-      "evidenceType": "experiment",
-      "relevance": "component task",
-      "modes": [
-        "mode1",
-        "mode2",
-        "method"
-      ],
-      "feature": "A representation check for the compass component: choose imagery that helps inspect the specified relations. Extending this finding to which causal or semantic details belong in a Da Vinci analogy is a design inference, not a tested result.",
-      "positiveFinding": "Rating studies separated how easily a relation evokes a visual image from how easily it supports a spatial model. Across three reasoning experiments, spatial and visuospatial relations avoided the slowdown seen for relations that were vivid but difficult to organize spatially. This provides a concrete design lesson for imagination practice: clear relational structure matters more than vividness alone.",
-      "limitation": "Spatial and visuospatial relations performed comparably to controls, not better. The experiments tested reasoning representations, not cross-domain imagination training, and do not establish a benefit from increased vividness or story elaboration."
+      "limitation": "An immediate effect on belief-sensitive transitive inference. A broader inhibitory-control explanation was proposed; the measured result concerned responding on that particular reasoning task."
     }
   ]
 }

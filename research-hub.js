@@ -59,7 +59,7 @@
     heading.append(link);
     article.append(heading, element('p', 'study-citation', study.authors + ' · ' + study.year));
     const descriptions = element('dl');
-    [['Finding', study.positiveFinding, ''], ['Connection to training', study.feature, ''], ['Scope of the evidence', study.limitation, 'scope']].forEach(([label, value, className]) => {
+    [['Finding', study.positiveFinding, ''], ['Connection to training', study.feature, ''], ['Study context', study.limitation, 'scope']].forEach(([label, value, className]) => {
       descriptions.append(element('dt', '', label), element('dd', className, value));
     });
     article.append(descriptions);
@@ -118,7 +118,7 @@
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 12000);
     try {
-      const response = await fetch(path + '?v=20260921-research-mapping-1', {signal: controller.signal});
+      const response = await fetch(path + '?v=20260921-davinci-focus-2', {signal: controller.signal});
       if (!response.ok) throw new Error('Collection unavailable');
       const collection = await response.json();
       if (!collection || !Array.isArray(collection.studies) || !collection.studies.length || !collection.studies.every(validStudy)) throw new Error('Collection format unavailable');
