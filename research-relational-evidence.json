@@ -991,6 +991,177 @@
       "feature": "Practise identifying, applying and checking relationships at a manageable difficulty. This supports treating relational reconstruction as its own training target alongside memory.",
       "positiveFinding": "In a randomized study of four-year-olds, adaptive non-verbal reasoning practice improved a fluid-reasoning factor derived from untrained Raven and Block Design measures relative to low-difficulty control practice. Training included changing patterns, sequences and classification rules with corrective feedback.",
       "limitation": "101 children completed sufficient training and post-testing. The programme scheduled 25 sessions of about 15 minutes. Outcomes were measured immediately; working-memory-only practice improved memory without corresponding reasoning transfer."
+    },
+    {
+      "id": "doumas2008-learned-role-binding",
+      "title": "A Theory of the Discovery and Predication of Relational Concepts",
+      "authors": "Doumas, L. A. A., Hummel, J. E., & Sandhofer, C. M.",
+      "year": 2008,
+      "url": "https://doi.org/10.1037/0033-295X.115.1.1",
+      "evidenceType": "theory",
+      "relevance": "proposed extension",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Distinguish an entity from the role it currently fills; compare examples to identify the reusable relation while keeping every role attached to its correct participant.",
+      "positiveFinding": "The DORA computational theory shows how comparison can progressively extract relational roles from concrete examples. Its simulations learn relations that support structurally correct mappings even when object identity suggests a competing match, providing an explicit account of reusable relational representations.",
+      "limitation": "This is computational theory. Higher-order nesting is described architecturally but was not exercised in the reported simulations."
+    },
+    {
+      "id": "dekker2022-compositional-curriculum",
+      "title": "Curriculum learning for human compositional generalization",
+      "authors": "Dekker, R. B., Otto, F., & Summerfield, C.",
+      "year": 2022,
+      "url": "https://www.pnas.org/doi/10.1073/pnas.2205582119",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "When learning a composite rule, first vary one meaningful component while holding another fixed; then test whether the components can be recombined correctly.",
+      "positiveFinding": "Across two experiments, adults learned symbolic cues composed of two independently informative features. Training that separated the factors, and grouped examples along one factor at a time, improved generalization to untrained combinations. This supports a concrete curriculum for learning reusable parts before recombining them.",
+      "limitation": "The task mapped symbols to locations. Generalization analyses excluded learners who did not meet a training-performance criterion; transfer was measured within that task."
+    },
+    {
+      "id": "franklin2020-contextual-composition",
+      "title": "Generalizing to generalize: Humans flexibly switch between compositional and conjunctive structures during reinforcement learning",
+      "authors": "Franklin, N. T., & Frank, M. J.",
+      "year": 2020,
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7179934/",
+      "evidenceType": "experiment",
+      "relevance": "proposed extension",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "When transferring an imagined system, decide which component can be reused independently and which relationship must travel with its original context.",
+      "positiveFinding": "Three navigation experiments separately varied goals and action mappings. Generalization followed whether previous contexts linked those components together or allowed them to vary independently. People could recombine learned components, with group behavior reflecting the structure of prior experience.",
+      "limitation": "These are task-specific, group-level findings; the design cannot establish each individual's strategy. Reusing a familiar component was not beneficial in every test context."
+    },
+    {
+      "id": "lake2023-human-function-composition",
+      "title": "Human-like systematic generalization through a meta-learning neural network",
+      "authors": "Lake, B. M., & Baroni, M.",
+      "year": 2023,
+      "url": "https://www.nature.com/articles/s41586-023-06668-3",
+      "evidenceType": "experiment",
+      "relevance": "component task",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Parse which parts a rule acts on and in what order; preserve these attachments when familiar components appear inside a new compound structure.",
+      "positiveFinding": "In the paper's human experiment, 25 adults learned a miniature instruction language and produced systematic outputs for novel instructions, including longer compositions. They could apply learned functions to new arguments, supporting compositional reasoning beyond memorizing whole examples.",
+      "limitation": "Study examples stayed visible, and responses involving unmastered study items were excluded. This behavioral benchmark and its computational models address composition, not gains from a reasoning intervention."
+    },
+    {
+      "id": "ward2004-abstract-imagination",
+      "title": "The Role of Specificity and Abstraction in Creative Idea Generation",
+      "authors": "Ward, T. B., Patterson, M. J., & Sifonis, C. M.",
+      "year": 2004,
+      "url": "https://doi.org/10.1207/s15326934crj1601_1",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Construct a Da Vinci world from the functions and relationships it must express, then invent its actors. In Mode 2, let the stated category roles guide those inventions.",
+      "positiveFinding": "In Experiment 2, 284 students imagined alien life. Prompts about abstract survival requirements produced more novel creations than prompts about familiar Earth animals or no special strategy.",
+      "limitation": "Judges evaluated creative novelty. Translating function-first generation into category-role world construction is the proposed practice application."
+    },
+    {
+      "id": "markman2007-counterfactual-structure",
+      "title": "Implications of Counterfactual Structure for Creative Generation and Analytical Problem Solving",
+      "authors": "Markman, K. D., Lindberg, M. J., Kray, L. J., & Galinsky, A. D.",
+      "year": 2007,
+      "url": "https://doi.org/10.1177/0146167206296106",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Explore two deliberate operations on an imagined world: add a possibility to expand alternatives; remove an assumption to inspect what follows. State each changed rule explicitly.",
+      "positiveFinding": "Four experiments found that additive counterfactual thinking favored creative generation, while subtractive thinking favored analytical problem solving relative to additive thinking. In the brick-use experiment, adding counterfactual possibilities improved rated creativity without increasing the number of ideas.",
+      "limitation": "Brief counterfactual primes preceded separate tasks; alternating these operations during Da Vinci practice is a proposed extension."
+    },
+    {
+      "id": "kemp2010-causal-schema-learning",
+      "title": "Learning to Learn Causal Models",
+      "authors": "Kemp, C., Goodman, N. D., & Tenenbaum, J. B.",
+      "year": 2010,
+      "url": "https://charleskemp.com/papers/kempgt10_learningtolearncausalmodels.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Build several worlds around an explicit causal rule, then test a possible exception. Track which relational roles justify reusing the rule and which changed outcomes require revising it.",
+      "positiveFinding": "Four experiments showed that adults used experience across causal systems to infer how newly encountered objects worked from sparse evidence. Learned causal categories guided predictions; additional conflicting observations could shift those judgments.",
+      "limitation": "The experiments used families of block-and-machine systems. Extending this schema-learning approach across imagined domains is the proposed application."
+    },
+    {
+      "id": "toyama2024-distal-observer-simulation",
+      "title": "Beyond the Here and Now: Leveraging Distal Mental Simulation for Creative Breakthroughs",
+      "authors": "Toyama, M.",
+      "year": 2024,
+      "url": "https://doi.org/10.1037/aca0000728",
+      "evidenceType": "experiment",
+      "relevance": "related paradigm",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "Imagine the same relationship in a distant time, another agent's situation or an unlikely world. Then view the whole scene from outside and describe its organizing relation. Keep Mode 2’s formal perspective labels unchanged.",
+      "positiveFinding": "In Study 2, 456 Japanese adults were assigned to distant simulation with observer instructions, nearby simulation or control. Distant-observer simulation improved subsequent idea originality against both comparators and flexibility against control.",
+      "limitation": "These were immediate creative outcomes. Study 1 found no advantage of distant over nearby simulation; Study 2 combined distance with observer instructions."
+    },
+    {
+      "id": "thiede2003-monitoring-restudy",
+      "title": "Accuracy of Metacognitive Monitoring Affects Learning of Texts",
+      "authors": "Thiede, K. W., Anderson, M. C. M., & Therriault, D.",
+      "year": 2003,
+      "url": "https://wp.stolaf.edu/cila/files/2012/11/thiede_jedp.pdf",
+      "evidenceType": "experiment",
+      "relevance": "related learning mechanism",
+      "modes": [
+        "mode1",
+        "mode2",
+        "method"
+      ],
+      "feature": "During reflection, reconstruct a world’s essential relations after a delay. Use what you can explain to choose the weakest relation for further practice.",
+      "positiveFinding": "Students generating keywords after reading all texts judged their comprehension more accurately, selected weaker texts for restudy more effectively, and achieved better final comprehension than immediate-keyword or no-keyword groups.",
+      "limitation": "66 students were randomly assigned. Benefits followed self-selected restudy within a reading experiment. Applying this diagnostic reconstruction to relational worlds is a proposed practice strategy."
+    },
+    {
+      "id": "barnett2002-transfer-dimensions",
+      "title": "When and Where Do We Apply What We Learn? A Taxonomy for Far Transfer",
+      "authors": "Barnett, S. M., & Ceci, S. J.",
+      "year": 2002,
+      "url": "https://doi.org/10.1037/0033-2909.128.4.612",
+      "evidenceType": "review",
+      "relevance": "transfer framework",
+      "modes": [
+        "mode1",
+        "mode2",
+        "nback",
+        "method"
+      ],
+      "feature": "When applying a learned rule, specify what changes in the problem or setting and what knowledge must carry over. Record these separately from the game's score.",
+      "positiveFinding": "This review organizes transfer across nine content and context dimensions. It identifies substantial evidence under some conditions and shows how specifying the kind of transfer makes otherwise conflicting findings easier to interpret.",
+      "limitation": "The framework classifies transfer outcomes; it does not test a training programme or identify an optimal practice schedule. The hub's practice examples apply this organizing idea."
     }
   ]
 }
