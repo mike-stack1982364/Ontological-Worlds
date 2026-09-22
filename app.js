@@ -162,6 +162,10 @@ class OntologicalWorlds {
       this.applyPremiseVisibility());
   }
   bindControls() {
+    const pauseForRelacality = (event) => {
+      if (event.type === "auxclick" && event.button !== 1) return;
+      if (this.running && !this.paused) this.togglePause();
+    };
     ($("start-btn").addEventListener("click", (t) => {
       (t.preventDefault(), this.primeAudioFromUserGesture(), this.start());
     }),
@@ -185,6 +189,8 @@ class OntologicalWorlds {
       $("research-hub-link")?.addEventListener("click", () => {
         if (this.running && !this.paused) this.togglePause();
       }),
+      $("relacality-portal-link")?.addEventListener("click", pauseForRelacality),
+      $("relacality-portal-link")?.addEventListener("auxclick", pauseForRelacality),
       $("dismiss-tutorial").addEventListener("click", () =>
         this.closeModal("tutorial"),
       ),

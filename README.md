@@ -2,6 +2,12 @@
 
 A browser-based relational reasoning and N-back trainer using the Da Vinci cross-domain method. The main screen provides two relational reasoning modes; **Extra Training** opens a separate ordered-number N-back screen. Modes 3–7 are unreleased and cannot be selected.
 
+## Relacality — independent expansion
+
+The **Open Relacality** portal below the main title opens [Relacality](https://dream-unity.github.io/relacality/) in its own tab: a temporal synchronisation and relational reasoning piano with **27 ontological keys (9 Archetypal + 9 Inner + 9 Outer)**. It supports free play, guided challenges and up to six optional independent metronomes at 1–240 BPM, with odd and even metres.
+
+Relacality is maintained in its [own repository](https://github.com/dream-unity/relacality). It does not add a training mode to this application or share its game runtime, settings, history or audio. The native portal link works without JavaScript; when the main game is running, normal activation or middle-click pauses the current session before opening the piano. Already paused sessions stay paused. Return to the original tab and press P or tap the paused screen to continue.
+
 ## Run locally
 
 The application is a static site; no application build or server-side account is required. Serve the repository over HTTP, for example:
