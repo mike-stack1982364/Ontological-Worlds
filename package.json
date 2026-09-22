@@ -8,7 +8,9 @@
     "test:runtime": "node --test tests/production-runtime-regression.test.js tests/session-lifecycle.test.js tests/mode-two-session-regression.test.js tests/mode-two-session-v22.test.js tests/mode-two-production-v22.test.js tests/extra-training-runtime.test.js tests/speech-lifecycle.test.js tests/number-speech-audio.test.js",
     "test:browser": "node tests/browser-smoke.cjs",
     "test:mode-two:browser": "node tests/mode-two-browser-v22.cjs",
-    "test:audio:browser": "node tests/number-speech-browser.cjs"
+    "test:audio:browser": "node tests/number-speech-browser.cjs",
+    "test:relacality": "npm --prefix relacality test",
+    "build:relacality": "npm --prefix relacality run build:standalone"
   },
   "engines": { "node": ">=22" },
   "devDependencies": { "jsdom": "26.1.0", "playwright": "1.58.2" }

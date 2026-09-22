@@ -1,0 +1,28 @@
+name: Relacality engine and offline checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'relacality/**'
+      - '.github/workflows/relacality-checks.yml'
+  pull_request:
+    paths:
+      - 'relacality/**'
+      - '.github/workflows/relacality-checks.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: relacality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test
+      - run: node --check app.js
+      - run: npm run build:standalone
+      - run: git diff --exit-code -- offline/relacality.html
