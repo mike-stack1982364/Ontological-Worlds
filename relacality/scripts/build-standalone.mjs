@@ -66,7 +66,9 @@ function replaceOnce(html, expected, replacement) {
 }
 let html = replaceOnce(template, '<link rel="stylesheet" href="./styles.css">', `<style>\n${styles.replace(/<\/style/gi, '<\\/style')}\n</style>`);
 html = replaceOnce(html, '<link rel="icon" type="image/svg+xml" href="./favicon.svg">', `<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,${encodeURIComponent(favicon)}">`);
-html = replaceOnce(html, '<script type="module" src="./app.js"></script>', `<script>\n${javascript.replace(/<\/script/gi, '<\\/script')}\n</script>`);
+const appScript = template.match(/<script type="module" src="\.\/app\.js(?:\?[^"]*)?"><\/script>/)?.[0];
+if (!appScript) throw new Error('Expected the app.js module script in index.html');
+html = replaceOnce(html, appScript, `<script>\n${javascript.replace(/<\/script/gi, '<\\/script')}\n</script>`);
 // A standalone file may be renamed or moved. Keep its home link in this page.
 html = replaceOnce(html, '<a class="brand" href="./"', '<a class="brand" href="#"');
 if (/<(?:script|link|img|audio|video)\b[^>]*\b(?:src|href)\s*=\s*['"](?:\.\/|https?:)/i.test(html)) {
