@@ -119,7 +119,7 @@
           <h3>3. Keep one set of name tags</h3>
           <p>The letters may change. Old <strong>C</strong> might become new <strong>X</strong>. That is fine! But C must mean X in <strong>every line</strong> of this comparison. Two old letters cannot share one new name.</p>
           <p>Use one set of name changes that makes <strong>as many lines match as possible</strong>. Do not pick a different set for each line.</p>
-          <ul><li>The first two clues may swap places.</li><li>The last line must match the <strong>old last line</strong>.</li><li><strong>“A is north of B” = “B is south of A.”</strong> Saying it backward is okay only when the direction flips too.</li></ul>
+          <ul><li>All three statements may change places for N-back matching.</li><li>Each current line may match <strong>any old line</strong>; use each old line only once.</li><li><strong>“A is north of B” = “B is south of A.”</strong> Saying it backward is okay only when the direction flips too.</li></ul>
           <div class="guide-note"><p><strong>What if two name keys tie?</strong> Sometimes two ways of renaming make the same number of lines match, but disagree about which lines match. The game uses a fixed tie rule: compare their Yes/No answers from line 1 onward. At the first difference, choose the set with <strong>No</strong>.</p><p>For example, <strong>No, Yes, Yes</strong> takes priority over <strong>Yes, No, Yes</strong> when both are possible. Use the winning set for all three line answers. This rule settles the memory comparison; it does not change whether today’s last line is proved.</p></div>
           <p>Remember the pattern of directions, not just the letters you see.</p>
         </section>
@@ -127,9 +127,9 @@
           <h3>4. Give all five answers</h3>
           <p>The buttons show letters. <strong>Tap the button</strong>, or press its key if <strong>Keyboard controls</strong> is on.</p>
           <table class="guide-five"><caption>Your five questions and buttons</caption><thead><tr><th scope="col">Question</th><th scope="col">Yes</th><th scope="col">No</th></tr></thead><tbody>
-            <tr><th scope="row">1. Does line 1 match one of the old first two clues?</th><td><kbd>A</kbd></td><td><kbd>S</kbd></td></tr>
-            <tr><th scope="row">2. Does line 2 match the other old clue, using the same name changes?</th><td><kbd>D</kbd></td><td><kbd>F</kbd></td></tr>
-            <tr><th scope="row">3. Does line 3 match the old last line?</th><td><kbd>H</kbd></td><td><kbd>J</kbd></td></tr>
+            <tr><th scope="row">1. Does line 1 match any old line under the shared alignment?</th><td><kbd>A</kbd></td><td><kbd>S</kbd></td></tr>
+            <tr><th scope="row">2. Does line 2 match an unused old line, using the same name changes?</th><td><kbd>D</kbd></td><td><kbd>F</kbd></td></tr>
+            <tr><th scope="row">3. Does line 3 match the remaining old line under that alignment?</th><td><kbd>H</kbd></td><td><kbd>J</kbd></td></tr>
             <tr><th scope="row">4. Do both clues prove line 3’s direction between the two end letters?<br>This is “entailed”.</th><td><kbd>K</kbd></td><td><kbd>L</kbd></td></tr>
             <tr><th scope="row">5. Do all three lines match the old round together?<br>This is the “complete triad”.</th><td><kbd>Space</kbd></td><td><kbd>N</kbd></td></tr>
           </tbody></table>
@@ -141,9 +141,9 @@
           <h3>5. Let’s solve one together</h3>
           <p>Imagine this old round is the one you need to remember.</p>
           <div class="guide-columns"><div class="guide-card"><h4>The old round</h4><ol><li>A is north of B.</li><li>B is north of C.</li><li>A is north of C.</li></ol></div><div class="guide-card guide-now"><h4>The round on screen now</h4><ol><li>A is north of B.</li><li>B is north of X.</li><li>A is <strong>south</strong> of X.</li></ol></div></div>
-          <p><strong>Our name key:</strong> A stays A. B stays B. C becomes X.</p>
-          <ol><li>Line 1 matches. Choose <strong>Yes: <kbd>A</kbd></strong>.</li><li>Line 2 matches after C becomes X. Choose <strong>Yes: <kbd>D</kbd></strong>.</li><li>Line 3 changed from north to south. Choose <strong>No: <kbd>J</kbd></strong>.</li><li>Start at X. Go up to B, then up again to A. A is <strong>north</strong> of X, so the last line is wrong. Choose <strong>No: <kbd>L</kbd></strong>.</li><li>Only two lines match. The whole round does not. Choose <strong>No: <kbd>N</kbd></strong>.</li></ol>
-          <p class="guide-answer"><strong>All five answers: A, D, J, L, N.</strong></p>
+          <p><strong>The winning name key:</strong> old A becomes B, old B becomes X, and old C becomes A. This gives two matches and wins the No-first tie rule.</p>
+          <ol><li>Line 1 does not match under the winning alignment. Choose <strong>No: <kbd>S</kbd></strong>.</li><li>Line 2 matches old line 1 after the name changes. Choose <strong>Yes: <kbd>D</kbd></strong>.</li><li>Line 3 matches old line 2 with equivalent reversed wording. Choose <strong>Yes: <kbd>H</kbd></strong>.</li><li>Start at X. Go up to B, then up again to A. A is <strong>north</strong> of X, so the last line is wrong. Choose <strong>No: <kbd>L</kbd></strong>.</li><li>Only two lines match. The whole round does not. Choose <strong>No: <kbd>N</kbd></strong>.</li></ol>
+          <p class="guide-answer"><strong>All five answers: S, D, H, L, N.</strong></p>
           <div class="guide-note"><p><strong>“Same as before” does not mean “true”.</strong> Suppose the old last line also said “A is south of C”. Both rounds would now have the same wrong claim. The whole round would match, but the claim would still not follow from the clues. You would choose <kbd>L</kbd> for question 4 and <kbd>Space</kbd> for question 5.</p></div>
         </section>
         <section class="guide-part">
@@ -199,13 +199,13 @@
           <div class="guide-card"><ol><li><strong>Projection Z</strong> is north of <strong>Outer Projection Y</strong>.</li><li><strong>Projection Y</strong> is north of <strong>Outer Connection X</strong>.</li><li>Candidate: <strong>Inner Division X</strong> is south of <strong>Multiplication Z</strong>.</li></ol></div>
           <p>The directions are unchanged. All the same category words still appear. But Z’s <strong>Projection</strong> and <strong>Multiplication</strong> jobs have traded places between a clue and the candidate.</p>
           <p class="guide-answer"><strong>Choose No Match.</strong> Remember which job belongs to which link, not just a bag of words.</p>
-          <ul><li>The first two clues may swap places.</li><li>A whole line may reverse only when its direction reverses too.</li><li><strong>Inner stays Inner. Outer stays Outer.</strong> Reversing a sentence does not change its jobs.</li><li>The candidate must match the <strong>old candidate</strong>. It cannot trade places with a clue.</li><li>All directions and all endpoint jobs must fit <strong>one name key</strong>.</li></ul>
+          <ul><li>All three statements may change places for N-back matching.</li><li>A whole line may reverse only when its direction reverses too.</li><li><strong>Inner stays Inner. Outer stays Outer.</strong> Reversing a sentence does not change its jobs.</li><li>The third statement may match <strong>any old statement</strong>. Its position does not restrict N-back matching.</li><li>All directions and all endpoint jobs must fit <strong>one name key</strong>.</li></ul>
           <div class="guide-note"><p><strong>A repeated claim can still be wrong.</strong> The first example puts C north of H. If its candidate instead said “C is west of H”, it would not follow from the clues. Yet two rounds can repeat that same wrong candidate and still be a memory Match.</p><p>Build your spatial world from the <strong>two clues</strong>. Hold the candidate as a claim to check; do not force a wrong claim to become a third fact.</p></div>
         </section>
         <section class="guide-part">
           <h3>6. Give one answer per memory round</h3>
           <p>Wait until the speech finishes and the answer buttons become available.</p>
-          <div class="guide-columns"><div class="guide-card guide-now"><h4>Match</h4><p>The complete pattern fits the right old round: names, jobs, directions and line roles, all together.</p><p>Tap <strong>Match</strong>.<br>Keyboard: <kbd>F</kbd> or <kbd>J</kbd>.</p></div><div class="guide-card"><h4>No Match</h4><p>No single name key preserves the complete pattern. One wrong binding is enough.</p><p>Tap <strong>No Match</strong>.<br>Keyboard: <kbd>D</kbd> or <kbd>K</kbd>.</p></div></div>
+          <div class="guide-columns"><div class="guide-card guide-now"><h4>Match</h4><p>The complete pattern fits the right old round: names, jobs and directions, all together.</p><p>Tap <strong>Match</strong>.<br>Keyboard: <kbd>F</kbd> or <kbd>J</kbd>.</p></div><div class="guide-card"><h4>No Match</h4><p>No single name key preserves the complete pattern. One wrong binding is enough.</p><p>Tap <strong>No Match</strong>.<br>Keyboard: <kbd>D</kbd> or <kbd>K</kbd>.</p></div></div>
           <p>Keys work when <strong>Keyboard controls</strong> is on. After your answer, the game shows feedback and moves to the next round.</p>
           <p>There is no timer for each answer, but the <strong>session clock keeps running during the memory rounds</strong>. <strong>Pause</strong> takes a break; <strong>Stop</strong> ends the session. <kbd>P</kbd> pauses or resumes and <kbd>Esc</kbd> stops, even when response keyboard controls are off.</p>
         </section>
@@ -252,7 +252,7 @@
           </div>
           <p>Hold these jobs as meaningful parts of the world. A word moving to the wrong endpoint, or Inner changing to Outer, can turn a Match into a No Match even when the compass map stays the same.</p>
         </section>
-        <div class="guide-checklist"><strong>Your tiny checklist</strong><p>Right old round? → One name key? → Right job at every endpoint? → Same directions and line roles? → Inner worlds too, if selected? → Match or No Match.</p><a class="guide-back" href="#logic-mode">Back to game settings ↑</a></div>
+        <div class="guide-checklist"><strong>Your tiny checklist</strong><p>Right old round? → One name key? → Right job at every endpoint? → Same directions and endpoint bindings? → Inner worlds too, if selected? → Match or No Match.</p><a class="guide-back" href="#logic-mode">Back to game settings ↑</a></div>
       </div>
     </section>
   </main>
@@ -261,11 +261,11 @@
     <h3>Mode 1 — Relational reasoning</h3>
     <p>Apply the Da Vinci cross-domain method: imagine a concrete world, then rebuild its relationships in a different domain. Preserve the supplied directions and each entity’s role while changing what the letters represent.</p>
     <p>Choose 4, 8 or 16 compass directions before starting. Four uses north, east, south and west; eight adds diagonals; sixteen adds intermediate directions. Both modes treat the two clues as equal-length steps, including diagonals. The candidate states the end-to-end direction, not a distance. At sixteen directions, a halfway result rounds clockwise to the next compass point. N-back tells you which older round to remember.</p>
-    <p>Answer five questions on every trial: three statement matches, whether the current candidate is the exact end-to-end relation proved by its two clues, and whether the whole triad matches N rounds back. Use one consistent letter key and assign each old premise only once. Premises may swap; the candidate stays the candidate. Reversed wording counts only when the direction also reverses.</p>
+    <p>Answer five questions on every trial: three statement matches, whether the current candidate is the exact end-to-end relation proved by its two clues, and whether the whole triad matches N rounds back. Use one consistent letter key and assign each old statement only once. All three statements may change places for N-back; the separate entailment question still checks current Statement 3 from Statements 1 and 2. Reversed wording counts only when the direction also reverses.</p>
     <p>For the three statement answers, choose the shared alignment with the most matches. If answer sets tie, compare them from Statement 1 onward and prefer No at the first difference. The first N rounds have no old target: all four memory answers are No, but still judge the current claim. All five answers count on those rounds.</p>
     <p>Keys: Statement 1 A/S, Statement 2 D/F, Statement 3 H/J, current entailment K/L, complete-triad match Space/N. In each pair, the first key is Yes and the second is No. Buttons do the same job. Each choice locks immediately and gets feedback. All five choices complete the round. There is no per-trial deadline; the session clock still runs.</p>
     <h3>Mode 2 — Ontological Integration</h3>
-    <p>Mode 2 binds a category and its Inner, Outer or plain form to each endpoint. Every descriptor matters. One letter is one stable entity; multiple aspects share its place. Match the full entity–category–form–direction–role pattern N rounds back with one consistent name key. Premises may swap and wording may invert correctly. Inner and Outer never switch just because a sentence reverses.</p>
+    <p>Mode 2 binds a category and its Inner, Outer or plain form to each endpoint. Every descriptor matters. One letter is one stable entity; multiple aspects share its place. Match the full entity–category–form–direction pattern N rounds back with one consistent name key. All three statements may change places and wording may invert correctly. Inner and Outer never switch just because a sentence reverses.</p>
     <p>Start with One descriptor per entity, then try Multiple aspects per entity. Worlds within worlds adds an inner triad to each outer entity. If an inner candidate follows, that world projects outward; otherwise it receives inward. The complete inner pattern must match too, not just its output.</p>
     <p>The first N Mode 2 rounds are unscored. They advance after speech, or wait for Remember this world — Continue if speech is silent or unavailable. Then give one Match (F/J) or No Match (D/K) response after speech finishes. A repeated false candidate can still be a memory match. Optional practice pauses after six scored answers: derive the spatial direction, change both premise directions, and rebuild the structure in a different imagined domain. Practice is separate from the N-back score.</p>
     <p>Both modes have an expanded step-by-step guide below the game. Pause/P stops the session clock; Stop/Escape ends the session. N and complexity stay fixed for the session. Adaptive N is unavailable.</p>
@@ -276,10 +276,10 @@
   <script src="mode-one-spatial-core.js?v=20260919-direction-fixes"></script>
   <script src="audio-accessibility.js?v=20260920-long-premises"></script>
   <script src="extra-training.js"></script>
-  <script src="mode-one-conflict-matrix-v20.js?v=20260919-session-fixes"></script>
-  <script src="mode-one-letter-continuity-v1.js?v=20260726-authoritative-max-logic-2"></script>
-  <script src="mode-two-ontology-nback-v14.js?v=20260920-bindings-1"></script>
-  <script src="matching-tutorial.js?v=20260731-4"></script>
+  <script src="mode-one-conflict-matrix-v20.js?v=20261005-sentience-matching"></script>
+  <script src="mode-one-letter-continuity-v1.js?v=20261005-sentience-matching"></script>
+  <script src="mode-two-ontology-nback-v14.js?v=20261005-sentience-matching"></script>
+  <script src="matching-tutorial.js?v=20261005-sentience-matching"></script>
   <script src="response-palette-v2.js?v=20260731-2"></script>
 </body>
 </html>

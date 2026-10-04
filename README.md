@@ -34,7 +34,7 @@ Each main reasoning trial contains two premises and a candidate conclusion invol
 
 **Spatial inference convention:** each premise denotes an equal-length unit step, including diagonal directions. The candidate asserts only the resulting bearing, not a unit distance. The core rounds the end-to-end bearing to the nearest of sixteen compass points, choosing clockwise at an exact halfway boundary. Generated trials keep the premises, candidate and derived answer within the chosen 4/8/16-direction pool. This explicit metric convention matters: bare real-world compass statements without distances would not generally determine the same precise intermediate bearings.
 
-N-back comparisons use the trial exactly N positions earlier. Matching requires a single consistent one-to-one mapping between the historical and current letters. Letter names may change, the two premises may exchange order, and reversed wording is equivalent only when its compass direction is also reversed. The conclusion retains its conclusion role. Compass directions must match exactly: adjacent directions, an incorrect letter pair, or reversing endpoints without reversing direction do not count.
+N-back comparisons use the trial exactly N positions earlier. Matching requires a single consistent one-to-one mapping between the historical and current letters. Letter names may change, all three statements may exchange positions, and reversed wording is equivalent only when its compass direction is also reversed. The third statement has no privileged N-back position; its within-trial inference role remains separate. Compass directions must match exactly: adjacent directions, an incorrect letter pair, or reversing endpoints without reversing direction do not count.
 
 ### Mode 1 — Relational reasoning
 
@@ -62,7 +62,7 @@ The score distinguishes **decision accuracy** from **complete-trial accuracy**: 
 
 ### Mode 2 — Ontological Integration
 
-Mode 2 binds an ontology descriptor to **both endpoints of every statement**. A descriptor includes a category and its Inner, Outer or unmarked form. All these bindings now affect scoring. A match preserves the complete **entity–category–form–direction–role configuration** under one consistent entity bijection. Premises may exchange order and wording may reverse with the opposite direction, but descriptors stay attached to their endpoints and the candidate retains its role. Reversing wording never silently changes Inner to Outer.
+Mode 2 binds an ontology descriptor to **both endpoints of every statement**. A descriptor includes a category and its Inner, Outer or unmarked form. All these bindings now affect scoring. A match preserves the complete **entity–category–form–direction configuration** under one consistent entity bijection. All three statements may exchange positions and wording may reverse with the opposite direction, while descriptors stay attached to their endpoints. Reversing wording never silently changes Inner to Outer.
 
 Each letter denotes one stable entity throughout a trial. Its aspects share its spatial anchor; different descriptors do not imply movement, separate entities or time steps. The complexity setting is independent of N:
 
@@ -86,7 +86,7 @@ The first N trials are unscored memory fill. They advance shortly after successf
 
 **Match:** H→X, D→Y, C→Z. The premises swap order and all three statements invert equivalently. Every endpoint descriptor retains its relational role.
 
-Swap only `Multiplication Z` and `Projection Z` between Trial 2's first and third lines: the result is **No Match**. The vocabulary and geometry remain the same, but two aspects have exchanged premise/candidate roles. Likewise, the candidate's logical truth and its historical match are separate: two structurally identical false candidates can form a memory match.
+Swap only `Multiplication Z` and `Projection Z` between Trial 2's first and third lines: the result is **No Match**. The vocabulary and geometry remain the same, but two aspects are attached to different relationships. Moving a complete statement is allowed; moving only its endpoint descriptor changes its meaning. Likewise, the candidate's logical truth and its historical match are separate: two structurally identical false candidates can form a memory match.
 
 #### Da Vinci cross-domain practice
 

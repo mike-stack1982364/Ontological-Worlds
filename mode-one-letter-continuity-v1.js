@@ -132,7 +132,7 @@
 
   function applyMaximumIdentityInterference(rng, targetTrial, previousTrial, trial, options = {}) {
     requireDependencies();
-    const roleSensitive = options.roleSensitive !== false;
+    const roleSensitive = false;
     const before = conflict.evaluateConflictMatrix(targetTrial, trial, { roleSensitive });
     const beforeVector = responseVector(before);
     const targetLetters = trialLetters(targetTrial);
@@ -202,7 +202,7 @@
   function generateMaximalScoredTrial(rng, targetTrial, previousTrial, options = {}) {
     requireDependencies();
     const match = Boolean(options.match);
-    const roleSensitive = options.roleSensitive !== false;
+    const roleSensitive = false;
     const directionResolution = core.normaliseResolution(options.directionResolution ?? targetTrial.directionResolution, 16);
     let lastError = null;
     for (let attempt = 0; attempt < 128; attempt += 1) {
@@ -254,7 +254,7 @@
     }
     const generated = generateMaximalScoredTrial(rng, previousTrial, previousTrial, {
       match: false,
-      roleSensitive: true,
+      roleSensitive: false,
       directionResolution
     });
     generated.logicalInterference = Object.freeze({ ...generated.logicalInterference, source: 'warmup-predecessor' });
@@ -262,7 +262,7 @@
   }
 
   function analyseTransition(targetTrial, previousTrial, currentTrial, options = {}) {
-    const roleSensitive = options.roleSensitive !== false;
+    const roleSensitive = false;
     const targetLetters = trialLetters(targetTrial);
     const previousLetters = previousTrial ? trialLetters(previousTrial) : targetLetters;
     const currentLetters = trialLetters(currentTrial);
@@ -326,12 +326,12 @@
       const requestedMatch = this.rng.next() < settings.matchProbability;
       return generateMaximalScoredTrial(this.rng, targetTrial, previousTrial, {
         match: requestedMatch,
-        roleSensitive: true,
+        roleSensitive: false,
         directionResolution
       });
     };
     app.assertModeOneMaximumInterference = function(targetTrial, previousTrial, currentTrial) {
-      const analysis = analyseTransition(targetTrial, previousTrial, currentTrial, { roleSensitive: true });
+      const analysis = analyseTransition(targetTrial, previousTrial, currentTrial, { roleSensitive: false });
       if (!analysis.valid) throw new Error('Mode 1 trial violates the authoritative maximum-interference invariant.');
       return analysis;
     };
@@ -359,10 +359,10 @@
             const previous = history[history.length - 1] || null;
             const target = history[history.length - level] || null;
             const trial = target
-              ? generateMaximalScoredTrial(rng, target, previous, { match: index % 4 === 0, roleSensitive: true, directionResolution })
+              ? generateMaximalScoredTrial(rng, target, previous, { match: index % 4 === 0, roleSensitive: false, directionResolution })
               : generateMaximalWarmupTrial(rng, previous, { directionResolution });
             if (target) {
-              const analysis = analyseTransition(target, previous, trial, { roleSensitive: true });
+              const analysis = analyseTransition(target, previous, trial, { roleSensitive: false });
               row.scored += 1;
               if (!analysis.valid || trial.interferenceLevel !== MAX_INTERFERENCE || !trial.logicalInterference?.valid) row.failures += 1;
             } else if (previous) {

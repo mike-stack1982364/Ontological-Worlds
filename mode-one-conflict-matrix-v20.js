@@ -56,10 +56,13 @@
   function analyseAlignment(target, current, options = {}) {
     const targetResolution = Number(target?.directionResolution || 16), currentResolution = Number(current?.directionResolution || 16);
     if (targetResolution !== currentResolution) throw new Error('N-back target and current trial use different compass resolutions.');
-    const roleSensitive = Boolean(options.roleSensitive), targetLetters = trialLetters(target), currentLetters = trialLetters(current);
+    const roleSensitive = false, targetLetters = trialLetters(target), currentLetters = trialLetters(current);
     if (targetLetters.length !== 3 || currentLetters.length !== 3) throw new Error('Conflict comparisons require exactly three letters in each trial.');
     const targetStatements = statements(target), currentStatements = statements(current), candidates = [];
-    const assignments = roleSensitive ? [[0,1,2],[1,0,2]] : permutations([0,1,2]);
+    // All three displayed statements have equal status for N-back matching.
+    // Their current first-two/third roles affect only the separate entailment answer.
+    // Ignore legacy roleSensitive:true callers so there is one matching rule.
+    const assignments = permutations([0,1,2]);
     const identity = Object.fromEntries(currentLetters.map(letter => [letter, letter]));
     const currentCanonical = currentStatements.map(s => canonicalStatement(s, identity));
     for (const assigned of permutations(currentLetters)) {
@@ -86,7 +89,7 @@
     // historical trial's result on a different set of displayed statements.
     trial.letters = trialLetters(trial);
     requireSpatial().hydrateTrial(trial);
-    const resolution = options.directionResolution, roleSensitive = Boolean(options.roleSensitive), evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }), requestedWholeMatch = Boolean(options.match);
+    const resolution = options.directionResolution, roleSensitive = false, evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }), requestedWholeMatch = Boolean(options.match);
     Object.assign(trial, { submitted: false, nBackRequestedMatch: requestedWholeMatch, nBackMatch: evaluation.wholeTrialMatch, isMatch: evaluation.wholeTrialMatch, statementMatchVector: evaluation.statementMatches.slice(), conclusionEntailed: evaluation.conclusionEntailed, conflictResponseVector: evaluation.responseVector.slice(), mappingConflict: evaluation.mappingConflict, localStatementCompatibility: evaluation.localStatementCompatibility.slice(), roleSensitive, directionResolution: resolution, interferenceLevel: options.interferenceLevel, interferenceProfile: `R${resolution}:${evaluation.statementMatches.map(Number).join('')}:${Number(evaluation.conclusionEntailed)}:${Number(evaluation.wholeTrialMatch)}`, scored: true });
     return trial;
   }
@@ -95,7 +98,7 @@
     if (!target) throw new Error('A historical N-back target is required.');
     const c = requireSpatial(), resolution = c.normaliseResolution(options.directionResolution ?? target.directionResolution, 16);
     if (!ensureResolutionClosed(target, resolution)) throw new Error('Target resolution does not match session resolution.');
-    const requestedWholeMatch = Boolean(options.match), interferenceLevel = Math.max(0, Math.min(100, Number(options.interferenceLevel) || 0)), roleSensitive = Boolean(options.roleSensitive);
+    const requestedWholeMatch = Boolean(options.match), interferenceLevel = Math.max(0, Math.min(100, Number(options.interferenceLevel) || 0)), roleSensitive = false;
     if (requestedWholeMatch) { const trial = renameAndTransform(rng, target); trial.directionResolution = resolution; if (!ensureResolutionClosed(trial, resolution)) throw new Error('Transformed match trial escaped the selected resolution.'); return finaliseConflictTrial(target, trial, { match: true, roleSensitive, directionResolution: resolution, interferenceLevel }); }
     const pool = c.allowedCodes(resolution), candidates = [];
     const addCandidate = trial => { if (!trial || !ensureResolutionClosed(trial, resolution)) return; let evaluation; try { evaluation = evaluateConflictMatrix(target, trial, { roleSensitive }); } catch (_) { return; } const relations = statements(trial).map(statement => statement.relation).concat(evaluation.expectedRelation); if (evaluation.wholeTrialMatch || !relations.every(code => pool.includes(code))) return; candidates.push({trial: clearPresentationState(trial), evaluation}); };
@@ -213,7 +216,7 @@
       const target = this.trials[this.trials.length - level];
       if (!target) return generateWarmupTrial(this.rng, { interferenceLevel, directionResolution: resolution });
       if (!ensureResolutionClosed(target, resolution)) throw new Error('Historical target escaped the frozen compass resolution.');
-      return generateConflictTrial(this.rng, target, { match: this.rng.next() < settings.matchProbability, interferenceLevel, roleSensitive: true, directionResolution: resolution });
+      return generateConflictTrial(this.rng, target, { match: this.rng.next() < settings.matchProbability, interferenceLevel, roleSensitive: false, directionResolution: resolution });
     };
     app.nextTrial = function(token = this.sessionToken) {
       if (Number(originalSettings().mode) !== 0) return originalNextTrial(token);
@@ -313,6 +316,6 @@
     };
     app.__mandatoryCompassResolutionInstalled = true; ui.sync();
   }
-  function runConflictAudit(iterationsPerResolution = 1000) { class AuditRng { constructor(seed) { this.s=seed>>>0; } next(){let v=this.s+=1831565813;v=Math.imul(v^v>>>15,1|v);v^=v+Math.imul(v^v>>>7,61|v);return((v^v>>>14)>>>0)/4294967296;} pick(values){return values[Math.floor(this.next()*values.length)];} shuffle(values){return fisherYates(this,values);} } const failures=[], rows=[]; for (const resolution of [4,8,16]) { const rng=new AuditRng(0x61000000+resolution), row={resolution,failures:0,exactTwo:0,nonMatches:0}; let target=generateWarmupTrial(rng,{interferenceLevel:100,directionResolution:resolution}); for(let i=0;i<iterationsPerResolution;i++){ try{ const trial=generateConflictTrial(rng,target,{match:false,interferenceLevel:100,roleSensitive:true,directionResolution:resolution}); const evaluation=evaluateConflictMatrix(target,trial,{roleSensitive:true}); row.nonMatches++; if(evaluation.matchedCount===2) row.exactTwo++; if(evaluation.wholeTrialMatch||!ensureResolutionClosed(trial,resolution)||evaluation.matchedCount!==2||trial.submitted) row.failures++; target=trial; }catch(error){row.failures++;if(failures.length<20)failures.push(`${resolution}-${i}:${error.message}`);} } if(row.failures) failures.push(`resolution-${resolution}-summary`); rows.push(row); } return {passed:failures.length===0,failures,iterationsPerResolution,rows}; }
+  function runConflictAudit(iterationsPerResolution = 1000) { class AuditRng { constructor(seed) { this.s=seed>>>0; } next(){let v=this.s+=1831565813;v=Math.imul(v^v>>>15,1|v);v^=v+Math.imul(v^v>>>7,61|v);return((v^v>>>14)>>>0)/4294967296;} pick(values){return values[Math.floor(this.next()*values.length)];} shuffle(values){return fisherYates(this,values);} } const failures=[], rows=[]; for (const resolution of [4,8,16]) { const rng=new AuditRng(0x61000000+resolution), row={resolution,failures:0,exactTwo:0,nonMatches:0}; let target=generateWarmupTrial(rng,{interferenceLevel:100,directionResolution:resolution}); for(let i=0;i<iterationsPerResolution;i++){ try{ const trial=generateConflictTrial(rng,target,{match:false,interferenceLevel:100,roleSensitive:false,directionResolution:resolution}); const evaluation=evaluateConflictMatrix(target,trial,{roleSensitive:false}); row.nonMatches++; if(evaluation.matchedCount===2) row.exactTwo++; if(evaluation.wholeTrialMatch||!ensureResolutionClosed(trial,resolution)||evaluation.matchedCount!==2||trial.submitted) row.failures++; target=trial; }catch(error){row.failures++;if(failures.length<20)failures.push(`${resolution}-${i}:${error.message}`);} } if(row.failures) failures.push(`resolution-${resolution}-summary`); rows.push(row); } return {passed:failures.length===0,failures,iterationsPerResolution,rows}; }
   return { version: 20, LEVELS, analyseAlignment, evaluateConflictMatrix, generateConflictTrial, generateWarmupTrial, evaluateHistory, installBrowser, runAudit: runConflictAudit, runConflictAudit, ensureResolutionClosed, mutateDirection };
 });

@@ -9,14 +9,13 @@ const permutations = values => values.length < 2 ? [values] : values.flatMap((va
 
 // Independently enumerate bijections without production canonical strings,
 // sorting keys or cached generation metadata.
-function independentAlignment(target, current, roleSensitive) {
+function independentAlignment(target, current) {
   const old = statements(target), now = statements(current), oldLetters = letters(target);
   let best = -1;
   const masks = new Set();
   for (const assignedLetters of permutations(letters(current))) {
     const mapping = Object.fromEntries(oldLetters.map((letter, index) => [letter, assignedLetters[index]]));
     for (const assignment of permutations([0, 1, 2])) {
-      if (roleSensitive && assignment[2] !== 2) continue;
       const matches = now.map((statement, index) => {
         const historical = old[assignment[index]];
         const direct = mapping[historical.subject] === statement.subject && mapping[historical.object] === statement.object && historical.relation === statement.relation;
@@ -39,7 +38,7 @@ class Rng {
 const target = { premises: [{ subject: 'A', relation: 'N', object: 'B' }, { subject: 'C', relation: 'E', object: 'A' }], conclusion: { subject: 'B', relation: 'SW', object: 'C' }, directionResolution: 16 };
 const roleSwapped = { premises: [{ subject: 'Y', relation: 'SW', object: 'Z' }, { subject: 'Z', relation: 'E', object: 'X' }], conclusion: { subject: 'Y', relation: 'S', object: 'X' }, directionResolution: 16 };
 assert.equal(conflict.evaluateConflictMatrix(target, roleSwapped).wholeTrialMatch, true);
-assert.equal(conflict.evaluateConflictMatrix(target, roleSwapped, { roleSensitive: true }).wholeTrialMatch, false);
+assert.equal(conflict.evaluateConflictMatrix(target, roleSwapped, { roleSensitive: true }).wholeTrialMatch, true);
 assert.deepEqual([...conflict.LEVELS], [1, 2, 3, 4, 5, 6, 7, 8]);
 let generated = 0;
 for (const resolution of [4, 8, 16]) for (const n of conflict.LEVELS) {
@@ -49,7 +48,7 @@ for (const resolution of [4, 8, 16]) for (const n of conflict.LEVELS) {
     const historical = history[history.length - n];
     const requestedMatch = index % 2 === 0, roleSensitive = index % 4 < 2;
     const current = conflict.generateConflictTrial(rng, historical, { match: requestedMatch, directionResolution: resolution, interferenceLevel: 100, roleSensitive });
-    const oracle = independentAlignment(historical, current, roleSensitive);
+    const oracle = independentAlignment(historical, current);
     history.push(current);
     const result = conflict.evaluateHistory(history, history.length - 1, n, { roleSensitive });
     assert.equal(result.targetIndex, history.length - 1 - n);
@@ -61,8 +60,9 @@ for (const resolution of [4, 8, 16]) for (const n of conflict.LEVELS) {
     assert.equal(result.conclusionEntailed, core.evaluateTrial(current).isEntailed);
     assert.equal(new Set(Object.values(result.letterMapping)).size, 3);
     assert.equal(new Set(result.assignment).size, 3);
-    if (roleSensitive) assert.equal(result.assignment[2], 2);
+    assert.equal(result.roleSensitive, false);
+    assert.equal(current.roleSensitive, false);
     generated++;
   }
 }
-console.log(JSON.stringify({ passed: true, independentlyCheckedTrials: generated, nBackLevels: 8, compassResolutions: [4, 8, 16], roleRegimes: 2 }));
+console.log(JSON.stringify({ passed: true, independentlyCheckedTrials: generated, nBackLevels: 8, compassResolutions: [4, 8, 16], legacyOptionVariants: 2, matchingRule: 'all-three-statements' }));

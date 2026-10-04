@@ -45,7 +45,8 @@ function oracle(a, b) {
   const from = letters(a), to = letters(b);
   for (const assignment of maps(to)) {
     const mapping = Object.fromEntries(from.map((letter, i) => [letter, assignment[i]]));
-    if (a.complexity === 'worlds' && from.some(letter => !oracle(a.worlds[letter], b.worlds[mapping[letter]]))) continue;
+    if (a.complexity === 'worlds' && from.some(letter => !oracle(a.worlds[letter], b.worlds[mapping[letter]])
+      || !sameFacet(a.worlds[letter].outputFacet, b.worlds[mapping[letter]].outputFacet))) continue;
     const same = (first, second) => (
       mapping[first.subject] === second.subject && mapping[first.object] === second.object
       && first.relation === second.relation && sameFacet(first.subjectFacet, second.subjectFacet) && sameFacet(first.objectFacet, second.objectFacet)
@@ -53,9 +54,7 @@ function oracle(a, b) {
       mapping[first.subject] === second.object && mapping[first.object] === second.subject
       && opposite(first.relation) === second.relation && sameFacet(first.subjectFacet, second.objectFacet) && sameFacet(first.objectFacet, second.subjectFacet)
     );
-    if (!same(a.conclusion, b.conclusion)) continue;
-    if ((same(a.premises[0], b.premises[0]) && same(a.premises[1], b.premises[1]))
-      || (same(a.premises[0], b.premises[1]) && same(a.premises[1], b.premises[0]))) return true;
+    if (maps([0, 1, 2]).some(order => list(a).every((statement, index) => same(statement, list(b)[order[index]])))) return true;
   }
   return false;
 }

@@ -105,9 +105,9 @@
 
           <h3>The five exact questions</h3>
           <ol>
-            <li><strong>A or S:</strong> Does current Statement 1 match one of the old card’s two premises under the shared alignment?</li>
-            <li><strong>D or F:</strong> Does current Statement 2 match the other old premise under that same alignment?</li>
-            <li><strong>H or J:</strong> Does current Statement 3 match the old Statement 3 under that same alignment?</li>
+            <li><strong>A or S:</strong> Does current Statement 1 match any old statement under the shared alignment?</li>
+            <li><strong>D or F:</strong> Does current Statement 2 match an unused old statement under that same alignment?</li>
+            <li><strong>H or J:</strong> Does current Statement 3 match the remaining old statement under that same alignment?</li>
             <li><strong>K or L:</strong> Is current Statement 3 the exact end-to-end relation forced by current Statements 1 and 2?</li>
             <li><strong>SPACEBAR or N:</strong> Do all three current statements match the N-back card together?</li>
           </ol>
@@ -128,9 +128,9 @@
           <p>You cannot say “A means P” for Statement 1 and then secretly make A mean R for Statement 2. That would be changing the rules halfway through.</p>
           <div class="matching-tutorial-warning"><strong>Important:</strong> three statements may each look similar by themselves but still fail as a group when they require incompatible letter mappings. The game scores the single best valid shared alignment, not three unrelated guesses.</div>
 
-          <h3>The first two clues may swap places</h3>
-          <p>Statement 1 and Statement 2 are both premises, so their order may be exchanged. Current Statement 1 may match old Statement 2, while current Statement 2 matches old Statement 1. Each old premise may be used only once.</p>
-          <p><strong>Statement 3 is different:</strong> it is the conclusion. A premise cannot trade places with the conclusion.</p>
+          <h3>All three statements may change places for N-back</h3>
+          <p>Any current statement may match any old statement. For example, current Statement 1 may match old Statement 3, current Statement 2 old Statement 1, and current Statement 3 old Statement 2. Each old statement may be used only once, under one shared letter mapping.</p>
+          <p><strong>K/L is a separate question:</strong> it still checks whether current Statements 1 and 2 entail current Statement 3. That inference role does not restrict N-back matching.</p>
           <div class="matching-tutorial-example">
             <strong>Old card</strong>
             <code>A is east of B; C is north of A; C is northeast of B.</code>
@@ -177,13 +177,13 @@
 
           <h3>Statement 3 matching and Statement 3 entailment are separate</h3>
           <div class="matching-tutorial-warning">
-            <p><strong>H/J asks:</strong> “Does current Statement 3 match old Statement 3 under the shared N-back alignment?”</p>
+            <p><strong>H/J asks:</strong> “Does current Statement 3 match any old statement under the shared N-back alignment?”</p>
             <p><strong>K/L asks:</strong> “Is current Statement 3 the exact end-to-end conclusion forced by current Statements 1 and 2?”</p>
           </div>
-          <p>H and L can both be correct: the current third statement may match an old third statement even though it is not the correct end-to-end conclusion. J and K can both be correct: the current conclusion may be logically correct but structurally different from the old conclusion.</p>
+          <p>H and L can both be correct: the current third statement may match an old statement even though it is not the correct end-to-end conclusion. J and K can both be correct: the current conclusion may be logically correct but unmatched under the best shared N-back alignment.</p>
 
           <h3>The complete-triad decision</h3>
-          <p>Press the <strong>dark-purple SPACEBAR</strong> only when all three statement matches are YES under one consistent mapping and one allowed premise pairing. Press the <strong>light-purple N</strong> when even one statement fails.</p>
+          <p>Press the <strong>dark-purple SPACEBAR</strong> only when all three statement matches are YES under one consistent mapping and one one-to-one assignment of all three statements. Press the <strong>light-purple N</strong> when even one statement fails.</p>
           <div class="matching-tutorial-rule"><strong>Two out of three is still NO for the whole triad.</strong> The game deliberately creates close near-misses where exactly one relation changes.</div>
           <p>The icy-blue K / dark-ocean-blue L pair does not decide the complete-triad answer. It checks the current card’s end-to-end logic. The dark-purple SPACEBAR / light-purple N pair checks whether the current three-statement structure matches the N-back card.</p>
 

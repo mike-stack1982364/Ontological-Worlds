@@ -19,7 +19,7 @@
   const start = root.document.getElementById('start-btn');
   if (start) start.disabled = true;
 
-  root.__modeTwoV22Ready = root.__modeTwoV21Ready = loadScript('mode-two-engine-v22.js?v=20260920-bindings-1')
+  root.__modeTwoV22Ready = root.__modeTwoV21Ready = loadScript('mode-two-engine-v22.js?v=20261005-sentience-matching')
     .then(() => loadScript('mode-two-runtime-v22.js?v=20260920-bindings-1'))
     .then(() => root.__modeTwoFinalRuntimeReady)
     .catch(error => {

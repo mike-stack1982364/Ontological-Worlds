@@ -111,7 +111,7 @@
   function outputFacet(trial) {
     return { category: 'Projection', form: requireCore().evaluateTrial(trial).isEntailed ? 'O' : 'I' };
   }
-  function validateTrial(trial, depth = 0, expectedResolution) {
+  function validateTrial(trial, depth = 0, expectedResolution, comparisonOnly = false) {
     const c = requireCore();
     const resolution = resolutionOf(trial);
     const complexity = complexityOf(trial);
@@ -125,9 +125,13 @@
       validateFacet(statement.objectFacet);
       if (!c.allowedCodes(resolution).includes(statement.relation)) throw new Error(`Mode 2 statement escaped ${resolution}-direction resolution.`);
     }
-    const evaluation = c.evaluateTrial(trial);
-    if (!evaluation.queryPairValid) throw new Error('The candidate must connect the two endpoints of the premise chain.');
-    if (!evaluation.resolutionClosed) throw new Error(`Mode 2 derived relation escaped ${resolution}-direction resolution.`);
+    // Memory comparison concerns the three stated edges, independently of which
+    // edge occupies the within-trial candidate slot. Generation and the spatial
+    // practice still require the original well-defined, resolution-closed proof.
+    // Each letter appearing twice below, with no self-edge, ensures one triangle.
+    const evaluation = comparisonOnly ? null : c.evaluateTrial(trial);
+    if (evaluation && !evaluation.queryPairValid) throw new Error('The candidate must connect the two endpoints of the premise chain.');
+    if (evaluation && !evaluation.resolutionClosed) throw new Error(`Mode 2 derived relation escaped ${resolution}-direction resolution.`);
     for (const letter of letters) {
       const refs = occurrences(trial, letter);
       const distinct = new Set(refs.map(ref => facetKey(ref.statement[ref.key])));
@@ -141,7 +145,7 @@
         || letters.some(letter => !Object.prototype.hasOwnProperty.call(trial.worlds, letter))) {
         throw new Error('World complexity requires exactly one inner world for each outer letter.');
       }
-      for (const letter of letters) validateTrial(trial.worlds[letter], depth + 1, resolution);
+      for (const letter of letters) validateTrial(trial.worlds[letter], depth + 1, resolution, comparisonOnly);
     } else if (trial.worlds != null) {
       throw new Error('Only world complexity may contain inner worlds.');
     }
@@ -179,13 +183,13 @@
     const attachments = attachmentSignatures(trial);
     return permutations(['A', 'B', 'C']).map(labels => {
       const mapping = Object.fromEntries(letters.map((letter, i) => [letter, labels[i]]));
-      const premises = trial.premises.map(s => normalisedStatement(s, mapping, attachments)).sort();
-      return `MODE2-ENDPOINT-NBACK-V22|RES:${resolutionOf(trial)}|TYPE:${complexityOf(trial)}|P:${premises.join('&')}|C:${normalisedStatement(trial.conclusion, mapping, attachments)}`;
+      const edges = statements(trial).map(s => normalisedStatement(s, mapping, attachments)).sort();
+      return `MODE2-ENDPOINT-NBACK-SENTIENCE|RES:${resolutionOf(trial)}|TYPE:${complexityOf(trial)}|EDGES:${edges.join('&')}`;
     }).sort()[0];
   }
-  function relationalSignature(trial) { validateTrial(trial); return signatureValidated(trial); }
+  function relationalSignature(trial) { validateTrial(trial, 0, undefined, true); return signatureValidated(trial); }
   function analyseAlignment(target, current) {
-    const first = validateTrial(target), second = validateTrial(current);
+    const first = validateTrial(target, 0, undefined, true), second = validateTrial(current, 0, undefined, true);
     if (first.resolution !== second.resolution || first.complexity !== second.complexity) {
       return Object.freeze({ matchedCount: 0, statementMatches: Object.freeze([false, false, false]), wholeTrialMatch: false, mapping: null });
     }
@@ -196,13 +200,18 @@
     for (const assigned of permutations(second.letters)) {
       const mapping = Object.fromEntries(first.letters.map((letter, i) => [letter, assigned[i]]));
       const prior = statements(target).map(s => normalisedStatement(s, mapping, targetAttachments));
-      for (const assignment of [[0, 1, 2], [1, 0, 2]]) {
+      for (const assignment of permutations([0, 1, 2])) {
         const vector = now.map((statement, i) => statement === prior[assignment[i]]);
         const count = vector.filter(Boolean).length;
-        if (!best || count > best.matchedCount) best = { matchedCount: count, statementMatches: Object.freeze(vector), wholeTrialMatch: count === 3, mapping: Object.freeze(mapping), premiseAssignment: Object.freeze(assignment.slice()) };
+        const key = `${3 - count}|${vector.map(Number).join('')}|${assignment.join('')}|${first.letters.map(letter => mapping[letter]).join('')}`;
+        if (!best || count > best.matchedCount || count === best.matchedCount && key.localeCompare(best.key) < 0) {
+          best = { matchedCount: count, statementMatches: Object.freeze(vector), wholeTrialMatch: count === 3,
+            mapping: Object.freeze(mapping), premiseAssignment: Object.freeze(assignment.slice()), key };
+        }
       }
     }
-    return Object.freeze(best);
+    const { key, ...alignment } = best;
+    return Object.freeze(alignment);
   }
   function evaluate(trial) {
     const { evaluation, resolution } = validateTrial(trial);
@@ -217,9 +226,15 @@
     if (!current) { current = target; target = null; }
     const currentSignature = relationalSignature(current);
     const targetSignature = target ? relationalSignature(target) : null;
+    // A role permutation can preserve the memory graph while making the old
+    // candidate geometry undefined. Never turn that independent proof failure
+    // into a false memory match or a thrown comparison. Generated trials retain
+    // strict spatial validation and therefore still have the full evaluation.
+    let currentWithinTrial = null;
+    try { currentWithinTrial = evaluate(current); } catch (_) {}
     return Object.freeze({ isMatch: Boolean(target && targetSignature === currentSignature), valid: Boolean(target),
       target: targetSignature, current: currentSignature, alignment: target ? analyseAlignment(target, current) : null,
-      currentWithinTrial: evaluate(current) });
+      currentWithinTrial });
   }
   function validLevel(value = 1) {
     const level = Number(value);
@@ -231,7 +246,7 @@
       throw new Error('Mode 2 history requires an existing current trial and a valid index.');
     }
     const level = validLevel(nBackLevel), targetIndex = currentIndex - level;
-    validateTrial(history[currentIndex]);
+    validateTrial(history[currentIndex], 0, undefined, true);
     if (targetIndex < 0) return Object.freeze({ nBackLevel: level, currentIndex, targetIndex, warmup: true, isMatch: false, scored: false });
     if (!history[targetIndex]) throw new Error('Mode 2 history is missing the N-back target.');
     return Object.freeze({ ...compare(history[targetIndex], history[currentIndex]), nBackLevel: level, currentIndex, targetIndex, warmup: false, scored: true });
