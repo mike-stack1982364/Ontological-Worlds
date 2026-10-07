@@ -63,6 +63,7 @@
           body.mode-two-active .response-stage{height:128px!important;min-height:128px!important;flex-basis:128px!important;overflow:visible!important}
           body.mode-two-active .response-buttons button{display:block!important;min-width:min(42vw,260px);min-height:76px;font-size:clamp(1rem,2.2vw,1.45rem);font-weight:900}
           body.mode-one-conflict-active .response-buttons{display:none!important}
+          body.mode-two-active.mode-two-listening .response-buttons{display:none!important}
         `;
         documentObject.head.appendChild(style);
       }
@@ -76,7 +77,12 @@
       const originalSessionSummary = typeof app.getSessionSummary === 'function' ? app.getSessionSummary.bind(app) : null;
       const originalSyncDelta = typeof app.syncDelta === 'function' ? app.syncDelta.bind(app) : null;
       const originalVisibility = typeof app.applyPremiseVisibility === 'function' ? app.applyPremiseVisibility.bind(app) : null;
+      const modeOneTimingState = typeof app.getTrialTimingState === 'function' ? app.getTrialTimingState.bind(app) : null;
       let modeTwoAdvanceTimer = null;
+      let modeTwoTimerAction = null;
+      let modeTwoTimerDeadline = 0;
+      let modeTwoTimerRemaining = null;
+      let modeTwoResponseDeadline = null;
       let modeTwoPresentation = 0;
       let modeTwoPhase = 'idle';
       let responsePausedAt = null;
@@ -87,6 +93,21 @@
       let reflectionSpeech = 0;
       let manualWarmup = false;
       const now = () => rootObject.performance?.now?.() ?? Date.now();
+      const timingSettings = () => {
+        const settings = app.settings();
+        const finite = (value, minimum, maximum, fallback) => Number.isFinite(Number(value)) && value !== ''
+          ? Math.max(minimum, Math.min(maximum, Number(value))) : fallback;
+        const advanceOnResponse = settings.advanceOnResponse !== false;
+        let responseSeconds = finite(settings.responseSeconds, 0, 120, 0);
+        if (responseSeconds > 0) responseSeconds = Math.max(1, responseSeconds);
+        if (!advanceOnResponse && responseSeconds === 0) responseSeconds = 30;
+        return { listening: Boolean(settings.listeningMode), interval: finite(settings.trialInterval, 1, 120, 30), responseSeconds, advanceOnResponse };
+      };
+      const finishExpiredSession = () => {
+        if (!app.isSessionExpired?.()) return false;
+        app.stop(false);
+        return true;
+      };
 
       const DOMAIN_PAIRS = Object.freeze([
         ['a living garden', 'a radio communication network'],
@@ -140,7 +161,7 @@
         domainBlock = nextBlock;
         const [first, second] = DOMAIN_PAIRS[nextBlock % DOMAIN_PAIRS.length];
         domainCue.textContent = `Imagination pair: ${first} → ${second}. Rebuild the same complete structure in both worlds. Let each operation and perspective shape your story. Your story is not scored.`;
-        domainCue.hidden = selectedMode() !== 1;
+        domainCue.hidden = selectedMode() !== 1 || timingSettings().listening;
       };
 
       // The practice break uses the same clock pause as a manual pause, but it
@@ -161,7 +182,7 @@
       const relationName = relation => core.direction(relation).name;
 
       function showReflection(trial) {
-        if (!sessionReflections || !app.running || app.paused || reflectionTrial || !trial?._answered) return false;
+        if (!sessionReflections || timingSettings().listening || !app.running || app.paused || reflectionTrial || !trial?._answered) return false;
         const generatedProbe = api.generateProbe(trial);
         const subject = trial.conclusion.subject, object = trial.conclusion.object;
         const probe = {
@@ -213,7 +234,7 @@
         const controls = makeElement('div', '', reflectionPanel, 'mode-two-practice-actions');
         const check = makeElement('button', 'Check practice answers', controls);
         check.type = 'button';
-        const read = makeElement('button', 'Read practice aloud', controls);
+        const read = makeElement('button', 'Read trial aloud', controls);
         read.type = 'button';
         const result = makeElement('p', '', reflectionPanel);
         result.id = 'mode-two-practice-feedback';
@@ -267,7 +288,7 @@
           app.primeAudioFromUserGesture?.();
           const speech = ++reflectionSpeech;
           read.disabled = true;
-          try { await app.speak?.(`${renderOntologicalTrial(trial)} Practice question one. ${probe.inference.question} Practice question two. ${probe.counterfactual.question}`); } catch (_) {}
+          try { await app.speak?.(renderOntologicalTrial(trial)); } catch (_) {}
           if (speech === reflectionSpeech && reflectionTrial === trial && !app.paused) read.disabled = false;
         });
         continueButton.addEventListener('click', () => {
@@ -297,12 +318,18 @@
         if (directionError) directionError.hidden = !show;
       };
       const setBinaryButtons = enabled => {
-        matchButton.disabled = !enabled;
-        noMatchButton.disabled = !enabled;
+        const allowed = enabled && !timingSettings().listening;
+        matchButton.disabled = !allowed;
+        noMatchButton.disabled = !allowed;
       };
-      const clearModeTwoTimer = () => {
+      const clearModeTwoTimer = (forget = true) => {
         if (modeTwoAdvanceTimer !== null) rootObject.clearTimeout(modeTwoAdvanceTimer);
         modeTwoAdvanceTimer = null;
+        if (forget) {
+          modeTwoTimerAction = null;
+          modeTwoTimerDeadline = 0;
+          modeTwoTimerRemaining = null;
+        }
       };
       const modeTwoInterference = () => 100;
       const hideWarmupContinue = () => {
@@ -317,25 +344,44 @@
         app.nextTrial(app.sessionToken);
       });
 
-      function scheduleAdvance(token, milliseconds) {
+      function armModeTwoTimer(token, milliseconds, action) {
         clearModeTwoTimer();
-        modeTwoAdvanceTimer = rootObject.setTimeout(() => {
+        const presentation = modeTwoPresentation, trial = app.current;
+        modeTwoTimerRemaining = Math.max(0, milliseconds);
+        modeTwoTimerDeadline = now() + modeTwoTimerRemaining;
+        modeTwoTimerAction = action;
+        const scheduledTimer = rootObject.setTimeout(() => {
+          if (modeTwoAdvanceTimer !== scheduledTimer) return;
           modeTwoAdvanceTimer = null;
-          if (app.running && !app.paused && token === app.sessionToken) {
-            if (modeTwoPhase === 'reflection') return;
-            if (modeTwoPhase === 'feedback' && sessionReflections && Number(app.score.scored || 0) % 6 === 0
-              && app.current?._answered && !app.current.reflection?.completed) {
-              try { showReflection(app.current); } catch (error) { failSession(error); }
-              return;
-            }
-            modeTwoPhase = 'advance';
-            app.nextTrial(token);
-          }
-        }, milliseconds);
+          if (!app.running || app.paused || token !== app.sessionToken || presentation !== modeTwoPresentation || app.current !== trial) return;
+          modeTwoTimerAction = null;
+          modeTwoTimerRemaining = null;
+          modeTwoTimerDeadline = 0;
+          action();
+        }, modeTwoTimerRemaining);
+        modeTwoAdvanceTimer = scheduledTimer;
+      }
+
+      function advanceTrial(token) {
+        if (!app.running || app.paused || token !== app.sessionToken || modeTwoPhase === 'reflection') return;
+        if (finishExpiredSession()) return;
+        if (!timingSettings().listening && modeTwoPhase === 'feedback' && sessionReflections && Number(app.score.scored || 0) % 6 === 0
+          && app.current?._answered && !app.current.reflection?.completed) {
+          try { showReflection(app.current); } catch (error) { failSession(error); }
+          return;
+        }
+        modeTwoPhase = 'advance';
+        app.nextTrial(token);
+      }
+
+      function scheduleAdvance(token, milliseconds) {
+        armModeTwoTimer(token, milliseconds, () => advanceTrial(token));
       }
 
       async function presentTrial(trial, token) {
         const presentation = ++modeTwoPresentation;
+        const cadenceStarted = now();
+        modeTwoResponseDeadline = null;
         modeTwoPhase = 'speaking';
         app.awaiting = false;
         setBinaryButtons(false);
@@ -352,19 +398,60 @@
         // completion must not open answers after pause/resume or restart.
         if (presentation !== modeTwoPresentation || !app.running || app.paused
           || token !== app.sessionToken || app.current !== trial) return trial;
+        const timing = timingSettings();
+        const volume = app.settings().volume;
+        // Older integrations resolved successful speech without a return value.
+        // Keep that normal-mode contract; listening counts require explicit
+        // successful completion so unavailable audio cannot inflate heard totals.
+        const speechAvailable = speechResult !== false && !(volume != null && Number(volume) <= 0) && !app._speechUnavailable;
+        const heard = speechResult === true && speechAvailable;
+        const visualFallback = timing.listening ? !heard : !speechAvailable;
+        if (visualFallback && premiseDisplay) {
+          // A current failure or muted device falls back to the visible trial.
+          // Cancellation from pause/restart has already failed the guards above.
+          app._speechUnavailable = true;
+          app.applyPremiseVisibility?.();
+          premiseDisplay.classList.remove('hidden-mode', 'muted');
+          premiseDisplay.hidden = false;
+          premiseDisplay.setAttribute('aria-hidden', 'false');
+        }
+        if (timing.listening) {
+          trial.scored = false;
+          if (heard && !trial.heard) {
+            trial.heard = true;
+            app.score.heard = Number(app.score.heard || 0) + 1;
+          }
+          app.updateStats?.();
+          if (finishExpiredSession()) return trial;
+          modeTwoPhase = 'listening';
+          if (feedback) feedback.textContent = heard
+            ? 'LISTENING · NOT SCORED · Answer in your mind'
+            : 'AUDIO UNAVAILABLE · Visual trial · Not scored';
+          scheduleAdvance(token, Math.max(0, timing.interval * 1000 - (now() - cadenceStarted)));
+          return trial;
+        }
+        if (finishExpiredSession()) return trial;
         if (trial.nBackWarmup || !trial.scored) {
           modeTwoPhase = 'warmup';
-          manualWarmup = speechResult === false || Number(app.settings().volume) <= 0 || Boolean(app._speechUnavailable);
-          if (feedback) feedback.textContent = `MEMORY FILL — ${app.trials.length} OF ${trial.nBackLevel} · UNSCORED${manualWarmup ? ' · Continue when ready' : ''}`;
+          manualWarmup = !speechAvailable && timing.responseSeconds === 0;
+          if (feedback) feedback.textContent = `MEMORY FILL — ${app.trials.length} OF ${trial.nBackLevel} · UNSCORED${manualWarmup ? ' · Continue when ready' : speechAvailable ? '' : ' · Visual trial'}`;
           if (manualWarmup) {
             warmupContinue.hidden = false;
             warmupContinue.disabled = false;
-          } else scheduleAdvance(token, 900);
+          } else scheduleAdvance(token, timing.responseSeconds > 0 ? timing.responseSeconds * 1000 : 900);
         } else {
           modeTwoPhase = 'response';
           app.awaiting = true;
           trial.started = now();
           setBinaryButtons(true);
+          if (visualFallback && feedback) feedback.textContent = 'AUDIO UNAVAILABLE · Answer from the visible trial';
+          if (timing.responseSeconds > 0) {
+            modeTwoResponseDeadline = now() + timing.responseSeconds * 1000;
+            armModeTwoTimer(token, timing.responseSeconds * 1000, () => {
+              if (trial._answered) advanceTrial(token);
+              else app.answer(null);
+            });
+          }
         }
         return trial;
       }
@@ -381,10 +468,11 @@
         const resolution = selectedResolution();
         documentObject.body.classList.toggle('mode-one-conflict-active', mode === 0);
         documentObject.body.classList.toggle('mode-two-active', mode === 1);
+        documentObject.body.classList.toggle('mode-two-listening', mode === 1 && timingSettings().listening);
         if (modeTwoSettings) modeTwoSettings.hidden = mode !== 1;
         if (complexitySelect) complexitySelect.disabled = Boolean(app.running);
         if (reflectionsCheckbox) reflectionsCheckbox.disabled = Boolean(app.running);
-        domainCue.hidden = mode !== 1;
+        domainCue.hidden = mode !== 1 || timingSettings().listening;
         if (mode !== 1) reflectionPanel.hidden = true;
         if (mode === 1) matrix?.classList.remove('active');
         directionGroup.hidden = false;
@@ -421,6 +509,7 @@
       }
 
       modeSelect.addEventListener('change', syncInterface);
+      documentObject.getElementById('listening-mode')?.addEventListener('change', syncInterface);
       directionSelect.addEventListener('input', syncInterface);
       directionSelect.addEventListener('change', syncInterface);
       rootObject.addEventListener?.('pageshow', syncInterface);
@@ -442,7 +531,8 @@
             matchProbability: random(this.rng) < 0.5 ? 1 : 0,
             directionResolution: resolution,
             interferenceLevel: modeTwoInterference(),
-            complexity: this.running ? sessionComplexity : selectedComplexity()
+            complexity: this.running ? sessionComplexity : selectedComplexity(),
+            history: history.slice(-32)
           });
           Object.assign(warmup, {
             nBackLevel: level,
@@ -459,7 +549,8 @@
           nBackLevel: level,
           directionResolution: resolution,
           interferenceLevel: modeTwoInterference(),
-          complexity: this.running ? sessionComplexity : selectedComplexity()
+          complexity: this.running ? sessionComplexity : selectedComplexity(),
+          history: history.slice(-32)
         });
       };
 
@@ -475,13 +566,14 @@
         clearModeTwoTimer();
         if (selectedMode() === 1) {
           sessionComplexity = selectedComplexity();
-          sessionReflections = selectedReflections();
+          sessionReflections = selectedReflections() && !timingSettings().listening;
           domainBlock = -1;
           hideReflection();
           hideWarmupContinue();
           modeTwoPresentation += 1;
           modeTwoPhase = 'idle';
           responsePausedAt = null;
+          modeTwoResponseDeadline = null;
           this.trials = [];
           this.current = null;
           this.awaiting = false;
@@ -489,7 +581,10 @@
           setBinaryButtons(false);
         }
         const result = modeOneStart(...args);
-        if (selectedMode() === 1) updateDomainCue();
+        if (selectedMode() === 1) {
+          this.score.heard = 0;
+          updateDomainCue();
+        }
         syncInterface();
         return result;
       };
@@ -498,9 +593,11 @@
         if (selectedMode() === 0) return modeOneNextTrial(token);
         if (!this.running || this.paused || token !== this.sessionToken) return null;
         if (modeTwoPhase === 'reflection') return this.current;
-        if (this.current && !this.current._answered
-          && ['speaking', 'response', 'warmup'].includes(modeTwoPhase)) return this.current;
+        if (this.current && ['speaking', 'response', 'warmup', 'listening'].includes(modeTwoPhase)) return this.current;
+        if (this.current && modeTwoPhase === 'feedback' && (!timingSettings().advanceOnResponse || timingSettings().listening)) return this.current;
+        if (finishExpiredSession()) return null;
         clearModeTwoTimer();
+        modeTwoResponseDeadline = null;
         if (Math.floor(Number(this.score.scored || 0) / 6) !== domainBlock) updateDomainCue();
         rootObject.clearTimeout(this.timerId);
         this.awaiting = false;
@@ -520,6 +617,7 @@
           return failSession(error);
         }
         trial._answered = false;
+        if (timingSettings().listening) trial.scored = false;
         this.current = trial;
         this.trials.push(trial);
         this.score.shown = Number(this.score.shown || 0) + 1;
@@ -530,18 +628,25 @@
       app.answer = function routedFinalAnswer(response) {
         if (selectedMode() === 0 || Number(this.current?.mode) === 0) return modeOneAnswer(response);
         const trial = this.current;
-        if (!this.running || this.paused || modeTwoPhase !== 'response' || !this.awaiting || !trial || trial._answered) return false;
-        if (typeof response !== 'boolean') return false;
+        const timing = timingSettings();
+        if (!this.running || this.paused || timing.listening || modeTwoPhase !== 'response' || !this.awaiting || !trial || trial._answered) return false;
+        if (finishExpiredSession()) return false;
+        if (response !== null && typeof response !== 'boolean') return false;
+        if (response === null && (modeTwoResponseDeadline === null || now() < modeTwoResponseDeadline)) return false;
+        if (modeTwoResponseDeadline !== null && now() >= modeTwoResponseDeadline) response = null;
         trial._answered = true;
         this.awaiting = false;
         setBinaryButtons(false);
         const expected = Boolean(trial.nBackMatch);
-        const correct = response === expected;
+        const correct = response !== null && response === expected;
         const answeredAt = now();
         const reactionTime = Math.max(0, answeredAt - (Number.isFinite(trial.started) ? trial.started : answeredAt));
-        this.rts.push(reactionTime);
+        if (response !== null) this.rts.push(reactionTime);
         this.score.scored = Number(this.score.scored || 0) + 1;
-        if (response && expected) this.score.hits = Number(this.score.hits || 0) + 1;
+        if (response === null) {
+          this.score.timeouts = Number(this.score.timeouts || 0) + 1;
+          if (expected) this.score.misses = Number(this.score.misses || 0) + 1;
+        } else if (response && expected) this.score.hits = Number(this.score.hits || 0) + 1;
         else if (response && !expected) this.score.falseAlarms = Number(this.score.falseAlarms || 0) + 1;
         else if (!response && expected) this.score.misses = Number(this.score.misses || 0) + 1;
         else this.score.correctRejects = Number(this.score.correctRejects || 0) + 1;
@@ -549,7 +654,7 @@
         trial.response = response;
         trial.responseTime = reactionTime;
         modeTwoPhase = 'feedback';
-        if (feedback) feedback.textContent = correct ? 'CORRECT' : 'INCORRECT';
+        if (feedback) feedback.textContent = response === null ? 'TIMEOUT · No answer recorded' : correct ? 'CORRECT' : 'INCORRECT';
         if (explanation) {
           const target = this.trials[this.trials.length - 1 - trial.nBackLevel];
           let comparison;
@@ -576,7 +681,15 @@
           if (this.settings().haptic) rootObject.navigator?.vibrate?.(correct ? 25 : [35, 25, 35]);
         } catch (_) {}
         const nextToken = this.sessionToken;
-        scheduleAdvance(nextToken, 1200);
+        if (timing.advanceOnResponse) scheduleAdvance(nextToken, 1200);
+        else if (modeTwoResponseDeadline !== null && now() < modeTwoResponseDeadline) {
+          // Keep the original response deadline; an early answer never resets
+          // or shortens the selected post-speech thinking interval.
+          scheduleAdvance(nextToken, modeTwoResponseDeadline - now());
+        } else {
+          clearModeTwoTimer();
+          advanceTrial(nextToken);
+        }
         return correct;
       };
 
@@ -593,10 +706,11 @@
         pausedOverlay?.classList.toggle('show', this.paused);
         if (pauseButton) pauseButton.textContent = this.paused ? 'Resume' : 'Pause';
         if (this.paused) {
-          clearModeTwoTimer();
+          if (modeTwoTimerAction) modeTwoTimerRemaining = Math.max(0, modeTwoTimerDeadline - now());
+          clearModeTwoTimer(false);
           modeTwoPresentation += 1;
           reflectionSpeech += 1;
-          responsePausedAt = modeTwoPhase === 'response' ? now() : null;
+          responsePausedAt = ['response', 'feedback'].includes(modeTwoPhase) ? now() : null;
           this.awaiting = false;
           warmupContinue.disabled = true;
           try {
@@ -619,11 +733,13 @@
             setBinaryButtons(true);
           } else if (modeTwoPhase === 'speaking' && this.current) {
             presentTrial(this.current, this.sessionToken);
-          } else if (modeTwoPhase === 'warmup') {
-            if (manualWarmup) warmupContinue.disabled = false;
-            else scheduleAdvance(this.sessionToken, 900);
-          } else if (modeTwoPhase === 'feedback') {
-            scheduleAdvance(this.sessionToken, 1200);
+          } else if (modeTwoPhase === 'warmup' && manualWarmup) {
+            warmupContinue.disabled = false;
+          }
+          if (responsePausedAt !== null && modeTwoResponseDeadline !== null) modeTwoResponseDeadline += now() - responsePausedAt;
+          if (modeTwoTimerAction && modeTwoTimerRemaining !== null) {
+            const action = modeTwoTimerAction, remaining = modeTwoTimerRemaining;
+            armModeTwoTimer(this.sessionToken, remaining, action);
           }
           // A paused startup countdown is resumed by the session starter;
           // generating here would insert a second trial into N-back history.
@@ -638,6 +754,7 @@
         modeTwoPresentation += 1;
         modeTwoPhase = 'idle';
         responsePausedAt = null;
+        modeTwoResponseDeadline = null;
         hideReflection();
         hideWarmupContinue();
         const result = modeOneStop(...args);
@@ -645,6 +762,13 @@
         setBinaryButtons(false);
         syncInterface();
         return result;
+      };
+
+      app.getTrialTimingState = function modeTwoTimingState() {
+        if (selectedMode() === 0) return modeOneTimingState ? modeOneTimingState() : { phase: 'idle', remainingMs: null };
+        return { phase: modeTwoPhase, remainingMs: modeTwoTimerAction
+          ? this.paused ? modeTwoTimerRemaining : Math.max(0, modeTwoTimerDeadline - now())
+          : null };
       };
 
       if (originalSessionSummary) app.getSessionSummary = function modeTwoSessionSummary(...args) {

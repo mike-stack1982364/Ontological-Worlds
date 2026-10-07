@@ -21,12 +21,14 @@ function seededRandom(seed) {
 function fixture(options = {}) {
   let time = 0, identifier = 0;
   const tasks = new Map(), events = {}, elements = {};
-  const defaults = { n: '2', count: '3', response: '1', session: '5', probability: '35', interference: '75', rate: 'average', spacing: 'average', volume: '.8' };
-  const controlIds = ['n', 'count', 'response', 'session', 'probability', 'interference', 'rate', 'spacing', 'volume', 'speak', 'audio-only', 'keyboard', 'haptic', 'test', 'start', 'pause', 'stop', 'match', 'no-match', 'stimulus', 'feedback', 'explanation', 'trials', 'hits', 'accuracy', 'dprime', 'clock', 'sessionprogress', 'timerbar'];
+  const defaults = { n: '2', count: '3', response: '1', session: '5', probability: '35', interference: '75', rate: 'average', spacing: 'average', volume: '.8', 'number-seconds': '5' };
+  const controlIds = ['n', 'count', 'response', 'session', 'probability', 'interference', 'rate', 'spacing', 'volume', 'speak', 'audio-only', 'keyboard', 'haptic', 'test', 'start', 'pause', 'stop', 'match', 'no-match', 'stimulus', 'feedback', 'explanation', 'trials', 'hits', 'accuracy', 'dprime', 'clock', 'sessionprogress', 'timerbar', 'number-listening', 'number-seconds', 'number-listening-settings', 'number-responses', 'number-key-guide', 'number-scored-stats', 'number-listening-stats', 'number-listening-summary', 'number-heard'];
   for (const id of controlIds) {
     const classes = new Set();
     elements[id] = {
-      value: defaults[id] || '', checked: id === 'keyboard', disabled: false, textContent: '', innerHTML: '', style: {},
+      value: defaults[id] || '', checked: id === 'keyboard', disabled: false, textContent: '', innerHTML: '', style: {}, hidden: false, listeners: {},
+      addEventListener(name, callback) { this.listeners[name] = callback; },
+      reportValidity() { return id !== 'number-seconds' || Number(this.value) >= 1 && Number(this.value) <= 120; },
       classList: { add: name => classes.add(name), remove: name => classes.delete(name), contains: name => classes.has(name), toggle: (name, enabled) => enabled ? classes.add(name) : classes.delete(name) }
     };
   }
@@ -104,7 +106,7 @@ async function run() {
   assert.deepEqual(sameSlots([2, 3, 1], [1, 2, 3]), []);
   assert.deepEqual(sameSlots([1, 1, 9], [1, 2, 1]), [0]);
   let generated = 0;
-  for (let n = 1; n <= 20; n++) for (const count of [1, 2, 3]) for (const interference of [0, 25, 50, 75, 100]) for (const probability of [0, 20, 30, 35, 40, 50, 60, 100]) {
+  for (let n = 1; n <= 20; n++) for (const count of [1, 2, 3, 4, 5, 6]) for (const interference of [0, 25, 50, 75, 100]) for (const probability of [0, 20, 30, 35, 40, 50, 60, 100]) {
     const settings = normaliseSettings({ n, count, interference, probability });
     const history = [], random = seededRandom(23847);
     for (let index = 0; index < n + 80; index++) {
@@ -114,12 +116,21 @@ async function run() {
       assert.equal(trial.scored, index >= n);
       assert.deepEqual(trial.target, index >= n ? history[index - n].values : null);
       assert.equal(trial.match, index >= n && trial.values.some((value, slot) => value === history[index - n].values[slot]));
-      if (index >= n && [0, 100].includes(probability)) assert.equal(trial.match, probability === 100);
+      // Requested matches yield to the hard repetition constraints. Score the
+      // actual same-slot relation rather than manufacturing a third repeat.
+      if (probability === 0) assert.equal(trial.match, false);
+      if (index >= n && probability === 100 && !trial.match) assert.equal(trial.repetitionLimitedMatch, true);
+      for (const digit of new Set(trial.values)) assert.ok(trial.values.filter(value => value === digit).length <= 2);
+      const stream = [...history.slice(-2).flatMap(old => old.values).slice(-2), ...trial.values];
+      for (let i = 2; i < stream.length; i++) assert.ok(!(stream[i] === stream[i - 1] && stream[i] === stream[i - 2]));
+      if (index >= 2) for (let slot = 0; slot < count; slot++) {
+        assert.ok(!(trial.values[slot] === history[index - 1].values[slot] && trial.values[slot] === history[index - 2].values[slot]));
+      }
       history.push(trial); generated++;
     }
   }
   const bounds = normaliseSettings({ n: -10, count: 99, response: NaN, session: 'open', volume: Infinity, rate: 'constructor', spacing: 'toString' });
-  assert.equal(bounds.n, 1); assert.equal(bounds.count, 3); assert.equal(bounds.response, 3); assert.equal(bounds.volume, .8);
+  assert.equal(bounds.n, 1); assert.equal(bounds.count, 6); assert.equal(bounds.response, 3); assert.equal(bounds.volume, .8);
   assert.equal(bounds.rate, 'average'); assert.equal(bounds.spacing, 'average'); assert.equal(bounds.session, 'open');
   assert.ok(Math.abs(normalQuantile(.975) - 1.959963986) < 1e-7);
   assert.equal(normalQuantile(.5), 0);
@@ -217,7 +228,7 @@ async function run() {
   // window. Rotate probability, interference, and silent/audio-only states;
   // their complete generator combinations are independently checked above.
   let lifecycleCombinations = 0;
-  for (let n = 1; n <= 20; n++) for (const count of [1, 2, 3]) for (const response of [1, 2, 3, 5, 8, 12, 20]) {
+  for (let n = 1; n <= 20; n++) for (const count of [1, 2, 3, 4, 5, 6]) for (const response of [1, 2, 3, 5, 8, 12, 20]) {
     const f = fixture({ speech: true });
     Object.entries({ n, count, response, probability: [20, 30, 35, 40, 50, 60][n % 6], interference: [0, 25, 50, 75, 100][n % 5] }).forEach(([id, value]) => { f.elements[id].value = String(value); });
     f.elements.session.value = 'open';
@@ -241,7 +252,7 @@ async function run() {
   // The player receives one uninterrupted buffer under every speed/gap/count
   // combination; response timing begins after both its tail and output drain.
   let audibleCombinations = 0;
-  for (const rate of Object.keys(numberSpeech.RATES)) for (const spacing of Object.keys(numberSpeech.GAPS)) for (const count of [1, 2, 3]) {
+  for (const rate of Object.keys(numberSpeech.RATES)) for (const spacing of Object.keys(numberSpeech.GAPS)) for (const count of [1, 2, 3, 4, 5, 6]) {
     const f = fixture({ speech: true });
     f.elements.rate.value = rate; f.elements.spacing.value = spacing; f.elements.count.value = String(count);
     f.elements['audio-only'].checked = true;
@@ -263,7 +274,7 @@ async function run() {
 
   // Expiration of session time must not cut a phoneme in half. Automatic finish
   // waits for the complete playing buffer; an explicit Stop remains immediate.
-  for (const session of [5, 10, 15, 20, 30, 45, 60, 'open']) {
+  for (const session of [5, 10, 15, 20, 30, 45, 60, 120, 180, 240, 300, 360, 'open']) {
     const expiring = fixture({ speech: true }); expiring.elements.session.value = String(session);
     expiring.start(); await expiring.flush();
     expiring.state.elapsed = (session === 'open' ? 60 : session) * 60000 - 100;
@@ -300,6 +311,40 @@ async function run() {
   await stale.advance(1410);
   assert.equal(stale.state.phase, 'response'); assert.equal(stale.state.current, newTrial);
   stale.stop(); assert.equal(stale.tasks.size, 0);
+
+  // Listening is a separate unscored path. Every supported count remains
+  // audible, 120 seconds is start-to-start, and pause freezes active time.
+  for (const count of [1, 2, 3, 4, 5, 6]) {
+    const listening = fixture({ speech: true });
+    listening.elements.count.value = String(count);
+    listening.elements['number-listening'].checked = true;
+    listening.elements['number-seconds'].value = '120';
+    listening.start(); await listening.flush();
+    assert.equal(listening.state.settings.seconds, 120);
+    assert.equal(listening.elements['number-responses'].hidden, true);
+    assert.equal(listening.elements['number-scored-stats'].hidden, true);
+    assert.equal(listening.elements['number-listening-stats'].hidden, false);
+    await listening.advance(119999);
+    assert.equal(listening.state.presented, 1); assert.equal(listening.state.heard, 1);
+    listening.answer(true); assert.ok(Object.values(listening.state.score).every(value => value === 0));
+    await listening.advance(1); assert.equal(listening.state.presented, 2);
+    const sequenceDuration = numberSpeech.buildSequence(listening.state.current.values, listening.state.settings, audioData).duration * 1000 + 60;
+    await listening.advance(sequenceDuration);
+    assert.equal(listening.state.heard, 2);
+    listening.pause(); const remaining = listening.state.remaining;
+    await listening.advance(5000); assert.equal(listening.state.presented, 2);
+    listening.pause(); await listening.advance(remaining - .01); assert.equal(listening.state.presented, 2);
+    await listening.advance(.02); assert.equal(listening.state.presented, 3);
+    assert.ok(Object.values(listening.state.score).every(value => value === 0));
+    listening.stop(); assert.equal(listening.tasks.size, 0);
+  }
+
+  const noAudio = fixture({ speech: 'failure' });
+  noAudio.elements['number-listening'].checked = true;
+  noAudio.start(); await noAudio.advance(10000);
+  assert.equal(noAudio.state.paused, true); assert.equal(noAudio.state.heard, 0);
+  assert.equal(noAudio.state.presented, 1); assert.ok(Object.values(noAudio.state.score).every(value => value === 0));
+  noAudio.stop();
 
   const complete = fixture(); complete.start(); await complete.flush(); await complete.advance(300000);
   assert.equal(complete.state.running, false); assert.equal(complete.elements.stimulus.textContent, 'SESSION COMPLETE');

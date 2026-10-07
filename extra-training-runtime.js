@@ -3,23 +3,23 @@
 (function exposeNumberTrainer(root, factory) {
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  if (root && root.document) api.createTrainer(root);
+  if (root && root.document) root.__numberTrainer = api.createTrainer(root);
 })(typeof window !== 'undefined' ? window : null, () => {
   const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   const RATES = { average: 1, 'moderately-fast': 1.12, fast: 1.25, 'very-fast': 1.4, 'extremely-fast': 1.55, 'incredibly-fast': 1.7, 'ultra-fast': 1.85 };
   const GAPS = { average: 300, 'moderately-fast': 200, fast: 120, 'very-fast': 80, 'extremely-fast': 40, 'incredibly-fast': 15, 'ultra-fast': 0 };
-  const CONTROL_IDS = ['n', 'count', 'response', 'session', 'probability', 'interference', 'rate', 'spacing', 'volume', 'speak', 'audio-only', 'keyboard', 'haptic', 'test'];
+  const CONTROL_IDS = ['n', 'count', 'response', 'session', 'probability', 'interference', 'rate', 'spacing', 'volume', 'speak', 'audio-only', 'keyboard', 'haptic', 'test', 'number-listening', 'number-seconds'];
   const emptyScore = () => ({ shown: 0, scored: 0, correct: 0, hits: 0, misses: 0, falseAlarms: 0, correctRejects: 0, omissions: 0 });
   const bounded = (value, minimum, maximum, fallback) => Number.isFinite(Number(value)) && value !== '' ? Math.max(minimum, Math.min(maximum, Number(value))) : fallback;
-  const choose = (values, random) => values[Math.floor(random() * values.length)];
 
   function normaliseSettings(raw) {
     return {
-      n: Math.floor(bounded(raw.n, 1, 20, 2)), count: Math.floor(bounded(raw.count, 1, 3, 3)),
-      response: bounded(raw.response, 1, 20, 3), session: raw.session === 'open' ? 'open' : bounded(raw.session, 5, 60, 15),
+      n: Math.floor(bounded(raw.n, 1, 20, 2)), count: Math.floor(bounded(raw.count, 1, 6, 3)),
+      response: bounded(raw.response, 1, 20, 3), session: raw.session === 'open' ? 'open' : bounded(raw.session, 5, 360, 15),
       prob: bounded(raw.probability, 0, 100, 35) / 100, interference: bounded(raw.interference, 0, 100, 75),
       rate: Object.hasOwn(RATES, raw.rate) ? raw.rate : 'average', spacing: Object.hasOwn(GAPS, raw.spacing) ? raw.spacing : 'average',
-      volume: bounded(raw.volume, 0, 1, .8), speak: !!raw.speak, audioOnly: !!raw.audioOnly,
+      volume: bounded(raw.volume, raw.listening ? .01 : 0, 1, .8), speak: !!raw.speak || !!raw.listening, audioOnly: !!raw.audioOnly,
+      listening: !!raw.listening, seconds: bounded(raw.seconds, 1, 120, 5),
       keyboard: !!raw.keyboard, haptic: !!raw.haptic
     };
   }
@@ -28,29 +28,88 @@
     return target ? values.reduce((positions, value, index) => value === target[index] ? [...positions, index] : positions, []) : [];
   }
 
+  // Repetition is a hard stimulus constraint, not a request to the RNG.
+  // Enforce it while choosing digits, including reserved N-back matches.
+  const MAX_DIGIT_OCCURRENCES = 2;
+
+  function shuffled(values, random) {
+    const result = [...values];
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+
   function makeTrial(history, settings, random = Math.random) {
     const target = history[history.length - settings.n]?.values;
     const wantMatch = !!target && random() < settings.prob;
-    const recent = history.slice(-8).flatMap(trial => trial.values);
-    const values = Array.from({ length: settings.count }, (_, index) => {
-      if (!target) return choose(DIGITS, random);
-      const pool = DIGITS.filter(value => value !== target[index]);
-      if (random() < settings.interference / 100) {
-        const lures = [...target, ...recent].filter(value => value !== target[index]);
-        if (lures.length) return choose(lures, random);
+    const previous = history[history.length - 1]?.values || [];
+    const penultimate = history[history.length - 2]?.values || [];
+    const tail = history.slice(-2).flatMap(trial => trial.values).slice(-2);
+    // A repeated digit gets one entry, not one lottery ticket per old occurrence.
+    const lureDigits = new Set([...(target || []), ...history.slice(-8).flatMap(trial => trial.values)]);
+    const repeatedInSlot = index => previous[index] !== undefined && previous[index] === penultimate[index]
+      ? previous[index] : null;
+
+    function completeWithMatches(matchSlots) {
+      const forced = new Set(matchSlots), values = [], counts = new Map();
+      function fill(index) {
+        if (index === settings.count) return [...values];
+        const recentStream = [...tail, ...values];
+        const last = recentStream[recentStream.length - 1];
+        const beforeLast = recentStream[recentStream.length - 2];
+        let pool = (forced.has(index) ? [target[index]] : DIGITS.filter(digit => !target || digit !== target[index]))
+          .filter(digit => DIGITS.includes(digit)
+            && (counts.get(digit) || 0) < MAX_DIGIT_OCCURRENCES
+            && digit !== repeatedInSlot(index)
+            && !(digit === last && digit === beforeLast));
+        pool = shuffled(pool, random);
+        if (!forced.has(index) && target && random() < settings.interference / 100) {
+          // Prefer legal lures, but never manufacture a forbidden third repeat.
+          pool = [...pool.filter(digit => lureDigits.has(digit)), ...pool.filter(digit => !lureDigits.has(digit))];
+        }
+        for (const digit of pool) {
+          values.push(digit);
+          counts.set(digit, (counts.get(digit) || 0) + 1);
+          const result = fill(index + 1);
+          if (result) return result;
+          values.pop();
+          counts.set(digit, counts.get(digit) - 1);
+        }
+        return null;
       }
-      return choose(pool, random);
-    });
+      return fill(0);
+    }
+
+    let values = null;
     if (wantMatch) {
-      const first = Math.floor(random() * settings.count);
-      values[first] = target[first];
-      if (settings.count > 1 && random() < .18) {
-        const second = choose(Array.from({ length: settings.count }, (_, i) => i).filter(i => i !== first), random);
-        values[second] = target[second];
+      const possible = shuffled(Array.from({ length: settings.count }, (_, index) => index)
+        .filter(index => DIGITS.includes(target[index]) && target[index] !== repeatedInSlot(index)), random);
+      // As before, some matching trials have a second matching position.
+      // Try the entire valid plan before committing any digit to the stimulus.
+      if (possible.length > 1 && random() < .18) {
+        for (let a = 0; a < possible.length && !values; a++) {
+          for (let b = a + 1; b < possible.length && !values; b++) {
+            values = completeWithMatches([possible[a], possible[b]]);
+          }
+        }
+      }
+      for (const index of possible) {
+        if (values) break;
+        values = completeWithMatches([index]);
       }
     }
+    // Example: 1-back, one digit, and two preceding 7s cannot produce another
+    // matching 7. The repetition limit takes priority; score the actual digits.
+    if (!values) values = completeWithMatches([]);
+    if (!values) throw new RangeError('No sequence satisfies the repetition limits.');
     const positions = sameSlots(values, target);
-    return { values, target: target ? [...target] : null, positions, match: positions.length > 0, scored: !!target };
+    return {
+      values, target: target ? [...target] : null, positions,
+      match: positions.length > 0, scored: !!target,
+      repetitionLimitedMatch: wantMatch && positions.length === 0
+    };
   }
 
   // Acklam's inverse standard-normal approximation; log-linear correction below
@@ -83,12 +142,12 @@
     const random = () => environment.Math.random();
     const speechApi = environment.__numberSpeechAudio || (typeof require === 'function' ? require('./number-speech.js') : null);
     const speechPlayer = speechApi?.createPlayer(environment);
-    const state = { running: false, paused: false, awaiting: false, phase: 'idle', trials: [], current: null, timer: null, clock: null, generation: 0, finishAfterSpeech: false, elapsed: 0, activeStarted: 0, remaining: 0, deadline: 0, settings: null, score: emptyScore() };
+    const state = { running: false, paused: false, awaiting: false, phase: 'idle', trials: [], current: null, timer: null, clock: null, generation: 0, finishAfterSpeech: false, elapsed: 0, activeStarted: 0, remaining: 0, deadline: 0, settings: null, score: emptyScore(), heard: 0, presented: 0, trialStarted: 0 };
     $('n').innerHTML = Array.from({ length: 20 }, (_, i) => `<option value="${i + 1}"${i === 1 ? ' selected' : ''}>${i + 1}-back</option>`).join('');
 
     function readSettings() {
       const values = Object.fromEntries(CONTROL_IDS.slice(0, 9).map(id => [id, $(id).value]));
-      return normaliseSettings({ ...values, speak: $('speak').checked, audioOnly: $('audio-only').checked, keyboard: $('keyboard').checked, haptic: $('haptic').checked });
+      return normaliseSettings({ ...values, speak: $('speak').checked, audioOnly: $('audio-only').checked, keyboard: $('keyboard').checked, haptic: $('haptic').checked, listening: $('number-listening').checked, seconds: $('number-seconds').value });
     }
     // One complete PCM sequence replaces per-digit native synthesis. In
     // particular, there is no shared speechSynthesis.cancel() call that can
@@ -100,8 +159,24 @@
     function audioEnabled(settings) {
       return !!(settings.speak && settings.volume > 0 && speechPlayer?.available());
     }
-    function buttons() { $('match').disabled = $('no-match').disabled = !state.running || state.paused || !state.awaiting; }
+    function syncListeningUI() {
+      const listening = state.running ? state.settings.listening : $('number-listening').checked;
+      $('number-listening-settings').hidden = !listening;
+      $('number-seconds').disabled = state.running || !listening;
+      $('response').disabled = state.running || listening;
+      $('speak').disabled = state.running || listening;
+      $('keyboard').disabled = state.running || listening;
+      $('haptic').disabled = state.running || listening;
+      if (listening) $('speak').checked = true;
+      $('number-responses').hidden = listening;
+      $('number-key-guide').hidden = listening;
+      $('number-scored-stats').hidden = listening;
+      $('number-listening-stats').hidden = !listening;
+      $('number-listening-summary').hidden = !listening;
+    }
+    function buttons() { $('match').disabled = $('no-match').disabled = !state.running || state.paused || !state.awaiting || !!state.settings?.listening; }
     function updateStats() {
+      $('number-heard').textContent = state.heard;
       $('trials').textContent = state.score.shown;
       $('hits').textContent = state.score.hits;
       $('accuracy').textContent = (state.score.scored ? Math.round(state.score.correct / state.score.scored * 100) : 0) + '%';
@@ -121,10 +196,10 @@
       }
     }
     function progress() {
-      const fraction = state.settings ? state.remaining / (state.settings.response * 1000) : 0;
+      const fraction = state.settings ? state.remaining / ((state.settings.listening ? state.settings.seconds : state.settings.response) * 1000) : 0;
       $('timerbar').style.transition = 'none';
-      $('timerbar').style.width = state.phase === 'response' ? `${Math.max(0, fraction) * 100}%` : '0%';
-      if (!state.paused && state.phase === 'response') {
+      $('timerbar').style.width = ['response', 'listening'].includes(state.phase) ? `${Math.min(1, Math.max(0, fraction)) * 100}%` : '0%';
+      if (!state.paused && ['response', 'listening'].includes(state.phase)) {
         void $('timerbar').offsetWidth;
         $('timerbar').style.transition = `width ${state.remaining}ms linear`;
         $('timerbar').style.width = '0%';
@@ -138,17 +213,37 @@
       state.timer = later(() => {
         if (!state.running || state.paused || state.generation !== generation) return;
         if (state.phase === 'response') finishTrial(null);
-        else if (state.phase === 'feedback') next();
+        else if (state.phase === 'feedback' || state.phase === 'listening') next();
       }, state.remaining);
       progress();
     }
     async function present() {
       const trial = state.current, generation = state.generation;
-      state.phase = 'speaking'; state.awaiting = false; buttons();
+      state.phase = 'speaking'; state.awaiting = false; state.trialStarted = elapsed(); buttons();
       const audible = audioEnabled(state.settings);
       $('stimulus').classList.toggle('hidden', !!(state.settings.audioOnly && audible));
       const spoken = await speak(trial.values, state.settings);
       if (!state.running || state.paused || state.generation !== generation || state.current !== trial) return;
+      if (state.settings.listening) {
+        if (!spoken || !audible) {
+          pause();
+          $('pause').textContent = 'Retry audio';
+          $('feedback').textContent = 'AUDIO PAUSED';
+          $('feedback').style.color = '#b42318';
+          $('explanation').textContent = 'Audio could not finish. Check your sound output, then select Retry audio to replay this same trial. Nothing has been scored or counted as heard.';
+          return;
+        }
+        trial.audioAvailable = true;
+        if (!trial.heard) { trial.heard = true; state.heard += 1; }
+        updateStats();
+        if (state.finishAfterSpeech) { stop('SESSION COMPLETE'); return; }
+        state.phase = 'listening'; state.awaiting = false; buttons();
+        $('feedback').textContent = 'LISTENING · NOT SCORED';
+        $('feedback').style.color = '';
+        $('explanation').textContent = 'Answer in your mind. The next trial starts automatically.';
+        armTimer(state.settings.seconds * 1000 - (elapsed() - state.trialStarted));
+        return;
+      }
       if (state.finishAfterSpeech) { stop('SESSION COMPLETE'); return; }
       trial.audioAvailable = !!(spoken && audible);
       if (state.settings.audioOnly && !spoken) {
@@ -161,20 +256,29 @@
     function next() {
       if (!state.running || state.paused) return;
       clear(state.timer);
+      if (state.settings.listening && state.settings.session !== 'open' && elapsed() >= state.settings.session * 60000) {
+        stop('SESSION COMPLETE');
+        return;
+      }
       state.current = makeTrial(state.trials, state.settings, random);
       state.trials.push(state.current);
       // Only N-back targets and recent interference digits are needed, even in
       // open-ended sessions. Keep memory bounded without changing trial offsets.
       if (state.trials.length > Math.max(state.settings.n, 8)) state.trials.shift();
-      state.score.shown += 1;
+      state.presented += 1;
+      if (!state.settings.listening) state.score.shown += 1;
       $('stimulus').textContent = state.current.values.join(', ');
       $('feedback').style.color = '';
       $('feedback').textContent = state.current.scored ? '' : `MEMORY FILL ${state.score.shown}/${state.settings.n}`;
       $('explanation').textContent = state.current.scored ? '' : 'Remember this ordered sequence. Responses begin after memory fill.';
+      if (state.settings.listening) {
+        $('feedback').textContent = 'LISTENING · NOT SCORED';
+        $('explanation').textContent = state.current.scored ? 'Compare in your mind with the sequence exactly ' + state.settings.n + ' trials earlier.' : 'Memory fill ' + state.presented + '/' + state.settings.n + '. Remember this ordered sequence.';
+      }
       updateStats(); present();
     }
     function finishTrial(response) {
-      if (!state.running || state.paused || state.phase !== 'response') return;
+      if (!state.running || state.paused || state.settings.listening || state.phase !== 'response') return;
       state.awaiting = false; state.phase = 'feedback'; clear(state.timer); buttons();
       const trial = state.current;
       if (trial.scored) {
@@ -189,22 +293,24 @@
         if (state.settings.haptic && environment.navigator?.vibrate) {
           try { environment.navigator.vibrate(correct ? 45 : [70, 40, 70]); } catch (_) {}
         }
-        const slots = trial.positions.map(i => ['first', 'second', 'third'][i]).join(', ');
+        const slots = trial.positions.map(i => ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'][i]).join(', ');
         const result = trial.match ? `MATCH at the ${slots} position${trial.positions.length > 1 ? 's' : ''}.` : 'NO MATCH. Repeated digits in different positions do not count.';
         $('explanation').textContent = `${result} Current ${trial.values.join(', ')}; ${state.settings.n}-back target ${trial.target.join(', ')}.`;
       }
       updateStats(); armTimer(450);
     }
     function answer(response) {
-      if (!state.running || state.paused || !state.awaiting || typeof response !== 'boolean') return;
+      if (!state.running || state.paused || state.settings.listening || !state.awaiting || typeof response !== 'boolean') return;
       finishTrial(now() >= state.deadline ? null : response);
     }
     function start() {
       if (state.running) return;
+      if ($('number-listening').checked && !$('number-seconds').reportValidity()) return;
       cancelSpeech(); clear(state.timer); environment.clearInterval(state.clock);
-      Object.assign(state, { running: true, paused: false, awaiting: false, trials: [], current: null, finishAfterSpeech: false, elapsed: 0, activeStarted: now(), settings: readSettings(), score: emptyScore(), generation: state.generation + 1 });
+      Object.assign(state, { running: true, paused: false, awaiting: false, trials: [], current: null, finishAfterSpeech: false, elapsed: 0, activeStarted: now(), settings: readSettings(), score: emptyScore(), heard: 0, presented: 0, trialStarted: 0, generation: state.generation + 1 });
       if (audioEnabled(state.settings)) speechPlayer.prepare();
       CONTROL_IDS.forEach(id => { $(id).disabled = true; });
+      syncListeningUI();
       $('start').disabled = true; $('pause').disabled = $('stop').disabled = false; $('pause').textContent = 'Pause';
       updateStats(); updateClock();
       state.clock = environment.setInterval(updateClock, 250);
@@ -215,6 +321,7 @@
       Object.assign(state, { running: false, paused: false, awaiting: false, phase: 'idle', generation: state.generation + 1 });
       clear(state.timer); environment.clearInterval(state.clock); cancelSpeech(); speechPlayer?.release?.();
       CONTROL_IDS.forEach(id => { $(id).disabled = false; });
+      syncListeningUI();
       $('start').disabled = false; $('pause').disabled = $('stop').disabled = true; $('pause').textContent = 'Pause';
       buttons(); progress();
       $('stimulus').classList.remove('hidden'); $('stimulus').textContent = message;
@@ -233,18 +340,24 @@
       } else {
         state.paused = false; state.activeStarted = now(); $('pause').textContent = 'Pause';
         $('stimulus').classList.toggle('hidden', !!(state.settings.audioOnly && state.current.audioAvailable));
-        if (state.phase === 'speaking') present();
+        if (state.phase === 'speaking') {
+          if (state.settings.listening) { $('feedback').textContent = 'LISTENING · NOT SCORED'; $('feedback').style.color = ''; }
+          present();
+        }
         else { buttons(); armTimer(state.remaining); }
         updateClock();
       }
     }
+    $('number-listening').addEventListener('change', syncListeningUI);
+    syncListeningUI();
     $('start').onclick = start; $('stop').onclick = () => stop(); $('pause').onclick = pause;
     $('match').onclick = () => answer(true); $('no-match').onclick = () => answer(false);
     $('test').onclick = () => {
       if (state.running) return;
       const generation = ++state.generation;
       $('feedback').textContent = 'TESTING AUDIO';
-      return speak([6, 8, 9], { ...readSettings(), speak: true }).then(ok => {
+      const settings = { ...readSettings(), speak: true };
+      return speak([6, 8, 9, 2, 4, 1].slice(0, settings.count), settings).then(ok => {
         if (!state.running && state.generation === generation) {
           speechPlayer?.release?.();
           $('feedback').textContent = ok ? 'AUDIO READY' : 'Audio unavailable. Check the volume and try again.';
@@ -261,7 +374,7 @@
     });
     document.addEventListener('visibilitychange', () => { if (document.hidden && state.running && !state.paused) pause(); });
     environment.addEventListener('pagehide', () => stop());
-    return { state, start, stop, pause, answer };
+    return { state, start, stop, pause, answer, player: speechPlayer };
   }
   return { createTrainer, makeTrial, sameSlots, normaliseSettings, dPrime, normalQuantile };
 });

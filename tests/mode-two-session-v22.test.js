@@ -188,7 +188,9 @@ test('Mode 2 warm-up pause preserves memory-fill order and stop invalidates dela
   f.advance(10000);
   assert.equal(f.app.trials.length, 1);
   f.app.togglePause();
-  f.advance(899);
+  // The first 100 ms already elapsed before pausing; resume the remaining
+  // 800 ms instead of restarting the entire 900 ms history delay.
+  f.advance(799);
   assert.equal(f.app.trials.length, 1);
   f.advance(1);
   assert.equal(f.app.trials.length, 2);
@@ -272,7 +274,9 @@ test('Mode 2 manual pause inside practice preserves a single clock pause and rep
   const read = f.window.document.querySelectorAll('.mode-two-practice-actions button')[1];
   read.click();
   const spoken = f.speech.at(-1);
-  assert.match(spoken.text, /Practice question one/);
+  // Replay speaks the presented trial only; practice prompts remain visual.
+  assert.equal(spoken.text, engine.renderOntologicalTrial(trial));
+  assert.doesNotMatch(spoken.text, /Practice question/);
   f.app.togglePause();
   f.advance(9000);
   assert.equal(f.counters().pauses, 1);

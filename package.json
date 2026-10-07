@@ -10,7 +10,8 @@
     "test:mode-two:browser": "node tests/mode-two-browser-v22.cjs",
     "test:audio:browser": "node tests/number-speech-browser.cjs",
     "test:relacality": "npm --prefix relacality test",
-    "build:relacality": "npm --prefix relacality run build:standalone"
+    "build:relacality": "npm --prefix relacality run build:standalone",
+    "test:pacing:browser": "node tests/main-pacing-browser.cjs"
   },
   "engines": { "node": ">=22" },
   "devDependencies": { "jsdom": "26.1.0", "playwright": "1.58.2" }

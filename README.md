@@ -22,11 +22,21 @@ Open `http://localhost:8000/`. Keep all JavaScript files beside the HTML files: 
 
 1. Choose Mode 1 or Mode 2.
 2. Select **4, 8 or 16 compass directions**. Both modes require an explicit choice before Start becomes available.
-3. Select an N-back level from **1–8**, session length and whole-triad match probability; adjust speech and display preferences as needed.
+3. Select an N-back level from **1–8**, a session length of up to **6 hours**, and whole-triad match probability; adjust speech and display preferences as needed.
 4. For Mode 2, choose **One descriptor per entity**, **Multiple aspects per entity** (default) or **Worlds within worlds**. Choose whether to keep **Practice break after every 6 answers** enabled (default).
-5. Press **Start**. Both main modes are self-paced: there is no per-trial response deadline, but the overall session has a duration.
+5. Choose listening practice or entered responses and their timing settings, then press **Start**. Entered responses are untimed by default; a finite response window is optional.
 
-Mode, N-back level, compass resolution, session duration and Mode 2 complexity/practice settings are fixed during a session. **Adaptive N is unavailable**; choose a different N before the next session. Both main modes use **100% cognitive interference**, so that control is fixed. Pause preserves the current trial and excludes paused time from the session clock and response measurements. Each mode has its own expanded, visible guide below the game and a jump link above the settings.
+Mode, N-back level, compass resolution, session duration, pacing controls and Mode 2 complexity/practice settings are fixed during a session. **Adaptive N is unavailable**; choose a different N before the next session. Both main modes use **100% cognitive interference**, so that control is fixed. Pause preserves the current trial and excludes paused time from the session clock and response measurements. Each mode has its own expanded, visible guide below the game and a jump link above the settings.
+
+### Listening and response timing
+
+Main-mode speech reads each complete trial continuously without announcing visual role labels or turn prompts. The optional binaural background is muted while speech is queued or playing. These modes use installed browser voices, so voice quality depends on the device.
+
+**Listening mode — no response input** advances both main modes automatically and leaves all answers to mental practice. Choose **1–120 seconds per trial**, including decimals. This is a target interval between trial starts, not a delay added after speech. Speech always finishes before the next trial starts; longer speech extends the interval. Listening mode does not record answers, accuracy, omissions or timeout penalties. Mode 2's optional practice breaks are disabled during listening. Visible text and audio-only display remain available; if speech is muted or unavailable, the visible trial remains usable.
+
+With listening off, **Response time after speech** controls an optional scored deadline: **0 means no time limit**, and a positive setting allows up to **120 seconds after speech completes**. The setting applies to initial trials too. If speech is muted or unavailable, the window begins when the text is presented. In Mode 1, incomplete answers at a finite deadline are scored as unanswered; in Mode 2, memory-fill trials remain unscored and only later missed responses affect accuracy.
+
+**Advance by trial response** lets a completed response advance after feedback. Turn it off to keep each trial for the full finite response interval even when you answer early. If this option is off while response time is 0, the application uses **30 seconds** so automatic progression has a defined interval. A pause freezes the remaining interval and session clock. Pausing during speech replays the same trial on Resume; in listening mode, its start-to-start interval restarts with that replay.
 
 ## What counts as a match?
 
@@ -34,13 +44,15 @@ Each main reasoning trial contains two premises and a candidate conclusion invol
 
 **Spatial inference convention:** each premise denotes an equal-length unit step, including diagonal directions. The candidate asserts only the resulting bearing, not a unit distance. The core rounds the end-to-end bearing to the nearest of sixteen compass points, choosing clockwise at an exact halfway boundary. Generated trials keep the premises, candidate and derived answer within the chosen 4/8/16-direction pool. This explicit metric convention matters: bare real-world compass statements without distances would not generally determine the same precise intermediate bearings.
 
+The main modes retain **three statements per trial** and their existing answer layouts: Mode 1 uses the five-decision matrix, and Mode 2 uses one Match/No Match response.
+
 N-back comparisons use the trial exactly N positions earlier. Matching requires a single consistent one-to-one mapping between the historical and current letters. Letter names may change, all three statements may exchange positions, and reversed wording is equivalent only when its compass direction is also reversed. The third statement has no privileged N-back position; its within-trial inference role remains separate. Compass directions must match exactly: adjacent directions, an incorrect letter pair, or reversing endpoints without reversing direction do not count.
 
 ### Mode 1 — Relational reasoning
 
 Apply the **Da Vinci cross-domain method**: build a concrete world from the two clues, then reconstruct the same relationships in a different domain. Preserve directions and entity roles while changing what the letters represent. Evaluate the candidate as a claim; it does not become a fact merely because it is part of the imagined scene.
 
-Answer all five decisions on **every trial**, including the initial N memory-fill trials:
+When entering responses, answer all five decisions on **every trial**, including the initial N memory-fill trials:
 
 | Decision | Positive key | Negative key |
 | --- | --- | --- |
@@ -50,19 +62,19 @@ Answer all five decisions on **every trial**, including the initial N memory-fil
 | Statement 3 is entailed by the current premises | K | L |
 | Complete triad matches the N-back structure | Space | N |
 
-Buttons provide the same choices. Each answer is locked after entry and gets immediate feedback; entering all five advances the trial. During memory fill, no historical target exists, so the three statement-match answers and complete-triad answer are **No**; judge current-trial entailment normally.
+Buttons provide the same choices. Each answer is locked after entry and gets immediate feedback. Entering all five advances after feedback when **Advance by trial response** is enabled; otherwise the trial stays until its finite response interval ends. During memory fill, no historical target exists, so the three statement-match answers and complete-triad answer are **No**; judge current-trial entailment normally.
 
 Statement matches are evaluated together under a coherent letter mapping and statement assignment, not as independent visual similarities. Current-trial entailment is a separate decision from historical matching. A complete-triad match requires all three statements to align.
 
 The alignment first maximizes the number of matching statements. If equally good alignments disagree on the three statement answers, the tie rule compares answers from Statement 1 onward and prefers **No** at the first difference. Thus `[No, Yes, Yes]` precedes `[Yes, No, Yes]`. This determines one reproducible answer vector; it does not affect current-trial entailment. Entailment requires the exact relation between the two ends of the two-premise chain. Merely repeating one premise using its own endpoint pair does not satisfy this question.
 
-After memory fill, every generated non-match preserves exactly two coherent statements and changes one relation. Controlled letter continuity retains two target letter identities, replaces one and maintains overlap with the preceding trial. These presentation constraints do not replace the structural scoring rule.
+After memory fill, every generated non-match preserves exactly two coherent statements and changes one relation. Letter presentation now varies independently of the requested match: a trial can retain **zero, one or two** letter names from its N-back target, and letters can change relational roles. There is no required shared letter with the immediately preceding trial. A soft random weighting based on the most recent **32 trials** reduces repeated names and long streaks without forcing a predictable rotation or guaranteeing a hard streak limit. Exposure history resets with a new session. These presentation choices do not replace the structural scoring rule.
 
 The score distinguishes **decision accuracy** from **complete-trial accuracy**: a complete trial is correct only when all five answers are correct. Historical hit/miss statistics refer to the complete-triad decision.
 
 ### Mode 2 — Ontological Integration
 
-Mode 2 binds an ontology descriptor to **both endpoints of every statement**. A descriptor includes a category and its Inner, Outer or unmarked form. All these bindings now affect scoring. A match preserves the complete **entity–category–form–direction configuration** under one consistent entity bijection. All three statements may exchange positions and wording may reverse with the opposite direction, while descriptors stay attached to their endpoints. Reversing wording never silently changes Inner to Outer.
+Mode 2 uses the same variable letter overlap and soft 32-trial exposure weighting while preserving its descriptor rules. It binds an ontology descriptor to **both endpoints of every statement**. A descriptor includes a category and its Inner, Outer or unmarked form. All these bindings now affect scoring. A match preserves the complete **entity–category–form–direction configuration** under one consistent entity bijection. All three statements may exchange positions and wording may reverse with the opposite direction, while descriptors stay attached to their endpoints. Reversing wording never silently changes Inner to Outer.
 
 Each letter denotes one stable entity throughout a trial. Its aspects share its spatial anchor; different descriptors do not imply movement, separate entities or time steps. The complexity setting is independent of N:
 
@@ -74,7 +86,7 @@ Each letter denotes one stable entity throughout a trial. Its aspects share its 
 
 Worlds use an explicit game rule: **If the inner candidate follows from its premises, this world projects outward; otherwise it receives inward.** The inner category/form/endpoint bindings remain part of the match identity. Equal output states do not make different inner structures equivalent. Inner entity letters are local to their containing world. This is an explicit extension of the game, not an inferred category algebra.
 
-The first N trials are unscored memory fill. They advance shortly after successful speech finishes. When speech is silent or unavailable, **Remember this world — Continue** lets the user finish reading the complete stimulus before advancing. Match/No Match remain unavailable during memory fill. Subsequent trials wait for one **Match** or **No Match** response after speech completes. Close non-matches can alter a category, form, endpoint-role binding, direction or inner-world binding. Remembering only the compass shape or the set of vocabulary words is insufficient. Use **F/J** for Match and **D/K** for No Match, or the on-screen buttons.
+The first N trials are unscored memory fill. A finite response-time setting gives them that full interval after speech; listening mode follows its start-to-start interval. With untimed entered responses, memory fill advances shortly after successful speech. Only in this untimed case, when speech is silent or unavailable, **Remember this world — Continue** lets the user finish reading before advancing. Match/No Match remain unavailable during memory fill. Subsequent trials accept one **Match** or **No Match** response after speech, subject to the chosen deadline and advancement setting. Close non-matches can alter a category, form, endpoint-role binding, direction or inner-world binding. Remembering only the compass shape or the set of vocabulary words is insufficient. Use **F/J** for Match and **D/K** for No Match, or the on-screen buttons.
 
 #### Worked 1-back example: multiple aspects
 
@@ -92,7 +104,7 @@ Swap only `Multiplication Z` and `Projection Z` between Trial 2's first and thir
 
 Use the category meanings to construct one integrated concrete world and reconstruct its relational pattern in a distant domain. Preserve each entity, its operational aspects and all written relationships. The domain cue and self-written stories do not change the formal match identity and are not automatically graded. Compass directions have no permanently assigned category meanings.
 
-After every six scored responses, optional practice pauses the session clock without adding or replacing an N-back trial. Derive the candidate subject's direction relative to its object from the two premises. Then reverse **both premise direction codes**, keeping their endpoints and facets fixed, and derive the new direction. This is a spatial intervention, distinct from equivalent sentence inversion. Practice feedback is separate from N-back accuracy and response-time measurements. Each question's first checked answer is retained for the separate practice metric; feedback retries remain available for learning. Optional prompts/notes support cross-domain reconstruction, an explicit causal rule, a predicted consequence and a boundary where the analogy breaks. Notes remain in the open session and are not graded or persisted to History. **Continue training** also permits skipping practice.
+Outside listening mode, after every six scored responses, optional practice pauses the session clock without adding or replacing an N-back trial. Derive the candidate subject's direction relative to its object from the two premises. Then reverse **both premise direction codes**, keeping their endpoints and facets fixed, and derive the new direction. This is a spatial intervention, distinct from equivalent sentence inversion. Practice feedback is separate from N-back accuracy and response-time measurements. Each question's first checked answer is retained for the separate practice metric; feedback retries remain available for learning. Optional prompts/notes support cross-domain reconstruction, an explicit causal rule, a predicted consequence and a boundary where the analogy breaks. Notes remain in the open session and are not graded or persisted to History. **Continue training** also permits skipping practice.
 
 Causal predictions need an explicit rule in the imagined model: compass position alone does not establish causation. No rule such as “Division plus Projection equals Connection” is used. The guide includes the nine-category, three-form operational glossary. In particular, Outer Connection means a connected member/endpoint of a linking medium, and unmarked Projection spans source, trajectory and destination.
 
@@ -100,19 +112,23 @@ For either main mode, **P** pauses/resumes and **Escape** stops, independently o
 
 ## Extra Training — Ordered Number N-back
 
-This separate screen supports **1–20 back**, **1–3 ordered digits per trial**, digits **1–9**, configurable match probability, interference, speech and a timed response window. Sessions can have a fixed duration or be open-ended.
+This separate screen supports **1–20 back**, **1–6 ordered digits per trial** (default: 3), digits **1–9**, configurable match probability, interference, speech and a timed response window. Fixed sessions include **1, 2, 3, 4, 5 and 6 hours** as well as shorter choices; open-ended sessions remain available. The main-page launcher navigates directly to this screen, and **Main Training** returns to the main page.
 
 A trial is a **Match if at least one digit is identical in the same position** as it was N trials earlier. The whole sequence need not match. For example, target `1, 2, 3` and current `1, 8, 9` match; current `2, 3, 1` does not. Digits repeated in different positions are interference.
 
-The first N trials are unscored memory fill and advance automatically. Thereafter use Match/No Match buttons or **F/J** and **D/K**. The response timer begins after speech completes. Timeouts count as incorrect; d′ uses corrected hit and false-alarm rates, excludes omitted responses, and remains unavailable until both match and non-match responses exist.
+Each digit appears at most **twice per sequence**. No digit repeats three times consecutively in the number stream, including across trial boundaries, or in the same sequence position across three trials. These constraints take priority over the requested match probability; scoring always uses the actual generated sequence.
 
-Number speech uses studio recordings of a human Australian English speaker. Complete digits and the selected gaps are assembled into one continuous audio sequence, with a protected startup lead-in and ending. Average uses the original recording with volume normalization and quiet padding; faster settings accelerate the whole word without changing pitch or splicing individual phonemes. The seven tempos run from 1× to 1.85×, keeping pronunciation intact instead of compressing the middle of a word up to 6×. No network speech service or installed system voice is required. The response timer waits for the full audio sequence and output latency. A session ending automatically finishes its current spoken sequence; Pause or Stop interrupts it immediately, and Resume replays an interrupted sequence from the beginning. See [voice attribution and build details](NUMBER-SPEECH-ASSETS.md).
+With listening off, the first N trials are unscored memory fill and advance automatically. Thereafter use Match/No Match buttons or **F/J** and **D/K**. The response timer begins after speech completes. Timeouts count as incorrect; d′ uses corrected hit and false-alarm rates, excludes omitted responses, and remains unavailable until both match and non-match responses exist.
 
-Settings are fixed until the session stops. Pause preserves the sequence and remaining response time; returning from a pause never inserts a replacement trial. If audio is unavailable, audio-only mode reveals the sequence so the trial remains usable. Switching away from this screen automatically pauses it. Number-session results are shown on this screen and are not saved to the main training-session history.
+**Listening mode — no response input** is also available here with a **1–120-second start-to-start interval**, including decimals. It disables response input and scoring, keeps speech enabled, and counts only fully heard trials. Longer speech completes before advancing. If audio cannot play, the session pauses for a retry without counting the trial or applying a penalty. Pausing during speech replays that sequence and restarts its interval; a pause between trials freezes the remaining interval.
+
+Number speech uses recordings of a human Australian English speaker. Complete digits and the selected gaps are assembled into one continuous audio sequence, with a protected startup lead-in and ending. Average uses the original recording with volume normalization and quiet padding; faster settings accelerate the whole word without changing pitch or splicing individual phonemes. The seven tempos run from 1× to 1.85×. All selected digits, including positions four through six, are included in the same complete buffer; **Test speech** uses the selected sequence length. Perceived speech quality still depends on the browser, device and sound output. No network speech service or installed system voice is required. The response timer waits for the full audio sequence and output latency. A session ending automatically finishes its current spoken sequence; Pause or Stop interrupts it immediately, and Resume replays an interrupted sequence from the beginning. See [voice attribution and build details](NUMBER-SPEECH-ASSETS.md).
+
+Settings are fixed until the session stops. Pause preserves the sequence and remaining response time; returning from a pause never inserts a replacement trial. In entered-response mode, if audio is unavailable, audio-only mode reveals the sequence so the trial remains usable; listening mode instead pauses for an audio retry. Switching away from this screen automatically pauses it. Number-session results are shown on this screen and are not saved to the main training-session history.
 
 ## Results and storage
 
-Completed or stopped reasoning sessions appear under **History**. Results include mode, N, compass resolution, active duration, accuracy and response statistics. Mode 2's practice questions are excluded from N-back accuracy. **Export CSV** downloads those summaries; **Clear** removes saved history from this browser.
+Completed or stopped reasoning sessions appear under **History**. Results include mode, N, compass resolution, active duration, accuracy and response statistics. Listening sessions are identified as unscored and retain shown/heard counts without invented response or accuracy results. Mode 2's practice questions are excluded from N-back accuracy. **Export CSV** downloads those summaries; **Clear** removes saved history from this browser.
 
 History and preferences use browser storage on the current site and device. They are not synced across devices. If storage is unavailable, the app reports the problem and keeps new results in the current tab for export. Export before clearing browser data or leaving a tab with unsaved results.
 

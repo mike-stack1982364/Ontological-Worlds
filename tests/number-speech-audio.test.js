@@ -76,7 +76,7 @@ function decode(pcm) {
 function verifyCorpus(data) {
   assert.ok(Number.isInteger(data.sampleRate) && data.sampleRate >= 8000);
   let combinations = 0;
-  for (const rate of rateNames) for (const spacing of rateNames) for (const count of [1, 2, 3]) {
+  for (const rate of rateNames) for (const spacing of rateNames) for (const count of [1, 2, 3, 4, 5, 6]) {
     for (let firstDigit = 1; firstDigit <= 9; firstDigit++) {
       const digits = Array.from({ length: count }, (_, index) => (firstDigit - 1 + index) % 9 + 1);
       const sequence = buildSequence(digits, settings({ rate, spacing }), data);
@@ -101,7 +101,7 @@ function verifyCorpus(data) {
       combinations++;
     }
   }
-  assert.equal(combinations, 1323);
+  assert.equal(combinations, 2646);
 }
 
 function audioFixture(options = {}) {
@@ -209,7 +209,7 @@ test('every digit, sequence length, speech speed and gap preserves complete PCM 
   verifyCorpus(syntheticData());
 });
 
-test('shipped audio includes all 63 complete rate-specific recordings and preserves them in 1323 sequences', () => {
+test('shipped audio includes all 63 complete rate-specific recordings and preserves them in 2646 sequences of one to six numbers', () => {
   const assetPath = path.resolve(__dirname, '../number-speech-data.js');
   assert.ok(fs.existsSync(assetPath), 'the deployed player must ship its speech recordings');
   const data = require(assetPath);
@@ -220,6 +220,16 @@ test('shipped audio includes all 63 complete rate-specific recordings and preser
     assert.ok(pcm.every(Number.isFinite));
   }
   verifyCorpus(data);
+});
+
+test('sequence validation rejects a seventh number and invalid values in the newly supported positions', () => {
+  const data = syntheticData();
+  for (const values of [[], [1, 2, 3, 4, 5, 6, 7], [1, 2, 3, 0], [1, 2, 3, 4, 10], [1, 2, 3, 4, 5, '6']]) {
+    assert.throws(() => buildSequence(values, settings(), data), /one to six digits from 1 to 9/);
+  }
+  const sparse = [1, 2, 3, 4, 5, 6];
+  delete sparse[5];
+  assert.throws(() => buildSequence(sparse, settings(), data), /one to six digits from 1 to 9/);
 });
 
 test('the natural voice has traceable original recordings and average speed preserves every source sample', () => {
@@ -314,17 +324,18 @@ test('all 63 whole-word recordings have verified hashes, silent guards, unclippe
   assert.equal(verifiedClips, 63);
 });
 
-test('one continuous source per trial uses full buffer from offset zero at every volume', async () => {
-  for (const volume of [.4, .6, .8, 1]) {
+test('one continuous source per trial uses the full one-to-six-number buffer from offset zero at every volume', async () => {
+  for (const volume of [.4, .6, .8, 1]) for (const count of [1, 2, 3, 4, 5, 6]) {
     const f = audioFixture();
     assert.equal(f.player.available(), true);
     const prepared = f.player.prepare();
     assert.equal(f.contexts[0].resumeCalls, 1, 'output unlock begins synchronously in the user gesture');
     assert.equal(await prepared, true);
-    const result = f.player.play([1, 2, 9], settings({ volume, rate: 'ultra-fast', spacing: 'ultra-fast' }));
+    const values = [1, 2, 9, 4, 5, 6].slice(0, count);
+    const result = f.player.play(values, settings({ volume, rate: 'ultra-fast', spacing: 'ultra-fast' }));
     await f.flush();
     assert.equal(f.spokenSources().length, 1);
-    const source = f.spokenSources()[0], expected = buildSequence([1, 2, 9], settings({ volume, rate: 'ultra-fast', spacing: 'ultra-fast' }), f.data);
+    const source = f.spokenSources()[0], expected = buildSequence(values, settings({ volume, rate: 'ultra-fast', spacing: 'ultra-fast' }), f.data);
     assert.equal(source.offset, 0);
     assert.equal(source.explicitDuration, undefined, 'source may not truncate the last number');
     assert.equal(source.playbackRate.value, 1, 'fast speech is pre-rendered and does not change playback pitch');
@@ -348,14 +359,19 @@ test('speech disabled and zero volume skip playback without invisible response d
   }
 });
 
-test('completion waits for the entire sequence and output drain before allowing a response', async () => {
+test('completion waits for all six numbers and output drain before allowing a response', async () => {
   const f = audioFixture();
-  const promise = f.player.play([1, 2, 3], settings());
+  const values = [1, 2, 3, 4, 5, 6];
+  const promise = f.player.play(values, settings());
   let settled = false;
   promise.then(() => { settled = true; });
   await f.flush();
   const source = f.spokenSources()[0];
-  await f.advance(source.buffer.duration * 1000 - 1);
+  const sequence = buildSequence(values, settings(), f.data);
+  const firstThreeFinished = sequence.segments[2].end / sequence.sampleRate * 1000;
+  await f.advance(firstThreeFinished);
+  assert.equal(settled, false, 'the old three-number boundary cannot finish a six-number trial');
+  await f.advance(source.buffer.duration * 1000 - firstThreeFinished - 1);
   assert.equal(settled, false, 'every final sample must finish');
   await f.advance(1);
   assert.equal(settled, false, 'device output still needs to drain after the graph ends');

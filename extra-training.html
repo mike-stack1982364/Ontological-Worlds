@@ -7,6 +7,7 @@
 <title>Extra Training — Ordered Number N-back</title>
 <style>
 :root{--bg:#fff;--panel:#f4f8fc;--ink:#0b1728;--muted:#43566d;--blue:#124f8c;--blue2:#176aa8;--green:#086b3a;--red:#b42318}
+[hidden]{display:none!important}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);padding:12px}
 .container{max-width:900px;margin:0 auto}
@@ -30,6 +31,7 @@ button:disabled{opacity:.42;cursor:not-allowed}
 #feedback{min-height:34px;text-align:center;font-weight:900;font-size:1.2rem}#explanation{min-height:52px;color:#30465d;line-height:1.45;text-align:center}
 .timer,.sessionbar{height:7px;background:#d7e1eb;border-radius:999px;overflow:hidden;margin-top:12px}.sessionbar{height:4px}#timerbar,#sessionprogress{height:100%;width:0;background:var(--blue2)}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}.stat{background:#fff;border:1px solid #b6c4d3;border-radius:10px;padding:10px;text-align:center}.stat small{display:block;color:var(--muted);text-transform:uppercase}.stat strong{color:var(--blue)}
+.key-guide{text-align:center;margin-top:12px}.guide{line-height:1.65}.guide h2{margin-top:0;color:var(--blue);font-size:1.15rem}
 @media(max-width:560px){header{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:repeat(2,1fr)}.responses{flex-direction:column}}
 </style>
 </head>
@@ -39,30 +41,50 @@ button:disabled{opacity:.42;cursor:not-allowed}
 <div id="clock" class="clock">00:00</div>
 <section class="controls">
 <p class="help" style="font-size:.9rem;margin:0 0 16px">Digits 1–9. A match exists only when the same number appears in the same sequence position as it did exactly N trials earlier. Repeated numbers in different positions are interference, not matches.</p>
+<p id="repetition-rule" class="help">Repetition limit: each digit appears at most twice per string. No third consecutive repeat, including across trials or in the same position. This limit takes priority over the requested match rate.</p>
 <div class="grid">
 <div><label for="n">N-back level</label><select id="n"></select></div>
-<div><label for="count">Numbers per trial</label><select id="count"><option value="1">1 number</option><option value="2">2 numbers</option><option value="3" selected>3 numbers</option></select></div>
+<div><label for="count">Numbers per trial</label><select id="count"><option value="1">1 number</option><option value="2">2 numbers</option><option value="3" selected>3 numbers</option><option value="4">4 numbers</option><option value="5">5 numbers</option><option value="6">6 numbers</option></select></div>
 <div><label for="response">Trial response time</label><select id="response"><option value="1">1 second</option><option value="2">2 seconds</option><option value="3" selected>3 seconds</option><option value="5">5 seconds</option><option value="8">8 seconds</option><option value="12">12 seconds</option><option value="20">20 seconds</option></select></div>
-<div><label for="session">Session length</label><select id="session"><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15" selected>15 minutes</option><option value="20">20 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option><option value="open">Open-ended session</option></select></div>
+<div><label for="session">Session length</label><select id="session"><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15" selected>15 minutes</option><option value="20">20 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option><option value="300">5 hours</option><option value="360">6 hours</option><option value="open">Open-ended session</option></select></div>
 <div><label for="probability">Match probability</label><select id="probability"><option value="20">20%</option><option value="30">30%</option><option value="35" selected>35%</option><option value="40">40%</option><option value="50">50%</option><option value="60">60%</option></select></div>
 <div><label for="interference">Cognitive interference</label><select id="interference"><option value="0">None</option><option value="25">Low</option><option value="50">Moderate</option><option value="75" selected>High</option><option value="100">Maximum</option></select><p class="help">Higher stages reuse recent digits, transpose remembered digits and create near-matches with misleading slot order.</p></div>
 <div><label for="rate">Number speech speed</label><select id="rate"><option value="average">Average</option><option value="moderately-fast">Moderately fast</option><option value="fast">Fast</option><option value="very-fast">Very fast</option><option value="extremely-fast">Extremely fast</option><option value="incredibly-fast">Incredibly fast</option><option value="ultra-fast">Ultra fast</option></select></div>
 <div><label for="spacing">Time between spoken numbers</label><select id="spacing"><option value="average">Average</option><option value="moderately-fast">Moderately fast</option><option value="fast">Fast</option><option value="very-fast">Very fast</option><option value="extremely-fast">Extremely fast</option><option value="incredibly-fast">Incredibly fast</option><option value="ultra-fast">Ultra fast — minimum possible gap</option></select></div>
 <div><label for="volume">Speech volume</label><select id="volume"><option value="0.4">40%</option><option value="0.6">60%</option><option value="0.8" selected>80%</option><option value="1">100%</option></select></div>
 </div>
+<div class="toggles number-listening-option"><label><input id="number-listening" type="checkbox" aria-describedby="number-listening-help"> Listening mode — no response input</label></div>
+<p id="number-listening-help" class="help">Listen and answer in your mind. Trials advance automatically; no answers, timeouts or accuracy penalties are recorded.</p>
+<div id="number-listening-settings" hidden style="max-width:420px;margin-top:16px">
+<label for="number-seconds">Seconds per trial</label>
+<input id="number-seconds" type="number" min="1" max="120" step="any" value="5" required inputmode="decimal" aria-describedby="number-cadence-help" disabled>
+<p id="number-cadence-help" class="help">Choose any value from 1 to 120 seconds, including decimals. This is the time between trial starts. If the speech takes longer, the next trial waits for it to finish. Speech stays on in listening mode.</p>
+</div>
 <div class="toggles"><label><input id="speak" type="checkbox" checked> Speak stimuli</label><label><input id="audio-only" type="checkbox"> Audio-only display</label><label><input id="keyboard" type="checkbox" checked> Keyboard controls</label><label><input id="haptic" type="checkbox" checked> Haptics</label></div>
 <div class="buttons"><button id="start">Start</button><button id="pause" class="secondary" disabled>Pause</button><button id="stop" class="secondary" disabled>Stop</button><button id="test" class="secondary">Test speech</button></div>
 </section>
 <section class="game">
 <div id="stimulus" class="stimulus">READY</div><div id="feedback"></div><div id="explanation"></div>
-<div class="responses"><button id="match" disabled>Match</button><button id="no-match" disabled>No Match</button></div>
+<div id="number-responses" class="responses"><button id="match" disabled>Match</button><button id="no-match" disabled>No Match</button></div>
+<p id="number-key-guide" class="help key-guide">F / J: Match · D / K: No Match · Escape: Stop</p>
+<p id="number-listening-summary" class="help" style="text-align:center" hidden>Listening mode · Not scored · Only fully played trials count as heard.</p>
+<div id="number-listening-stats" class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr))" hidden><div class="stat"><small>Trials heard</small><strong id="number-heard">0</strong></div><div class="stat"><small>Scoring</small><strong>Not scored</strong></div></div>
 <div class="timer"><div id="timerbar"></div></div><div class="sessionbar"><div id="sessionprogress"></div></div>
-<div class="stats"><div class="stat"><small>Trials</small><strong id="trials">0</strong></div><div class="stat"><small>Hits</small><strong id="hits">0</strong></div><div class="stat"><small>Accuracy</small><strong id="accuracy">0%</strong></div><div class="stat" title="Signal sensitivity uses corrected hit and false-alarm rates. Timeouts count against accuracy and are excluded from d′. Both match and non-match responses are needed."><small>d′</small><strong id="dprime">—</strong></div></div>
+<div id="number-scored-stats" class="stats"><div class="stat"><small>Trials</small><strong id="trials">0</strong></div><div class="stat"><small>Hits</small><strong id="hits">0</strong></div><div class="stat"><small>Accuracy</small><strong id="accuracy">0%</strong></div><div class="stat" title="Signal sensitivity uses corrected hit and false-alarm rates. Timeouts count against accuracy and are excluded from d′. Both match and non-match responses are needed."><small>d′</small><strong id="dprime">—</strong></div></div>
+</section>
+<section class="controls guide" aria-labelledby="number-guide-title">
+<h2 id="number-guide-title">How to play</h2>
+<p>Remember each ordered sequence of 1–6 digits. Select <strong>Match</strong> when at least one digit is the same in the same position as it was exactly N trials earlier. Otherwise select <strong>No Match</strong>. A digit repeated in a different position is not a match.</p>
+<p>The first N trials fill your memory and are not scored. When speech is enabled, the complete sequence plays before the response timer starts. Missing a scored response counts against accuracy.</p>
+<p>For hands-free practice, enable <strong>Listening mode — no response input</strong> and choose 1–120 seconds per trial, including decimals. The interval runs from one trial start to the next. Longer speech finishes before the next trial starts. No responses, accuracy scores or omission penalties are recorded; only fully played trials count as heard.</p>
+<p>Pause freezes the remaining interval. If you pause during speech, Resume replays the same trial and restarts its interval. A session ending during speech finishes the current sequence before stopping. Turn listening mode off before starting a new session to restore responses and scoring.</p>
+<p>Each digit appears at most twice per sequence. No digit repeats three times consecutively in the number stream or in the same position across trials. These limits take priority over the requested match probability.</p>
+<p><strong>Keyboard:</strong> F or J = Match; D or K = No Match; Escape = Stop. Use Pause/Resume to pause. Returning to Main Training stops the current session.</p>
 </section>
 </main>
 <footer class="container help" style="padding-top:0">Australian English voice: Cameron, recorded by CAMSOWN. <a href="https://github.com/mike-stack1982364/Ontological-Worlds/blob/main/NUMBER-SPEECH-ASSETS.md">Voice credits and adaptations</a> · <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a></footer>
 <script src="number-speech-data.js?v=20260920-natural-voice-2"></script>
-<script src="number-speech.js?v=20260920-natural-voice-2"></script>
-<script src="extra-training-runtime.js?v=20260920-natural-voice-2"></script>
+<script src="number-speech.js?v=20261008-sentience-numbers"></script>
+<script src="extra-training-runtime.js?v=20261008-sentience-numbers"></script>
 </body>
 </html>

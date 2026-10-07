@@ -39,9 +39,9 @@ for (const directionResolution of [4, 8, 16]) {
         const analysis = maximal.analyseTransition(target, previous, trial, { roleSensitive: true });
         const evaluation = conflict.evaluateConflictMatrix(target, trial, { roleSensitive: true });
         assert.strictEqual(analysis.valid, true, JSON.stringify({ directionResolution, level, index, analysis, meta: trial.logicalInterference }));
-        assert.strictEqual(analysis.targetOverlapCount, 2);
-        assert(analysis.previousOverlapCount >= 1);
-        assert.strictEqual(analysis.introducedRelativeToTarget, 1);
+        assert([0, 1, 2].includes(analysis.targetOverlapCount));
+        assert.strictEqual(analysis.introducedRelativeToTarget, 3 - analysis.targetOverlapCount);
+        assert.strictEqual(trial.nBackWarmup, false);
         assert.strictEqual(trial.logicalInterference.retainedIdentityValid, true);
         assert.strictEqual(trial.logicalInterference.changedIdentityRemoved, true);
         assert.strictEqual(trial.logicalInterference.level, 100);
@@ -50,26 +50,28 @@ for (const directionResolution of [4, 8, 16]) {
         assert.deepStrictEqual(trial.conflictResponseVector, [...evaluation.statementMatches, evaluation.conclusionEntailed, evaluation.wholeTrialMatch]);
         transitions += 1;
       } else if (previous) {
-        const previousLetters = maximal.trialLetters(previous);
-        const currentLetters = maximal.trialLetters(trial);
-        assert.strictEqual(currentLetters.filter(letter => previousLetters.includes(letter)).length, 2);
         assert.strictEqual(trial.nBackWarmup, true);
+        assert.strictEqual(trial.logicalInterference.source, 'independent-warmup');
+        assert.strictEqual(trial.scored, true);
         assert.deepStrictEqual(trial.statementMatchVector, [false, false, false]);
+        assert.deepStrictEqual(trial.conflictResponseVector, [false, false, false, core.evaluateTrial(trial).isEntailed, false]);
       }
       history.push(trial);
     }
   }
 }
 
-// Direct regression for the screenshot failure: N=1 must never produce disjoint triads.
+// Even a disjoint literal letter set can retain an exact two-statement lure:
+// matching is structural, while symbol overlap is now deliberately variable.
 {
   const rng = new Rng(0x71717171);
   const first = maximal.generateMaximalWarmupTrial(rng, null, { directionResolution: 4 });
   const second = maximal.generateMaximalScoredTrial(rng, first, first, { match: false, roleSensitive: true, directionResolution: 4 });
   const firstLetters = maximal.trialLetters(first);
   const secondLetters = maximal.trialLetters(second);
-  assert.strictEqual(secondLetters.filter(letter => firstLetters.includes(letter)).length, 2);
-  assert.strictEqual(secondLetters.filter(letter => !firstLetters.includes(letter)).length, 1);
+  const targetOverlap = secondLetters.filter(letter => firstLetters.includes(letter)).length;
+  assert([0, 1, 2].includes(targetOverlap));
+  assert.strictEqual(secondLetters.filter(letter => !firstLetters.includes(letter)).length, 3 - targetOverlap);
   assert.strictEqual(conflict.evaluateConflictMatrix(first, second, { roleSensitive: true }).matchedCount, 2);
 }
 

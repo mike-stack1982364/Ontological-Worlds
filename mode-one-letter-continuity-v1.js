@@ -68,45 +68,84 @@
     return first.length === second.length && first.every((value, index) => value === second[index]);
   }
 
+  const EXPOSURE_WINDOW = 32;
+  function summariseExposure(recentTrials) {
+    const counts = Object.fromEntries(LETTER_POOL.map(letter => [letter, 0]));
+    const streaks = Object.fromEntries(LETTER_POOL.map(letter => [letter, 0]));
+    for (const row of recentTrials) {
+      const used = new Set(row);
+      for (const letter of LETTER_POOL) {
+        counts[letter] += Number(used.has(letter));
+        streaks[letter] = used.has(letter) ? streaks[letter] + 1 : 0;
+      }
+    }
+    return { trialCount: recentTrials.length, counts, streaks, recentTrials };
+  }
+  function exposureBefore(previousTrial) {
+    if (!previousTrial) return summariseExposure([]);
+    const previousLetters = trialLetters(previousTrial), recorded = previousTrial.letterExposure;
+    const recent = recorded?.recentTrials;
+    const valid = recorded?.version === 2 && Array.isArray(recent) && recent.length > 0 && recent.length <= EXPOSURE_WINDOW &&
+      recent.every(row => Array.isArray(row) && row.length === 3 && new Set(row).size === 3 && row.every(letter => LETTER_POOL.includes(letter))) &&
+      recent[recent.length - 1].every(letter => previousLetters.includes(letter));
+    // Earlier trials without a usable exposure window supply one known
+    // observation; never manufacture missing session history.
+    return summariseExposure(valid ? recent.map(row => [...row]) : [[...previousLetters]]);
+  }
+  function recordExposure(trial, previousTrial) {
+    const recentTrials = [...exposureBefore(previousTrial).recentTrials, trialLetters(trial)].slice(-EXPOSURE_WINDOW);
+    const exposure = summariseExposure(recentTrials);
+    // All counts and arrays describe only the last 32 trials, so metadata
+    // stays bounded even in long or open-ended sessions.
+    trial.letterExposure = Object.freeze({ version: 2, windowSize: EXPOSURE_WINDOW,
+      trialCount: exposure.trialCount, counts: Object.freeze(exposure.counts), streaks: Object.freeze(exposure.streaks),
+      recentTrials: Object.freeze(recentTrials.map(row => Object.freeze([...row]))) });
+    return trial;
+  }
+  function sampleLetters(rng, candidates, count, exposure) {
+    const remaining = [...candidates], selected = [];
+    if (!Number.isInteger(count) || count < 0 || count > remaining.length) throw new Error('Invalid letter sample size.');
+    while (selected.length < count) {
+      // Soft penalties preserve positive probability for every eligible
+      // letter; they do not enforce a predictable least-used rotation.
+      const weights = remaining.map(letter => 1 / (1 + 0.5 * exposure.counts[letter] + 2 * exposure.streaks[letter] ** 2));
+      let threshold = random(rng) * weights.reduce((sum, weight) => sum + weight, 0), selectedIndex = weights.length - 1;
+      for (let index = 0; index < weights.length; index++) {
+        threshold -= weights[index];
+        if (threshold < 0) { selectedIndex = index; break; }
+      }
+      selected.push(remaining.splice(selectedIndex, 1)[0]);
+    }
+    return selected;
+  }
+
   function chooseIdentityUpdatePlan(rng, targetTrial, previousTrial = null) {
     const targetLetters = trialLetters(targetTrial);
     const previousLetters = previousTrial ? trialLetters(previousTrial) : targetLetters.slice();
-    const shared = overlap(targetLetters, previousLetters);
-
-    // Preserve the only target/previous bridge when there is exactly one.
-    const changeCandidates = shared.length === 1
-      ? targetLetters.filter(letter => letter !== shared[0])
-      : targetLetters.slice();
-    const changedTargetLetter = pick(rng, shuffle(rng, changeCandidates));
-    const retainedTargetLetters = targetLetters.filter(letter => letter !== changedTargetLetter);
-    const retainedPreviousOverlap = overlap(retainedTargetLetters, previousLetters);
-
-    let replacementPool;
-    if (previousTrial && retainedPreviousOverlap.length === 0) {
-      // Disjoint N-back target and immediate predecessor: use one predecessor letter as the bridge.
-      replacementPool = previousLetters.filter(letter => !targetLetters.includes(letter));
-    } else {
-      // Otherwise introduce a genuinely new letter relative to both active contexts.
-      replacementPool = LETTER_POOL.filter(letter => !targetLetters.includes(letter) && !previousLetters.includes(letter));
-      if (!replacementPool.length) replacementPool = LETTER_POOL.filter(letter => !targetLetters.includes(letter));
-    }
-    const replacementLetter = pick(rng, shuffle(rng, replacementPool));
-    const currentLetters = [...retainedTargetLetters, replacementLetter];
+    const before = exposureBefore(previousTrial || targetTrial);
+    // Draw this plan before generating the requested match/nonmatch. Both
+    // outcomes use the same 0/1/2 overlap distribution, with no forced bridge.
+    const targetOverlapCount = Math.floor(random(rng) * 3);
+    const retainedTargetLetters = sampleLetters(rng, targetLetters, targetOverlapCount, before);
+    const introducedLetters = sampleLetters(rng, LETTER_POOL.filter(letter => !targetLetters.includes(letter)), 3 - targetOverlapCount, before);
+    const removedTargetLetters = targetLetters.filter(letter => !retainedTargetLetters.includes(letter));
+    const currentLetters = [...retainedTargetLetters, ...introducedLetters];
     const previousOverlapCount = overlap(currentLetters, previousLetters).length;
-
     if (new Set(currentLetters).size !== 3) throw new Error('Identity update produced duplicate letters.');
-    if (overlap(currentLetters, targetLetters).length !== 2) throw new Error('Identity update must retain exactly two N-back target letters.');
-    if (previousTrial && previousOverlapCount < 1) throw new Error('Identity update lost the immediate-predecessor bridge.');
+    if (overlap(currentLetters, targetLetters).length !== targetOverlapCount) throw new Error('The variable letter-overlap plan failed.');
 
     return Object.freeze({
       targetLetters: Object.freeze(targetLetters.slice()),
       previousLetters: Object.freeze(previousLetters.slice()),
       retainedTargetLetters: Object.freeze(retainedTargetLetters.slice()),
-      changedTargetLetter,
-      replacementLetter,
+      removedTargetLetters: Object.freeze(removedTargetLetters.slice()),
+      introducedLetters: Object.freeze(introducedLetters.slice()),
+      changedTargetLetter: removedTargetLetters.length === 1 ? removedTargetLetters[0] : null,
+      replacementLetter: introducedLetters.length === 1 ? introducedLetters[0] : null,
       currentLetters: Object.freeze(currentLetters.slice()),
-      targetOverlapCount: 2,
-      previousOverlapCount
+      targetOverlapCount,
+      previousOverlapCount,
+      identityPolicy: 'variable-overlap-random-roles'
     });
   }
 
@@ -135,19 +174,11 @@
     const roleSensitive = false;
     const before = conflict.evaluateConflictMatrix(targetTrial, trial, { roleSensitive });
     const beforeVector = responseVector(before);
-    const targetLetters = trialLetters(targetTrial);
-    const mappedCurrentLetters = targetLetters.map(letter => before.letterMapping?.[letter]);
-    if (mappedCurrentLetters.some(letter => !letter) || new Set(mappedCurrentLetters).size !== 3) {
-      throw new Error('Conflict alignment did not provide a bijective target-to-current letter mapping.');
-    }
-
-    const plan = chooseIdentityUpdatePlan(rng, targetTrial, previousTrial);
-    const retained = new Set(plan.retainedTargetLetters);
-    const replacements = {};
-    targetLetters.forEach(targetLetter => {
-      const currentLetter = before.letterMapping[targetLetter];
-      replacements[currentLetter] = retained.has(targetLetter) ? targetLetter : plan.replacementLetter;
-    });
+    const plan = options.identityPlan || chooseIdentityUpdatePlan(rng, targetTrial, previousTrial);
+    const assignedLetters = shuffle(rng, plan.currentLetters.slice()), sourceLetters = trialLetters(trial);
+    // A full random bijection also moves retained identities between roles.
+    // Statement order and the separate within-trial entailment stay intact.
+    const replacements = Object.fromEntries(sourceLetters.map((letter, index) => [letter, assignedLetters[index]]));
 
     let adjusted = core.renameTrial(trial, replacements);
     adjusted = refreshSpatialMetadata(adjusted);
@@ -161,14 +192,15 @@
     const targetOverlapCount = overlap(adjustedLetters, plan.targetLetters).length;
     const previousOverlapCount = previousTrial ? overlap(adjustedLetters, plan.previousLetters).length : targetOverlapCount;
     const retainedIdentityValid = plan.retainedTargetLetters.every(letter => adjustedLetters.includes(letter));
-    const changedIdentityRemoved = !adjustedLetters.includes(plan.changedTargetLetter);
-    if (targetOverlapCount !== 2 || previousOverlapCount < 1 || !retainedIdentityValid || !changedIdentityRemoved) {
+    const changedIdentityRemoved = plan.removedTargetLetters.every(letter => !adjustedLetters.includes(letter));
+    if (targetOverlapCount !== plan.targetOverlapCount || targetOverlapCount > 2 || !retainedIdentityValid || !changedIdentityRemoved) {
       throw new Error('Maximum logical-interference identity invariant failed.');
     }
 
     Object.assign(adjusted, {
       interferenceLevel: MAX_INTERFERENCE,
       maxLogicalInterference: true,
+      nBackWarmup: false,
       nBackMatch: after.wholeTrialMatch,
       isMatch: after.wholeTrialMatch,
       statementMatchVector: after.statementMatches.slice(),
@@ -184,8 +216,12 @@
         previousLetters: plan.previousLetters,
         currentLetters: Object.freeze(adjustedLetters.slice()),
         retainedTargetLetters: plan.retainedTargetLetters,
+        removedTargetLetters: plan.removedTargetLetters,
+        introducedLetters: plan.introducedLetters,
         changedTargetLetter: plan.changedTargetLetter,
         replacementLetter: plan.replacementLetter,
+        identityPolicy: plan.identityPolicy,
+        rolesRandomized: true,
         targetOverlapCount,
         previousOverlapCount,
         retainedIdentityValid,
@@ -196,7 +232,8 @@
         valid: true
       })
     });
-    return adjusted;
+    delete adjusted.warmupSourceStatementMatchVector;
+    return recordExposure(adjusted, previousTrial || targetTrial);
   }
 
   function generateMaximalScoredTrial(rng, targetTrial, previousTrial, options = {}) {
@@ -204,6 +241,7 @@
     const match = Boolean(options.match);
     const roleSensitive = false;
     const directionResolution = core.normaliseResolution(options.directionResolution ?? targetTrial.directionResolution, 16);
+    const identityPlan = chooseIdentityUpdatePlan(rng, targetTrial, previousTrial || targetTrial);
     let lastError = null;
     for (let attempt = 0; attempt < 128; attempt += 1) {
       try {
@@ -218,6 +256,7 @@
         if (!match && evaluation.matchedCount !== 2) throw new Error('Maximum-interference NO MATCH trial was not an exact two-of-three lure.');
         return applyMaximumIdentityInterference(rng, targetTrial, previousTrial || targetTrial, trial, {
           roleSensitive,
+          identityPlan,
           source: 'n-back-target'
         });
       } catch (error) {
@@ -245,20 +284,16 @@
   function generateMaximalWarmupTrial(rng, previousTrial, options = {}) {
     requireDependencies();
     const directionResolution = core.normaliseResolution(options.directionResolution ?? previousTrial?.directionResolution, 16);
-    if (!previousTrial) {
-      const trial = conflict.generateWarmupTrial(rng, { interferenceLevel: MAX_INTERFERENCE, directionResolution });
-      trial.interferenceLevel = MAX_INTERFERENCE;
-      trial.maxLogicalInterference = true;
-      trial.logicalInterference = Object.freeze({ level: MAX_INTERFERENCE, source: 'initial-seed', initialTrial: true, valid: true });
-      return trial;
-    }
-    const generated = generateMaximalScoredTrial(rng, previousTrial, previousTrial, {
-      match: false,
-      roleSensitive: false,
-      directionResolution
-    });
-    generated.logicalInterference = Object.freeze({ ...generated.logicalInterference, source: 'warmup-predecessor' });
-    return markWarmup(generated);
+    // Draw a new valid spatial problem, not a near-copy of the predecessor.
+    // Formal Mode 1 still scores its existing five warmup decisions, including K/L.
+    const generated = conflict.generateWarmupTrial(rng, { interferenceLevel: MAX_INTERFERENCE, directionResolution });
+    const letters = shuffle(rng, sampleLetters(rng, LETTER_POOL, 3, exposureBefore(previousTrial)));
+    const sourceLetters = trialLetters(generated);
+    const trial = refreshSpatialMetadata(core.renameTrial(generated, Object.fromEntries(sourceLetters.map((letter, index) => [letter, letters[index]]))));
+    trial.interferenceLevel = MAX_INTERFERENCE;
+    trial.maxLogicalInterference = true;
+    trial.logicalInterference = Object.freeze({ level: MAX_INTERFERENCE, source: 'independent-warmup', initialTrial: !previousTrial, valid: true });
+    return recordExposure(markWarmup(trial), previousTrial);
   }
 
   function analyseTransition(targetTrial, previousTrial, currentTrial, options = {}) {
@@ -276,9 +311,10 @@
     };
     return Object.freeze({
       ...result,
-      validSurfaceContinuity: result.targetOverlapCount === 2 && result.previousOverlapCount >= 1 && result.introducedRelativeToTarget === 1,
+      // Keep the legacy API field while reflecting variable identity overlap.
+      validSurfaceContinuity: result.targetOverlapCount <= 2 && result.introducedRelativeToTarget === 3 - result.targetOverlapCount,
       validLogicalLure: result.wholeTrialMatch || result.statementMatchCount === 2,
-      valid: result.targetOverlapCount === 2 && result.previousOverlapCount >= 1 && result.introducedRelativeToTarget === 1 && (result.wholeTrialMatch || result.statementMatchCount === 2)
+      valid: result.targetOverlapCount <= 2 && result.introducedRelativeToTarget === 3 - result.targetOverlapCount && (result.wholeTrialMatch || result.statementMatchCount === 2)
     });
   }
 
@@ -298,7 +334,7 @@
       slider.setAttribute('aria-valuetext', 'Maximum logical interference, fixed at 100 percent');
     }
     if (value) value.textContent = '100% — FIXED';
-    if (help) help.textContent = 'Mode 1 is fixed at maximum logical interference. Every scored trial retains exactly two letter identities from its N-back target, replaces exactly one, preserves a bridge to the immediately preceding trial, and makes every NO MATCH an exact two-of-three logical lure.';
+    if (help) help.textContent = 'Mode 1 is fixed at maximum logical interference. Letter overlap varies from zero to two N-back target letters, and retained letters can change roles. Every NO MATCH remains an exact two-of-three logical lure.';
   }
 
   function installBrowser(rootObject) {
@@ -366,8 +402,7 @@
               row.scored += 1;
               if (!analysis.valid || trial.interferenceLevel !== MAX_INTERFERENCE || !trial.logicalInterference?.valid) row.failures += 1;
             } else if (previous) {
-              const previousOverlap = overlap(trialLetters(trial), trialLetters(previous)).length;
-              if (previousOverlap !== 2 || trial.interferenceLevel !== MAX_INTERFERENCE) row.failures += 1;
+              if (!trial.nBackWarmup || trial.interferenceLevel !== MAX_INTERFERENCE || trial.logicalInterference?.source !== 'independent-warmup') row.failures += 1;
             }
             history.push(trial);
             row.trials += 1;

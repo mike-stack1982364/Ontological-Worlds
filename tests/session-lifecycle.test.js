@@ -330,3 +330,81 @@ test("storage failures keep current results available and do not break stopping"
     dom.window.close();
   }
 });
+
+test("six-hour and listening settings survive storage, freeze during a session, and restore controls", async () => {
+  const { dom, window, app, advance } = await setup({ minutes: 360, listeningMode: true, trialInterval: 120, responseSeconds: 120, advanceOnResponse: false });
+  try {
+    assert.equal(app.settings().minutes, 360);
+    assert.equal(app.settings().trialInterval, 120);
+    assert.equal(app.settings().listeningMode, true);
+    app.nextTrial = () => { app.current = {}; app.score.shown++; };
+    const starting = app.start();
+    await advance(2000); await starting;
+    assert.equal(app.sessionDurationMs, 21600000);
+    for (const id of ['listening-mode', 'trial-interval', 'response-seconds', 'advance-on-response'])
+      assert.equal(window.document.getElementById(id).disabled, true, id);
+    window.document.getElementById('trial-interval').value = '1';
+    assert.equal(app.settings().trialInterval, 120);
+    app.stop(true);
+    assert.equal(window.document.getElementById('listening-mode').disabled, false);
+    assert.equal(window.document.getElementById('trial-interval').disabled, false);
+    assert.equal(window.document.getElementById('response-seconds').disabled, true);
+    assert.equal(app.history[0].listeningMode, true);
+    assert.equal(app.history[0].accuracy, null);
+  } finally { dom.window.close(); }
+});
+
+test("natural expiry lets the active statement finish and explicit stop remains immediate", async () => {
+  const { dom, app, advance } = await setup({ minutes: 1 });
+  try {
+    app.nextTrial = () => { app.current = {}; app.score.shown++; };
+    const starting = app.start(); await advance(2000); await starting;
+    app._speakInProgress = true;
+    await advance(60000);
+    assert.equal(app.running, true);
+    assert.equal(app.isSessionExpired(), true);
+    app._speakInProgress = false;
+    await advance(250);
+    assert.equal(app.running, false);
+    const next = app.start(); await advance(2000); await next;
+    app._speakInProgress = true;
+    app.stop(true);
+    assert.equal(app.running, false);
+  } finally { dom.window.close(); }
+});
+
+test("fixed pacing cannot remain untimed and invalid intervals do not start a session", async () => {
+  const { dom, window, app } = await setup();
+  try {
+    window.document.getElementById('advance-on-response').checked = false;
+    app.updateLabels();
+    assert.equal(app.settings().responseSeconds, 30);
+    assert.equal(window.document.getElementById('response-seconds').value, '30');
+    window.document.getElementById('listening-mode').checked = true;
+    window.document.getElementById('trial-interval').disabled = false;
+    window.document.getElementById('trial-interval').value = '121';
+    await app.start();
+    assert.equal(app.running, false);
+    window.document.getElementById('trial-interval').value = '12.5';
+    assert.equal(app.settings().trialInterval, 12.5);
+  } finally { dom.window.close(); }
+});
+
+test("background-volume controls cannot reintroduce sound during pending or active speech", async () => {
+  const { dom, app } = await setup();
+  try {
+    const values = [];
+    app.audioContext = { currentTime: 0 };
+    app.deltaNodes = { master: { gain: { setTargetAtTime(value) { values.push(value); } } } };
+    app.running = true;
+    app._speakInProgress = true;
+    app.setDeltaVolume(); app.duckDelta(false);
+    assert.deepEqual(values, [0, 0]);
+    app._speakInProgress = false;
+    app.duckDelta(false);
+    assert.equal(values.at(-1), app.settings().deltaVolume);
+    app.paused = true;
+    app.setDeltaVolume(); app.duckDelta(false);
+    assert.equal(values.at(-1), 0);
+  } finally { dom.window.close(); }
+});

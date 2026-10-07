@@ -134,7 +134,7 @@
     });
     const sync = () => matrix.querySelectorAll('.conflict-choice').forEach(button => {
       const index = Number(button.closest('.conflict-row').dataset.decision);
-      button.disabled = !app.running || app.paused || !app.awaiting || responses[index] !== null;
+      button.disabled = !app.running || app.paused || !app.awaiting || app.settings().listeningMode || responses[index] !== null;
     });
     const reset = trial => {
       responses.fill(null); decisionTimes.fill(null);
@@ -146,7 +146,9 @@
         : '0 of 5 decisions entered';
     };
     const handleButton = button => {
-      if (!app.running || app.paused || !app.awaiting || !button || button.disabled || matrix.dataset.submitting === 'true') return;
+      if (!app.running || app.paused || !app.awaiting || app.settings().listeningMode || !button || button.disabled || matrix.dataset.submitting === 'true') return;
+      if (app.isSessionExpired?.()) { app.stop(false); return; }
+      if (app.expireModeOneResponseIfDue?.()) return;
       const row = button.closest('.conflict-row'), index = Number(row?.dataset.decision);
       if (!Number.isInteger(index) || index < 0 || index > 4 || responses[index] !== null) return;
       responses[index] = button.dataset.value === '1';
@@ -177,7 +179,7 @@
       const decision = Math.floor(keyIndex / 2), value = keyIndex % 2 === 0;
       handleButton(matrix.querySelector('[data-decision="' + decision + '"] [data-value="' + (value ? 1 : 0) + '"]'));
     }, true);
-    return matrix.__inputApi = { reset, sync, addPausedTime: ms => { matrix.dataset.startedAt = String(Number(matrix.dataset.startedAt) + ms); } };
+    return matrix.__inputApi = { reset, sync, snapshot: () => ({ responses: responses.slice(), decisionTimes: decisionTimes.slice() }), setStartedAt: time => { matrix.dataset.startedAt = String(time); }, addPausedTime: ms => { matrix.dataset.startedAt = String(Number(matrix.dataset.startedAt) + ms); } };
   }
   function installBrowser(rootObject) {
     const app = rootObject.__ontologicalWorlds, d = rootObject.document;
@@ -187,23 +189,72 @@
     const ui = ensureResolutionUI(d, app), input = installMatrixInput(rootObject, app, matrix);
     const originalSettings = app.settings.bind(app), originalStart = app.start.bind(app), originalNextTrial = app.nextTrial.bind(app), originalStop = app.stop.bind(app), originalTogglePause = app.togglePause?.bind(app);
     const premiseDisplay = d.getElementById('premise-display'), feedback = d.getElementById('feedback'), explanation = d.getElementById('trial-explanation');
-    let advanceTimerId = null, advanceDue = 0, advanceRemaining = 0;
-    const scheduleAdvance = (delay = 1600) => {
-      clearTimeout(advanceTimerId);
-      advanceRemaining = delay; advanceDue = Date.now() + delay;
-      const token = app.sessionToken;
+    let advanceTimerId = null, advanceDue = 0, advanceRemaining = 0, timerKind = null;
+    let timerGeneration = 0, phase = 'idle', expiringResponse = false;
+    const timing = () => {
+      const settings = app.settings();
+      const finite = Math.max(0, Math.min(120, Number(settings.responseSeconds) || 0));
+      return { listening: Boolean(settings.listeningMode),
+        interval: Math.max(1, Math.min(120, Number(settings.trialInterval) || 30)) * 1000,
+        response: (finite || (settings.advanceOnResponse === false ? 30 : 0)) * 1000,
+        advanceOnResponse: settings.advanceOnResponse !== false };
+    };
+    const clearTimer = (forget = true) => {
+      rootObject.clearTimeout(advanceTimerId); advanceTimerId = null; timerGeneration++;
+      if (forget) { timerKind = null; advanceRemaining = 0; advanceDue = 0; }
+    };
+    const isExpired = () => Boolean(app.isSessionExpired?.());
+    const finishResponseWindow = () => {
+      if (!app.running || app.paused || timing().listening || timerKind !== 'response') return;
+      if (!app.current?.submitted) {
+        const pending = input.snapshot();
+        expiringResponse = true;
+        try { app.submitConflictMatrix(pending.responses, pending.decisionTimes, true); }
+        finally { expiringResponse = false; }
+      }
+      if (!timing().advanceOnResponse) { clearTimer(); app.nextTrial(app.sessionToken); }
+    };
+    const armTimer = (kind, delay) => {
+      clearTimer(); timerKind = kind;
+      advanceRemaining = Math.max(0, delay); advanceDue = Date.now() + advanceRemaining;
+      const token = app.sessionToken, trial = app.current, generation = timerGeneration;
       advanceTimerId = rootObject.setTimeout(() => {
         advanceTimerId = null;
-        if (app.running && !app.paused && token === app.sessionToken) app.nextTrial(token);
-      }, delay);
+        if (!app.running || app.paused || token !== app.sessionToken || trial !== app.current || generation !== timerGeneration) return;
+        if (kind === 'response') finishResponseWindow();
+        else { clearTimer(); app.nextTrial(token); }
+      }, advanceRemaining);
     };
+    const scheduleAdvance = (delay = 1600) => armTimer('advance', delay);
+    app.expireModeOneResponseIfDue = () => {
+      if (timerKind !== 'response' || app.paused || Date.now() < advanceDue) return false;
+      finishResponseWindow(); return true;
+    };
+    app.getTrialTimingState = () => ({ phase,
+      remainingMs: timerKind ? (app.paused ? advanceRemaining : Math.max(0, advanceDue - Date.now())) : null });
     const speakTrial = trial => {
-      const token = app.sessionToken;
+      const token = app.sessionToken, cadenceStarted = Date.now();
       const speechId = trial._speechId = (trial._speechId || 0) + 1;
-      trial.speechComplete = false;
-      Promise.resolve(app.speak?.(requireSpatial().renderTrial(trial))).then(success => {
-        if (app.running && !app.paused && app.current === trial && token === app.sessionToken && speechId === trial._speechId) trial.speechComplete = success !== false;
-      }).catch(() => {});
+      trial.speechComplete = false; phase = 'speaking'; app.awaiting = false; input.sync();
+      const finish = success => {
+        if (!app.running || app.paused || app.current !== trial || token !== app.sessionToken || speechId !== trial._speechId) return;
+        // Failed or muted speech leaves the visible premises and a usable timer.
+        trial.speechComplete = success !== false;
+        if (success === false) { premiseDisplay.classList.remove('muted', 'hidden-mode'); premiseDisplay.hidden = false; }
+        if (timing().listening && success !== false) app.score.heard = Number(app.score.heard || 0) + 1;
+        if (isExpired()) { app.stop(false); return; }
+        if (timing().listening) {
+          phase = 'listening'; app.awaiting = false;
+          if (feedback) feedback.textContent = success === false ? 'LISTENING — AUDIO UNAVAILABLE · FOLLOW THE VISIBLE PREMISES · NOT SCORED' : 'LISTENING — NOT SCORED';
+          scheduleAdvance(Math.max(0, timing().interval - (Date.now() - cadenceStarted)));
+        } else {
+          phase = 'response'; trial.started = Date.now(); input.setStartedAt(trial.started); app.awaiting = true;
+          if (timing().response > 0) armTimer('response', timing().response);
+        }
+        input.sync(); app.updateStats?.();
+      };
+      try { Promise.resolve(app.speak?.(requireSpatial().renderTrial(trial))).then(finish, () => finish(false)); }
+      catch (_) { finish(false); }
     };
     app.settings = function() { const settings = originalSettings(); return { ...settings, directionResolution: this.running ? this.directionResolution : ui.getSelected() }; };
     app.getSelectedDirectionResolution = ui.getSelected;
@@ -221,7 +272,8 @@
     app.nextTrial = function(token = this.sessionToken) {
       if (Number(originalSettings().mode) !== 0) return originalNextTrial(token);
       if (!this.running || this.paused || token !== this.sessionToken) return null;
-      clearTimeout(this.timerId); clearTimeout(advanceTimerId); advanceTimerId = null;
+      if (isExpired()) { this.stop(false); return null; }
+      clearTimeout(this.timerId); clearTimer();
       const resolution = requireSpatial().normaliseResolution(this.directionResolution, null);
       if (!resolution) return this.failModeOneStartup(new Error('Mode 1 has no frozen compass resolution.'));
       let trial = null, rendered = '', lastError = null;
@@ -244,7 +296,7 @@
       premiseDisplay.classList.remove('correct','incorrect');
       if (feedback) feedback.textContent = '';
       if (explanation) explanation.textContent = '';
-      this.awaiting = true; input.reset(trial);
+      this.awaiting = false; input.reset(trial);
       this.applyPremiseVisibility?.(); speakTrial(trial); this.updateStats?.();
       return trial;
     };
@@ -258,15 +310,19 @@
       if (Number(originalSettings().mode) !== 0) return originalStart(...args);
       if (this.running || !ui.validate(true)) return false;
       this.directionResolution = ui.getSelected();
+      clearTimer(); phase = 'idle';
       this.trials = []; this.current = null; this.awaiting = false;
       this.conflictDecisionStats = Array.from({length: 5}, () => ({hits: 0, misses: 0, falseAlarms: 0, correctRejects: 0, scored: 0, correct: 0}));
       const result = originalStart(...args);
       if (result && typeof result.catch === 'function') result.catch(error => this.failModeOneStartup(error));
       return result;
     };
-    app.submitConflictMatrix = function(responses, decisionTimes = []) {
-      if (!this.running || this.paused || !this.current?.scored || !Array.isArray(this.current.conflictResponseVector) ||
-          !this.awaiting || this.current.submitted || !Array.isArray(responses) || responses.length !== 5 || !Array.from(responses).every(value => typeof value === 'boolean')) return false;
+    app.submitConflictMatrix = function(responses, decisionTimes = [], timedOut = false) {
+      if (timedOut && !expiringResponse) return false;
+      if (!this.running || this.paused || timing().listening || phase !== 'response' || !this.current?.scored || !Array.isArray(this.current.conflictResponseVector) ||
+          !this.awaiting || this.current.submitted || !Array.isArray(responses) || responses.length !== 5 || !Array.from(responses).every(value => typeof value === 'boolean' || (timedOut && expiringResponse && value === null))) return false;
+      if (isExpired()) { this.stop(false); return false; }
+      if (!timedOut && this.expireModeOneResponseIfDue()) return false;
       const trial = this.current, expected = trial.conflictResponseVector, correctness = responses.map((value,index) => value === expected[index]);
       const responseTime = Math.max(0, Date.now() - trial.started);
       Object.assign(trial, { submitted: true, _answered: true, correct: correctness.every(Boolean), responseTime,
@@ -275,17 +331,22 @@
         directionResolution: this.directionResolution });
       const signalKey = (answer, truth) => truth ? (answer ? 'hits' : 'misses') : (answer ? 'falseAlarms' : 'correctRejects');
       this.score.scored++;
-      this.score[signalKey(responses[4], expected[4])]++;
+      if (responses[4] === null) { this.score.timeouts = Number(this.score.timeouts || 0) + 1; if (expected[4]) this.score.misses++; }
+      else this.score[signalKey(responses[4], expected[4])]++;
       this.score.correctTrials = (this.score.correctTrials || 0) + Number(trial.correct);
       this.conflictDecisionStats ||= Array.from({length: 5}, () => ({hits: 0, misses: 0, falseAlarms: 0, correctRejects: 0, scored: 0, correct: 0}));
       responses.forEach((value, i) => {
-        const stats = this.conflictDecisionStats[i]; stats.scored++; stats.correct += Number(correctness[i]); stats[signalKey(value, expected[i])]++;
+        const stats = this.conflictDecisionStats[i]; stats.scored++; stats.correct += Number(correctness[i]);
+        if (value === null) { stats.timeouts = Number(stats.timeouts || 0) + 1; if (expected[i]) stats.misses++; }
+        else stats[signalKey(value, expected[i])]++;
       });
       this.rts.push(responseTime); this.awaiting = false; input.sync();
-      clearTimeout(this.timerId); this.cancelSpeech?.();
+      clearTimeout(this.timerId); phase = 'feedback';
       if (feedback) feedback.textContent = trial.conflictAllCorrect ? 'ALL FIVE CORRECT' : trial.conflictCorrectCount + '/5 CORRECT';
       if (explanation) explanation.textContent = requireSpatial().explainTrial(trial);
-      this.updateStats?.(); scheduleAdvance(); return true;
+      this.updateStats?.();
+      if (timing().advanceOnResponse) scheduleAdvance();
+      return true;
     };
     app.togglePause = function(...args) {
       if (Number(originalSettings().mode) !== 0) return originalTogglePause?.(...args);
@@ -294,22 +355,24 @@
       if (!this.paused) {
         this.beginSessionPause?.(); this.paused = true;
         if (advanceTimerId !== null) advanceRemaining = Math.max(0, advanceDue - Date.now());
-        clearTimeout(advanceTimerId); advanceTimerId = null;
+        clearTimer(false);
+        if (this.current) this.current._speechId = (this.current._speechId || 0) + 1;
         this.cancelSpeech?.(); this.stopDelta?.();
       } else {
         const elapsed = this.endSessionPause?.() || 0;
         this.paused = false;
         if (this.current) this.current.started += elapsed;
         input.addPausedTime(elapsed); this.syncDelta?.();
-        if (this.current?.submitted) scheduleAdvance(advanceRemaining);
-        else if (this.current && !this.current.speechComplete) speakTrial(this.current);
+        if (this.current && (phase === 'speaking' || (!this.current.speechComplete && !this.current.submitted && !timing().listening && timing().response === 0))) speakTrial(this.current);
+        else if (timerKind) armTimer(timerKind, advanceRemaining);
       }
       d.getElementById('paused-overlay').classList.toggle('show', this.paused);
       d.getElementById('pause-btn').textContent = this.paused ? 'Resume' : 'Pause';
       input.sync();
     };
     app.stop = function(...args) {
-      clearTimeout(advanceTimerId); advanceTimerId = null; advanceRemaining = 0;
+      clearTimer(); phase = 'idle';
+      if (this.current) this.current._speechId = (this.current._speechId || 0) + 1;
       const result = originalStop(...args);
       this.directionResolution = null; this.current = null; ui.select.value = '';
       matrix.classList.remove('active'); input.sync(); ui.sync(); return result;

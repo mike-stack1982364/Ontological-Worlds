@@ -122,3 +122,27 @@ test("slow nested-world speech is allowed to finish beyond ninety seconds", asyn
   assert.equal(await speech, true);
   assert.equal(callbacks.size, 0);
 });
+
+test("one continuous utterance reads every relation without visual role labels", async () => {
+  const { app, utterances } = setup();
+  const speech = app.speak('Premise 1: A is north of B.\nPremise 2: B is east of C.\nCandidate: A is northeast of C.');
+  assert.equal(utterances.length, 1);
+  assert.equal(utterances[0].text, 'A is north of B.\nB is east of C.\nA is northeast of C.');
+  assert.equal(utterances[0].pitch, 1);
+  utterances[0].onend(); await speech;
+});
+
+test("speech mutes background while queued and stale callbacks cannot restore it", async () => {
+  const { app, utterances } = setup();
+  const gains = [];
+  app.duckDelta = function(duck) { gains.push(duck || this._speakInProgress ? 0 : 1); };
+  const first = app.speak('A is north of B.');
+  assert.equal(gains.at(-1), 0);
+  const second = app.speak('C is west of D.');
+  assert.equal(await first, false);
+  assert.equal(gains.at(-1), 0);
+  utterances[0].onstart(); utterances[0].onend();
+  assert.equal(gains.at(-1), 0);
+  utterances[1].onend(); await second;
+  assert.equal(gains.at(-1), 1);
+});

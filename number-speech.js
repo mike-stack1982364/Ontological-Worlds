@@ -31,9 +31,9 @@
   }
 
   function buildSequence(values, settings, data) {
-    if (!Array.isArray(values) || !values.length || values.length > 3 ||
+    if (!Array.isArray(values) || !values.length || values.length > 6 ||
         !Array.from(values).every(value => Number.isInteger(value) && value >= 1 && value <= 9)) {
-      throw new Error('A sequence must contain one to three digits from 1 to 9.');
+      throw new Error('A sequence must contain one to six digits from 1 to 9.');
     }
     if (!data || !Number.isInteger(data.sampleRate) || data.sampleRate < 8000 || data.sampleRate > 96000) throw new Error('Invalid number audio sample rate.');
     const rate = Object.hasOwn(RATES, settings.rate) ? settings.rate : 'average';

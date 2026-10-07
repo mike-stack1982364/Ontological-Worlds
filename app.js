@@ -178,8 +178,8 @@ class OntologicalWorlds {
         (this.primeAudioFromUserGesture(),
           this.speak(
             Number($("logic-mode").value) === 1
-              ? "Outer Connection H is south of Projection D. Outer Projection D is south of Multiplication C. Candidate: Projection C is north of Inner Division H."
-              : "A is north of B. B is north of C. Candidate: A is north of C.",
+              ? "Outer Connection H is south of Projection D. Outer Projection D is south of Multiplication C. Projection C is north of Inner Division H."
+              : "A is north of B. B is north of C. A is north of C.",
           ));
       }),
       $("tutorial-btn").addEventListener("click", () =>
@@ -264,6 +264,15 @@ class OntologicalWorlds {
       }));
   }
   settings() {
+    const frozen = this.running && this.sessionSettings;
+    const finite = (value, fallback, min, max) => {
+      const number = Number(value);
+      return Number.isFinite(number) && String(value).trim() !== ""
+        ? clamp(number, min, max) : fallback;
+    };
+    const listeningMode = frozen ? frozen.listeningMode : Boolean($("listening-mode")?.checked);
+    const advanceOnResponse = frozen ? frozen.advanceOnResponse : $("advance-on-response")?.checked !== false;
+    const selectedResponse = frozen ? frozen.responseSeconds : finite($("response-seconds")?.value ?? 0, 0, 0, 120);
     return {
       mode:
         this.running && this.sessionSettings
@@ -276,7 +285,11 @@ class OntologicalWorlds {
       minutes:
         this.running && this.sessionSettings
           ? this.sessionSettings.minutes
-          : Number($("session-slider").value),
+          : finite($("session-slider").value, 15, 1, 360),
+      listeningMode,
+      trialInterval: frozen ? frozen.trialInterval : finite($("trial-interval")?.value ?? 30, 30, 1, 120),
+      responseSeconds: !advanceOnResponse && selectedResponse === 0 ? 30 : selectedResponse,
+      advanceOnResponse,
       matchProbability: Number($("prob-slider").value) / 100,
       rate: Number($("rate-slider").value),
       volume: Number($("premise-vol").value) / 100,
@@ -310,6 +323,10 @@ class OntologicalWorlds {
     (e("logic-mode", [0, 1].includes(Number(t.mode)) ? Number(t.mode) : 0),
       e("n-slider", t.n),
       e("session-slider", t.minutes),
+      e("trial-interval", t.trialInterval),
+      e("response-seconds", t.responseSeconds),
+      s("listening-mode", t.listeningMode),
+      s("advance-on-response", t.advanceOnResponse ?? true),
       e("prob-slider", Math.round(100 * (t.matchProbability ?? 0.35))),
       e("rate-slider", t.rate),
       e("premise-vol", Math.round(100 * (t.volume ?? 0.7))),
@@ -349,6 +366,18 @@ class OntologicalWorlds {
         `${Math.round(100 * t.speechBoost)}%`),
       ($("premise-vol-meter").style.width = `${Math.round(100 * t.volume)}%`));
     const hint = $("kbd-hint");
+    if ($("trial-interval")) $("trial-interval").disabled = this.running || !t.listeningMode;
+    if ($("response-seconds")) {
+      $("response-seconds").disabled = this.running || t.listeningMode;
+      if (!t.advanceOnResponse && Number($("response-seconds").value) === 0)
+        $("response-seconds").value = String(t.responseSeconds);
+    }
+    if ($("advance-on-response")) $("advance-on-response").disabled = this.running || t.listeningMode;
+    if ($("trial-pacing-summary")) $("trial-pacing-summary").textContent = t.listeningMode
+      ? `Listening mode · ${t.trialInterval} seconds between trial starts · No scoring`
+      : t.responseSeconds > 0
+        ? `${t.responseSeconds} seconds after speech${t.advanceOnResponse ? " · Answers can advance the trial" : " · Wait for the full interval"}`
+        : "Self-paced · No response deadline";
     (hint && (hint.style.display = t.keyboard ? "block" : "none"),
       ($("hide-text").disabled = t.audioOnly));
   }
@@ -428,7 +457,7 @@ class OntologicalWorlds {
       s.connect(o).connect(n, 0, 0),
       i.connect(r).connect(n, 0, 1),
       n.connect(e).connect(t.destination),
-      (e.gain.value = this.settings().deltaVolume),
+      (e.gain.value = this._speakInProgress ? 0 : this.settings().deltaVolume),
       s.start(),
       i.start(),
       (this.deltaNodes = {
@@ -456,7 +485,7 @@ class OntologicalWorlds {
   setDeltaVolume() {
     this.deltaNodes &&
       this.deltaNodes.master.gain.setTargetAtTime(
-        this.settings().deltaVolume,
+        this._speakInProgress || !this.running || this.paused ? 0 : this.settings().deltaVolume,
         this.audioContext.currentTime,
         0.08,
       );
@@ -464,7 +493,7 @@ class OntologicalWorlds {
   duckDelta(t) {
     if (!this.deltaNodes) return;
     const e = this.settings().deltaVolume,
-      s = t ? e / Math.max(1, this.settings().speechBoost) : e;
+      s = t || this._speakInProgress || !this.running || this.paused ? 0 : e;
     this.deltaNodes.master.gain.setTargetAtTime(
       s,
       this.audioContext.currentTime,
@@ -473,6 +502,11 @@ class OntologicalWorlds {
   }
   async start() {
     if (this.running) return;
+    const pacingInput = $("listening-mode")?.checked ? $("trial-interval") : $("response-seconds");
+    if (pacingInput && !pacingInput.checkValidity()) {
+      pacingInput.reportValidity();
+      return null;
+    }
     this.sessionSettings = { ...this.settings() };
     this.sessionDurationMs = Math.max(
       60000,
@@ -538,7 +572,7 @@ class OntologicalWorlds {
     return this.nextTrial(t);
   }
   setSessionControlsLocked(locked) {
-    for (const id of ["logic-mode", "n-slider", "session-slider", "premise-test-btn"]) {
+    for (const id of ["logic-mode", "n-slider", "session-slider", "premise-test-btn", "listening-mode", "trial-interval", "response-seconds", "advance-on-response"]) {
       const control = $(id);
       if (!control) continue;
       if (locked) {
@@ -565,11 +599,19 @@ class OntologicalWorlds {
     this.pauseStartedAt = null;
     return elapsed;
   }
+  isSessionExpired() {
+    return this.running && !this._starting && !this.paused && this.endsAt > 0 && Date.now() >= this.endsAt;
+  }
   startSessionClock() {
     clearInterval(this.sessionTimerId);
     const t = () => {
       if (!this.running) return;
       const now = this.pauseStartedAt ?? Date.now();
+      const trialTiming = this.getTrialTimingState?.();
+      const trialClock = $("trial-timing-status");
+      if (trialClock) trialClock.textContent = trialTiming && Number.isFinite(trialTiming.remainingMs) && trialTiming.remainingMs > 0
+        ? `${this.paused ? "Paused · " : ""}${trialTiming.phase === "response" ? "Response time" : "Next trial"}: ${Math.ceil(trialTiming.remainingMs / 1000)} s`
+        : "";
       const t = this._starting
           ? this.sessionDurationMs
           : Math.max(0, this.endsAt - now),
@@ -580,7 +622,7 @@ class OntologicalWorlds {
         $("session-countdown").classList.toggle("ending", t < 6e4),
         ($("session-progress").style.width =
           clamp(100 * (1 - t / this.sessionDurationMs), 0, 100) + "%"),
-        !this._starting && !this.paused && t <= 0 && this.stop(!1));
+        !this._starting && !this.paused && t <= 0 && !this._speakInProgress && this.stop(!1));
     };
     (t(), (this.sessionTimerId = setInterval(t, 250)));
   }
@@ -607,8 +649,10 @@ class OntologicalWorlds {
         $("no-match-btn") && ($("no-match-btn").disabled = !0),
         $("paused-overlay").classList.remove("show"),
         ($("countdown-box").textContent = ""),
+        $("trial-timing-status") && ($("trial-timing-status").textContent = ""),
         $("session-countdown").classList.add("idle"),
         this.setSessionControlsLocked(false),
+        this.updateLabels(),
         this.saveSession(t),
         this.setStatus(t ? "SESSION_STOPPED" : "SESSION_COMPLETE"));
     }
@@ -822,6 +866,8 @@ class OntologicalWorlds {
       directionResolution:
         this.directionResolution ?? settings.directionResolution ?? null,
       plannedMinutes: Number(settings.minutes),
+      listeningMode: Boolean(settings.listeningMode),
+      trialInterval: Number(settings.trialInterval || 30),
       elapsedMs: this.startedAt
         ? clamp(
             now - this.startedAt - this.pausedDurationMs,
@@ -830,6 +876,7 @@ class OntologicalWorlds {
           )
         : 0,
       shown: Number(this.score.shown || 0),
+      heard: Number(this.score.heard || 0),
       completed,
       correctTrials,
       decisions,
@@ -859,7 +906,9 @@ class OntologicalWorlds {
     const score = $("score");
     if (score)
       score.textContent =
-        summary.mode === 0
+        summary.listeningMode
+          ? `${summary.shown} trials shown · Listening mode · No responses or accuracy penalties`
+          : summary.mode === 0
           ? `${summary.completed} completed / ${summary.shown} shown · All five correct: ${summary.correctTrials}/${summary.completed} · Decision accuracy: ${accuracy}${reaction}`
           : `${summary.completed} scored / ${summary.shown} shown · Accuracy: ${accuracy} · Hits: ${summary.hits} · Misses: ${summary.misses} · False alarms: ${summary.falseAlarms}${reaction}`;
     const currentN = $("n-current");
@@ -868,7 +917,7 @@ class OntologicalWorlds {
     const conflictScore = $("conflict-score");
     if (conflictScore)
       conflictScore.textContent =
-        summary.mode === 0
+        summary.listeningMode ? "Listening mode — scoring off" : summary.mode === 0
           ? `${summary.correctDecisions}/${summary.decisions} decisions correct · ${summary.correctTrials}/${summary.completed} complete trials correct`
           : "";
   }
@@ -947,6 +996,8 @@ class OntologicalWorlds {
         ? `${(session.elapsedMs / 60000).toFixed(1)} min`
         : "—";
       detail.textContent = `${session.n || 1}-back${session.directionResolution ? ` · ${session.directionResolution} directions` : ""} · ${session.completed || 0} scored trials · ${Number(session.mode) === 0 ? "Decision accuracy" : "Accuracy"}: ${accuracy} · ${elapsed} · ${session.stoppedEarly ? "Stopped" : "Complete"}`;
+      if (session.listeningMode)
+        detail.textContent = `${session.n || 1}-back · Listening mode · ${session.shown || 0} trials shown · No scoring · ${elapsed} · ${session.stoppedEarly ? "Stopped" : "Complete"}`;
       if (Number(session.mode) === 1) {
         const complexityNames = {
           entities: "One descriptor per entity",
@@ -1006,6 +1057,9 @@ class OntologicalWorlds {
       "reflectionCount",
       "practiceChecks",
       "practiceCorrect",
+      "listeningMode",
+      "trialInterval",
+      "heard",
     ];
     const cell = (value) => {
       let text = value === null || value === undefined ? "" : String(value);

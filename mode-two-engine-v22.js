@@ -63,6 +63,64 @@
     return values.flatMap((value, i) => permutations(values.filter((_, j) => j !== i))
       .map(rest => [value, ...rest]));
   }
+  const EXPOSURE_WINDOW = 32;
+  function recentHistory(options, fallback) {
+    return (Array.isArray(options.history) ? options.history : fallback ? [fallback] : []).slice(-EXPOSURE_WINDOW);
+  }
+  function recentExposure(history) {
+    // Imported valid trials may contain I/O even though fresh stimuli avoid
+    // those visually ambiguous symbols; retained identities still get weights.
+    const letterCounts = Object.fromEntries('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => [letter, 0]));
+    const letterStreaks = { ...letterCounts };
+    const categoryCounts = Object.fromEntries(ONTOLOGY_CATEGORIES.map(category => [category, 0]));
+    const categoryStreaks = { ...categoryCounts };
+    for (const trial of history) {
+      const all = statements(trial);
+      const letters = new Set(all.flatMap(statement => [statement.subject, statement.object]));
+      const categories = new Set(all.flatMap(statement => [statement.subjectFacet.category, statement.objectFacet.category]));
+      for (const letter of Object.keys(letterCounts)) {
+        letterCounts[letter] += Number(letters.has(letter));
+        letterStreaks[letter] = letters.has(letter) ? letterStreaks[letter] + 1 : 0;
+      }
+      for (const category of ONTOLOGY_CATEGORIES) {
+        categoryCounts[category] += Number(categories.has(category));
+        categoryStreaks[category] = categories.has(category) ? categoryStreaks[category] + 1 : 0;
+      }
+    }
+    return { letterCounts, letterStreaks, categoryCounts, categoryStreaks };
+  }
+  function weightedPick(rng, values, weightFor) {
+    if (!values.length) throw new Error('Cannot choose from an empty collection.');
+    const weights = values.map(weightFor);
+    let threshold = random(rng) * weights.reduce((sum, weight) => sum + weight, 0);
+    for (let index = 0; index < values.length; index += 1) {
+      threshold -= weights[index];
+      if (threshold < 0) return values[index];
+    }
+    return values[values.length - 1];
+  }
+  function sampleLetters(rng, candidates, count, exposure) {
+    const available = candidates.slice(), selected = [];
+    while (selected.length < count) {
+      const letter = weightedPick(rng, available, item => 1 / (1 + 0.5 * exposure.letterCounts[item] + 2 * exposure.letterStreaks[item] ** 2));
+      selected.push(letter);
+      available.splice(available.indexOf(letter), 1);
+    }
+    return selected;
+  }
+  function nextLetters(rng, source, exposure) {
+    // Like Sentience, retain a random 0..k-1 identities. No letter is an anchor,
+    // and the plan does not depend on the requested match/nonmatch answer.
+    const retained = Math.floor(random(rng) * source.length);
+    return shuffled(rng, [
+      ...sampleLetters(rng, source, retained, exposure),
+      ...sampleLetters(rng, requireCore().LETTERS.filter(letter => !source.includes(letter)), source.length - retained, exposure)
+    ]);
+  }
+  const categoryWeight = (exposure, category) => 1 / (1 + 0.5 * exposure.categoryCounts[category] + 2 * exposure.categoryStreaks[category] ** 2);
+  function innerHistory(history) {
+    return history.flatMap(trial => Object.values(trial.worlds || {})).slice(-EXPOSURE_WINDOW);
+  }
   function resolutionOf(trial) {
     const value = trial?.directionResolution ?? 16;
     const resolution = Number(value);
@@ -300,18 +358,18 @@
     const comparison = compare(target, trial);
     return `${comparison.isMatch ? 'Match: all endpoint bindings and relationships fit one consistent letter map.' : 'No Match: no single letter map preserves the complete structure.'} ${spatial}`;
   }
-  function randomFacet(rng, excluding = []) {
+  function randomFacet(rng, excluding, exposure) {
     const pool = ONTOLOGY_CATEGORIES.flatMap(category => ['I', 'O', 'A'].map(form => ({ category, form })))
       .filter(facet => !excluding.includes(facetKey(facet)));
-    return clone(pick(rng, pool));
+    return clone(weightedPick(rng, pool, facet => categoryWeight(exposure, facet.category)));
   }
-  function assignFacets(rng, trial) {
+  function assignFacets(rng, trial, exposure) {
     const used = [];
     for (const letter of trialLetters(trial)) {
       const refs = occurrences(trial, letter);
-      const first = randomFacet(rng, used);
+      const first = randomFacet(rng, used, exposure);
       used.push(facetKey(first));
-      const second = complexityOf(trial) === 'entities' ? first : randomFacet(rng, [facetKey(first)]);
+      const second = complexityOf(trial) === 'entities' ? first : randomFacet(rng, [facetKey(first)], exposure);
       refs[0].statement[refs[0].key] = clone(first);
       refs[1].statement[refs[1].key] = clone(second);
     }
@@ -319,13 +377,14 @@
   }
   function generateTrial(rng, options = {}) {
     const c = requireCore(), resolution = resolutionOf(options), complexity = complexityOf(options);
+    const history = recentHistory(options), exposure = recentExposure(history);
     const ring = c.allowedCodes(resolution);
     const pairs = [];
     for (const first of ring) for (const second of ring) {
       const a = c.direction(first), b = c.direction(second), sum = c.directionFromVector(a.x + b.x, a.y + b.y);
       if (ring.includes(sum)) pairs.push([first, second, sum]);
     }
-    const [first, bridge, last] = shuffled(rng, c.LETTERS).slice(0, 3);
+    const [first, bridge, last] = shuffled(rng, sampleLetters(rng, c.LETTERS, 3, exposure));
     const [directionA, directionB, expected] = pick(rng, pairs);
     const probability = Number(options.matchProbability ?? 0.5);
     if (!Number.isFinite(probability) || probability < 0 || probability > 1) throw new Error('Mode 2 probability must be between zero and one.');
@@ -334,13 +393,13 @@
       complexity, directionResolution: resolution,
       premises: [{ subject: first, relation: directionA, object: bridge }, { subject: bridge, relation: directionB, object: last }],
       conclusion: { subject: first, relation: entailed ? expected : pick(rng, ring.filter(code => code !== expected)), object: last }
-    });
+    }, exposure);
     trial.premises = trial.premises.map(s => random(rng) < 0.5 ? invert(s) : s);
     if (random(rng) < 0.5) trial.premises.reverse();
     if (random(rng) < 0.5) trial.conclusion = invert(trial.conclusion);
     if (complexity === 'worlds') {
       trial.worlds = Object.fromEntries(trialLetters(trial).map(letter => {
-        const child = generateTrial(rng, { directionResolution: resolution, complexity: 'facets', matchProbability: 0.5 });
+        const child = generateTrial(rng, { directionResolution: resolution, complexity: 'facets', matchProbability: 0.5, history: innerHistory(history) });
         child.worldRule = WORLD_RULE;
         child.outputFacet = outputFacet(child);
         return [letter, child];
@@ -350,27 +409,45 @@
     trial.seedGenerator = 'mode-two-endpoint-binding-v22';
     return refreshTrial(trial);
   }
-  function transformedCopy(rng, target, options = {}) {
+  function randomiseStatementRoles(rng, trial, requiredEntailment) {
+    const all = statements(trial), ring = requireCore().allowedCodes(resolutionOf(trial));
+    const allowed = permutations([0, 1, 2]).filter(order => {
+      try {
+        const result = requireCore().evaluateTrial({ ...trial, premises: order.slice(0, 2).map(index => all[index]), conclusion: all[order[2]] });
+        return result.queryPairValid && result.resolutionClosed && ring.includes(result.expectedRelation)
+          && (requiredEntailment == null || result.isEntailed === requiredEntailment);
+      } catch (_) { return false; }
+    });
+    // The original ordering is always available for a strictly valid target.
+    const order = pick(rng, allowed);
+    trial.premises = order.slice(0, 2).map(index => all[index]);
+    trial.conclusion = all[order[2]];
+    trial.premises = trial.premises.map(statement => random(rng) < 0.5 ? invert(statement) : statement);
+    if (random(rng) < 0.5) trial.conclusion = invert(trial.conclusion);
+    return trial;
+  }
+  function transformedCopy(rng, target, options = {}, selectedLetters) {
     validateTrial(target);
     const resolution = resolutionOf({ directionResolution: options.directionResolution ?? target.directionResolution });
     if (resolution !== resolutionOf(target)) throw new Error('Mode 2 target and selected compass resolution disagree.');
     if (options.complexity != null && options.complexity !== complexityOf(target)) throw new Error('Mode 2 target and selected complexity disagree.');
-    const source = trialLetters(target), destination = shuffled(rng, requireCore().LETTERS).slice(0, 3);
+    const history = recentHistory(options, target), source = trialLetters(target);
+    const destination = selectedLetters || nextLetters(rng, source, recentExposure(history));
     const mapping = Object.fromEntries(source.map((letter, i) => [letter, destination[i]]));
     const rename = s => ({ subject: mapping[s.subject], subjectFacet: clone(s.subjectFacet), relation: s.relation, object: mapping[s.object], objectFacet: clone(s.objectFacet) });
     // Whitelist structural data: answers, old targets, diagnostic mappings and timing never propagate.
     const out = { complexity: complexityOf(target), directionResolution: resolution, premises: target.premises.map(rename), conclusion: rename(target.conclusion) };
-    if (random(rng) < 0.5) out.premises.reverse();
-    out.premises = out.premises.map(s => random(rng) < 0.5 ? invert(s) : s);
-    if (random(rng) < 0.5) out.conclusion = invert(out.conclusion);
+    // Inner-world output is part of the scored attachment. Slot permutations
+    // may never silently change that output, even when their edge graph matches.
+    randomiseStatementRoles(rng, out, target.worldRule != null || target.outputFacet != null ? requireCore().evaluateTrial(target).isEntailed : undefined);
     if (out.complexity === 'worlds') {
-      out.worlds = Object.fromEntries(source.map(letter => [mapping[letter], transformedCopy(rng, target.worlds[letter])]));
+      out.worlds = Object.fromEntries(source.map(letter => [mapping[letter], transformedCopy(rng, target.worlds[letter], { history: innerHistory(history) })]));
       for (const child of Object.values(out.worlds)) { child.worldRule = WORLD_RULE; child.outputFacet = outputFacet(child); }
     }
     if (target.worldRule != null) { out.worldRule = WORLD_RULE; out.outputFacet = outputFacet(out); }
     return refreshTrial(out);
   }
-  function mutate(trial, kind, rng, interferenceLevel) {
+  function mutate(trial, kind, rng, interferenceLevel, history = []) {
     const all = statements(trial), letters = trialLetters(trial), letter = pick(rng, letters);
     const refs = occurrences(trial, letter);
     const selected = pick(rng, refs);
@@ -378,8 +455,11 @@
     if (kind === 'category' || kind === 'perspective') {
       const before = clone(selected.statement[selected.key]), after = clone(before);
       const otherFacet = refs.find(ref => ref !== selected).statement[refs.find(ref => ref !== selected).key];
-      if (kind === 'category') after.category = pick(rng, ONTOLOGY_CATEGORIES.filter(category => category !== before.category
-        && (trial.complexity === 'entities' || `${after.form}:${category}` !== facetKey(otherFacet))));
+      if (kind === 'category') {
+        const exposure = recentExposure(history);
+        after.category = weightedPick(rng, ONTOLOGY_CATEGORIES.filter(category => category !== before.category
+          && (trial.complexity === 'entities' || `${after.form}:${category}` !== facetKey(otherFacet))), category => categoryWeight(exposure, category));
+      }
       else after.form = pick(rng, ['I', 'O', 'A'].filter(form => form !== before.form
         && (trial.complexity === 'entities' || `${form}:${after.category}` !== facetKey(otherFacet))));
       for (const ref of trial.complexity === 'entities' ? refs : [selected]) {
@@ -408,7 +488,7 @@
       details.push({ slot: 3, endpoint: 'relation', before, after: trial.conclusion.relation });
     } else if (kind === 'nested') {
       const child = trial.worlds[letter];
-      const inner = mutate(child, pick(rng, ['category', 'perspective', 'facet-role', 'spatial']), rng, interferenceLevel);
+      const inner = mutate(child, pick(rng, ['category', 'perspective', 'facet-role', 'spatial']), rng, interferenceLevel, innerHistory(history));
       if (!inner) return null;
       refreshTrial(child);
       details.push(...inner.map(detail => ({ world: letter, ...detail })));
@@ -420,15 +500,18 @@
     validateTrial(target);
     const level = validLevel(options.nBackLevel ?? 1), requestedMatch = Boolean(options.match);
     const interference = Math.max(0, Math.min(100, Number(options.interferenceLevel) || 0));
+    const history = recentHistory(options, target);
+    // Hold this independent identity plan constant if a nonmatch lure retries.
+    const selectedLetters = nextLetters(rng, trialLetters(target), recentExposure(history));
     const available = LURE_KINDS.filter(kind => kind !== 'nested' || complexityOf(target) === 'worlds');
     if (options.lureKind != null && !available.includes(options.lureKind)) throw new Error('Requested lure kind is unavailable at this complexity.');
     let trial, result;
     const requestedKind = options.lureKind || pick(rng, available);
     for (let attempt = 0; attempt < 128; attempt += 1) {
-      trial = transformedCopy(rng, target, options);
+      trial = transformedCopy(rng, target, options, selectedLetters);
       if (!requestedMatch) {
         const kind = attempt < 64 || options.lureKind ? requestedKind : pick(rng, available);
-        const details = mutate(trial, kind, rng, interference);
+        const details = mutate(trial, kind, rng, interference, history);
         if (!details) continue;
         refreshTrial(trial);
         trial.lureKind = kind;

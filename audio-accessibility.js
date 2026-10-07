@@ -39,6 +39,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   app.speak = function(text, rate = null) {
     this.cancelSpeech();
+    // Preserve all statement content, but never narrate visual role labels.
+    text = String(text || '').replace(/\b(?:Premise\s+[12]|Candidate):\s*/g, '').trim();
     const settings = this.settings();
     if (!text || !this.synth || !window.SpeechSynthesisUtterance || settings.volume <= 0) {
       this._speechUnavailable = true;
@@ -67,9 +69,11 @@ window.addEventListener('DOMContentLoaded', () => {
       }};
       active = item;
       this._speakInProgress = true;
+      this.duckDelta(true);
       utterance.voice = this.voice || this.synth.getVoices?.()[0] || null;
       utterance.lang = utterance.voice?.lang || 'en-AU';
       utterance.rate = Math.max(.1, Math.min(2, rate ?? settings.rate));
+      utterance.pitch = 1;
       utterance.volume = Math.max(0, Math.min(1, settings.volume));
       utterance.onstart = () => { if (active === item) this.duckDelta(true); };
       utterance.onend = () => item.finish(true);
