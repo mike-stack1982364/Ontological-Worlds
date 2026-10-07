@@ -306,19 +306,75 @@ test('session expiration is checked before generation and after speech without o
 });
 
 test('interval limits, decimal precision and invalid-value defaults remain deterministic', async t => {
-  for (const [value, expected] of [[-5, 1], [0, 1], [1, 1], [1.125, 1.125], [120, 120], [999, 120], [Infinity, 30], ['', 30]]) {
+  for (const [value, expected] of [[-5, 1], [0, 1], [1, 1], [1.125, 1.125], [120, 120], [120.125, 120.125], [299.999, 299.999], [300, 300], [300.001, 300], [301, 300], [999, 300], [Infinity, 30], ['', 30]]) {
     const f = await fixture(t, { listeningMode: true, trialInterval: value });
     await f.start(); await f.finish();
     assert.equal(f.app.getTrialTimingState().remainingMs, expected * 1000, `listening interval ${value}`);
     await f.tick(expected * 1000 - 1); assert.equal(f.app.trials.length, 1);
     await f.tick(1); assert.equal(f.app.trials.length, 2);
   }
-  for (const [value, expected] of [[0, 0.9], [0.25, 1], [1, 1], [1.125, 1.125], [120, 120], [999, 120], [Infinity, 0.9]]) {
+  for (const [value, expected] of [[0, 0.9], [0.25, 1], [1, 1], [1.125, 1.125], [120, 120], [120.125, 120.125], [299.999, 299.999], [300, 300], [300.001, 300], [301, 300], [999, 300], [Infinity, 0.9]]) {
     const f = await fixture(t, { responseSeconds: value });
     await f.start(); await f.finish();
     assert.equal(f.app.getTrialTimingState().remainingMs, expected * 1000, `warmup response interval ${value}`);
     await f.tick(expected * 1000 - 1); assert.equal(f.app.trials.length, 1);
     await f.tick(1); assert.equal(f.app.trials.length, 2);
+  }
+});
+
+test('five-minute listening preserves pause remainder and waits for speech longer than its interval', async t => {
+  const f = await fixture(t, { listeningMode: true, trialInterval: 300 });
+  await f.start();
+  await f.tick(125000); await f.finish();
+  assert.equal(f.app.getTrialTimingState().remainingMs, 175000);
+  await f.tick(100000); f.app.togglePause();
+  assert.equal(f.app.getTrialTimingState().remainingMs, 75000);
+  await f.tick(180000);
+  assert.equal(f.app.trials.length, 1);
+  assert.equal(f.app.getTrialTimingState().remainingMs, 75000);
+  f.app.togglePause(); await f.tick(74999);
+  assert.equal(f.app.trials.length, 1, 'the five-minute interval must not advance early');
+  await f.tick(1);
+  assert.equal(f.app.trials.length, 2);
+  await f.tick(310000);
+  assert.equal(f.app.trials.length, 2, 'speech exceeding five minutes must not be cut or overlapped');
+  assert.equal(f.phase(), 'speaking');
+  await f.finish(); await f.tick(0);
+  assert.equal(f.app.trials.length, 3);
+  assert.equal(f.app.score.heard, 2);
+  assert.equal(f.app.score.scored || 0, 0);
+  assert.equal(f.app.score.timeouts || 0, 0);
+});
+
+test('five-minute responses begin after full speech and retain their exact paused deadline', async t => {
+  for (const advanceOnResponse of [true, false]) {
+    const f = await fixture(t, { responseSeconds: 300, advanceOnResponse });
+    await f.start(); await f.finish(); await f.tick(300000);
+    const current = f.app.current;
+    current.nBackMatch = false;
+    await f.tick(310000);
+    assert.equal(f.phase(), 'speaking');
+    assert.equal(f.app.score.scored || 0, 0);
+    await f.finish();
+    assert.equal(f.app.getTrialTimingState().remainingMs, 300000);
+    await f.tick(120000);
+    assert.equal(f.app.awaiting, true, 'the former 120-second limit cannot end this response');
+    f.app.togglePause(); await f.tick(180000);
+    assert.equal(f.app.getTrialTimingState().remainingMs, 180000);
+    assert.equal(f.app.trials.length, 2);
+    f.app.togglePause(); await f.tick(179999);
+    assert.equal(f.app.awaiting, true);
+    assert.equal(f.app.score.scored || 0, 0);
+    await f.tick(1);
+    assert.equal(current.response, null);
+    assert.equal(current.correct, false);
+    assert.equal(f.app.score.timeouts, 1);
+    assert.equal(f.app.score.correctRejects || 0, 0);
+    assert.equal(f.app.trials.length, advanceOnResponse ? 2 : 3);
+    if (advanceOnResponse) {
+      await f.tick(1199); assert.equal(f.app.trials.length, 2);
+      await f.tick(1); assert.equal(f.app.trials.length, 3);
+    }
   }
 });
 

@@ -115,6 +115,8 @@ async function main() {
       await page.goto(base + '/extra-training.html');
       assert.deepEqual(await page.locator('#count option').evaluateAll(options => options.map(option => option.value)), ['1', '2', '3', '4', '5', '6']);
       assert.equal(await page.locator('#count').inputValue(), '3');
+      assert.deepEqual(await page.locator('#response option').evaluateAll(options => options.map(option => option.value)), ['1', '2', '3', '5', '8', '12', '20', '30', '60', '120', '180', '240', '300']);
+      assert.equal(await page.locator('#response').inputValue(), '3');
       for (const value of ['60', '120', '180', '240', '300', '360', 'open']) assert.equal(await page.locator(`#session option[value="${value}"]`).count(), 1);
       await page.locator('#n').selectOption('1');
       await page.locator('#count').selectOption('2');
@@ -155,7 +157,7 @@ async function main() {
       await page.locator('#session').selectOption('360');
       await page.locator('#spacing').selectOption('ultra-fast');
       await page.locator('#number-listening').check();
-      await page.locator('#number-seconds').fill('121');
+      await page.locator('#number-seconds').fill('301');
       await page.locator('#start').click();
       assert.equal(await page.evaluate(() => window.__numberTrainer.state.running), false);
       await page.locator('#number-seconds').fill('1.25');
@@ -177,9 +179,9 @@ async function main() {
       assert.ok(listening.runs[1].started >= listening.runs[0].finished);
       assert.equal(listening.overflow, false);
       await page.locator('#stop').click();
-      await page.locator('#number-seconds').fill('120');
+      await page.locator('#number-seconds').fill('300');
       await page.locator('#start').click();
-      assert.equal(await page.evaluate(() => window.__numberTrainer.state.settings.seconds), 120);
+      assert.equal(await page.evaluate(() => window.__numberTrainer.state.settings.seconds), 300);
       await page.locator('#stop').click();
       await page.locator('#number-listening').uncheck();
       assert.equal(await page.locator('#number-responses').isVisible(), true);
@@ -188,13 +190,15 @@ async function main() {
       // disabled; switching settings after Stop never reuses the old recording.
       await page.locator('#speak').uncheck();
       await page.locator('#count').selectOption('1');
+      await page.locator('#response').selectOption('300');
       await page.locator('#start').click();
+      assert.equal(await page.evaluate(() => window.__numberTrainer.state.settings.response), 300);
       assert.equal(await page.locator('#stimulus').evaluate(element => element.classList.contains('hidden')), false);
       assert.match(await page.locator('#stimulus').innerText(), /^[1-9]$/);
       await page.locator('#stop').click();
       assert.deepEqual(await page.evaluate(() => window.__nativeSpeechCalls), []);
       assert.deepEqual(errors, []);
-      console.log(`PASS ${viewport.width}px: prerecorded speech, Test→Start, pause replay, response timing, scoring, restart, six-digit listening, 120-second limit, audio fallback`);
+      console.log(`PASS ${viewport.width}px: prerecorded speech, Test→Start, pause replay, response timing, scoring, restart, six-digit listening, 300-second limit, audio fallback`);
       await page.close();
     }
   } finally {

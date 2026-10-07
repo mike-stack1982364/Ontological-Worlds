@@ -155,3 +155,40 @@ test('Mode 1 stop and new session reject the prior utterance completion', async 
   await f.finishSpeech(1); assert.equal(f.app.score.heard, 1);
   assert.equal(f.app.current, current); assert.equal(f.app.trials.length, 1);
 });
+
+
+test('Mode 1 supports 300-second listening and retains the existing 120-second cadence', async t => {
+  for (const [requested, seconds] of [[120, 120], [300, 300], [301, 300]]) {
+    const f = await fixture(t, { listeningMode: true, trialInterval: requested });
+    f.next(); await f.advance(4000); await f.finishSpeech();
+    assert.equal(f.app.getTrialTimingState().remainingMs, seconds * 1000 - 4000);
+    await f.advance(seconds * 1000 - 4001); assert.equal(f.app.trials.length, 1);
+    await f.advance(1); assert.equal(f.app.trials.length, 2);
+    assert.equal(f.app.score.scored, 0);
+  }
+});
+
+test('Mode 1 five-minute thinking time survives early answers and pause; 301 clamps to 300', async t => {
+  for (const requested of [120, 300, 301]) {
+    const seconds = Math.min(requested, 300);
+    const f = await fixture(t, { responseSeconds: requested, advanceOnResponse: false });
+    const trial = f.next(); await f.advance(8000); await f.finishSpeech();
+    assert.equal(f.app.getTrialTimingState().remainingMs, seconds * 1000);
+    trial.conflictResponseVector.forEach((value, index) => f.choose(index, value));
+    await f.advance(30000); f.app.togglePause(); await f.advance(60000);
+    assert.equal(f.app.trials.length, 1);
+    assert.equal(f.app.getTrialTimingState().remainingMs, seconds * 1000 - 30000);
+    f.app.togglePause(); await f.advance(seconds * 1000 - 30001);
+    assert.equal(f.app.trials.length, 1);
+    await f.advance(1); assert.equal(f.app.trials.length, 2);
+    assert.equal(f.app.score.scored, 1);
+  }
+});
+
+test('Mode 1 never cuts speech exceeding a five-minute listening interval', async t => {
+  const f = await fixture(t, { listeningMode: true, trialInterval: 300 });
+  f.next(); await f.advance(310000);
+  assert.equal(f.app.trials.length, 1); assert.equal(f.app.score.heard || 0, 0);
+  await f.finishSpeech(); await f.advance(0);
+  assert.equal(f.app.trials.length, 2); assert.equal(f.app.score.heard, 1);
+});

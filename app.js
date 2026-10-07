@@ -272,7 +272,7 @@ class OntologicalWorlds {
     };
     const listeningMode = frozen ? frozen.listeningMode : Boolean($("listening-mode")?.checked);
     const advanceOnResponse = frozen ? frozen.advanceOnResponse : $("advance-on-response")?.checked !== false;
-    const selectedResponse = frozen ? frozen.responseSeconds : finite($("response-seconds")?.value ?? 0, 0, 0, 120);
+    const selectedResponse = frozen ? frozen.responseSeconds : finite($("response-seconds")?.value ?? 0, 0, 0, 300);
     return {
       mode:
         this.running && this.sessionSettings
@@ -287,7 +287,7 @@ class OntologicalWorlds {
           ? this.sessionSettings.minutes
           : finite($("session-slider").value, 15, 1, 360),
       listeningMode,
-      trialInterval: frozen ? frozen.trialInterval : finite($("trial-interval")?.value ?? 30, 30, 1, 120),
+      trialInterval: frozen ? frozen.trialInterval : finite($("trial-interval")?.value ?? 30, 30, 1, 300),
       responseSeconds: !advanceOnResponse && selectedResponse === 0 ? 30 : selectedResponse,
       advanceOnResponse,
       matchProbability: Number($("prob-slider").value) / 100,

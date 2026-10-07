@@ -193,9 +193,9 @@
     let timerGeneration = 0, phase = 'idle', expiringResponse = false;
     const timing = () => {
       const settings = app.settings();
-      const finite = Math.max(0, Math.min(120, Number(settings.responseSeconds) || 0));
+      const finite = Math.max(0, Math.min(300, Number(settings.responseSeconds) || 0));
       return { listening: Boolean(settings.listeningMode),
-        interval: Math.max(1, Math.min(120, Number(settings.trialInterval) || 30)) * 1000,
+        interval: Math.max(1, Math.min(300, Number(settings.trialInterval) || 30)) * 1000,
         response: (finite || (settings.advanceOnResponse === false ? 30 : 0)) * 1000,
         advanceOnResponse: settings.advanceOnResponse !== false };
     };

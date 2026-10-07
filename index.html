@@ -94,12 +94,12 @@
       <div class="control-group" aria-label="Trial pacing">
         <div class="toggle-row"><label><input id="listening-mode" type="checkbox"> Listening mode — no response input</label></div>
         <p>Listen and answer in your mind. Responses, timeouts and accuracy scoring are disabled in listening mode.</p>
-        <label for="trial-interval">Listening: seconds per trial (1–120)</label>
-        <input id="trial-interval" type="number" min="1" max="120" step="any" value="30" required aria-describedby="trial-interval-help" disabled>
-        <p id="trial-interval-help">Time between trial starts, including decimals. The next trial waits for speech to finish if it takes longer. Works with visible text or audio-only display.</p>
+        <label for="trial-interval">Listening: seconds per trial (1–300)</label>
+        <input id="trial-interval" type="number" min="1" max="300" step="any" value="30" required aria-describedby="trial-interval-help" disabled>
+        <p id="trial-interval-help">Choose up to 300 seconds (5 minutes) between trial starts, including decimals. The next trial waits for speech to finish if it takes longer. Works with visible text or audio-only display.</p>
         <label for="response-seconds">Response time after speech (seconds)</label>
-        <input id="response-seconds" type="number" min="0" max="120" step="any" value="0" required aria-describedby="response-seconds-help">
-        <p id="response-seconds-help">0 means no deadline. Choose up to 120 seconds for a timed response, including initial trials. If speech is muted or unavailable, the timer begins when the text appears.</p>
+        <input id="response-seconds" type="number" min="0" max="300" step="any" value="0" required aria-describedby="response-seconds-help">
+        <p id="response-seconds-help">0 means no deadline. Choose up to 300 seconds (5 minutes) for a timed response, including initial trials. If speech is muted or unavailable, the timer begins when the text appears.</p>
         <div class="toggle-row"><label><input id="advance-on-response" type="checkbox" checked> Advance by trial response</label></div>
         <p>Turn this off to keep the full response interval even after answering. A 30-second interval is used if no deadline was selected.</p>
         <p id="trial-pacing-summary" aria-live="polite">Self-paced · No response deadline</p>
@@ -287,14 +287,14 @@
     <p>Both modes have an expanded step-by-step guide below the game. Pause/P stops the session clock; Stop/Escape ends the session. N and complexity stay fixed for the session. Adaptive N is unavailable.</p>
     <button id="dismiss-tutorial" class="small-btn" type="button">Close</button></div></section>
   <section id="history" class="modal" role="dialog" aria-modal="true" aria-labelledby="history-title"><div class="modal-inner"><button class="modal-close" data-close="history" aria-label="Close history">×</button><h2 id="history-title">Session History</h2><div id="history-list"></div><div class="modal-actions"><button id="export-btn" class="small-btn" type="button">Export CSV</button><button id="clear-btn" class="small-btn" type="button">Clear</button><button id="dismiss-history" class="small-btn" type="button">Close</button></div></section>
-  <script src="app.js?v=20261008-sentience-updates"></script>
+  <script src="app.js?v=20261008-five-minute-pacing"></script>
   <script src="mode-one-match-logic.js"></script>
   <script src="mode-one-spatial-core.js?v=20260919-direction-fixes"></script>
   <script src="audio-accessibility.js?v=20261008-sentience-updates"></script>
   <script src="extra-training.js"></script>
-  <script src="mode-one-conflict-matrix-v20.js?v=20261008-sentience-updates"></script>
+  <script src="mode-one-conflict-matrix-v20.js?v=20261008-five-minute-pacing"></script>
   <script src="mode-one-letter-continuity-v1.js?v=20261008-sentience-updates"></script>
-  <script src="mode-two-ontology-nback-v14.js?v=20261008-sentience-updates"></script>
+  <script src="mode-two-ontology-nback-v14.js?v=20261008-five-minute-pacing"></script>
   <script src="matching-tutorial.js?v=20261005-sentience-matching"></script>
   <script src="response-palette-v2.js?v=20260731-2"></script>
 </body>

@@ -28,7 +28,7 @@ function fixture(options = {}) {
     elements[id] = {
       value: defaults[id] || '', checked: id === 'keyboard', disabled: false, textContent: '', innerHTML: '', style: {}, hidden: false, listeners: {},
       addEventListener(name, callback) { this.listeners[name] = callback; },
-      reportValidity() { return id !== 'number-seconds' || Number(this.value) >= 1 && Number(this.value) <= 120; },
+      reportValidity() { return id !== 'number-seconds' || Number(this.value) >= 1 && Number(this.value) <= 300; },
       classList: { add: name => classes.add(name), remove: name => classes.delete(name), contains: name => classes.has(name), toggle: (name, enabled) => enabled ? classes.add(name) : classes.delete(name) }
     };
   }
@@ -132,6 +132,11 @@ async function run() {
   const bounds = normaliseSettings({ n: -10, count: 99, response: NaN, session: 'open', volume: Infinity, rate: 'constructor', spacing: 'toString' });
   assert.equal(bounds.n, 1); assert.equal(bounds.count, 6); assert.equal(bounds.response, 3); assert.equal(bounds.volume, .8);
   assert.equal(bounds.rate, 'average'); assert.equal(bounds.spacing, 'average'); assert.equal(bounds.session, 'open');
+  for (const response of [30, 60, 120, 180, 240, 300]) assert.equal(normaliseSettings({ response }).response, response);
+  for (const seconds of [1.25, 120, 299.75, 300]) assert.equal(normaliseSettings({ listening: true, seconds }).seconds, seconds);
+  assert.equal(normaliseSettings({ response: 301 }).response, 300);
+  assert.equal(normaliseSettings({ listening: true, seconds: 301 }).seconds, 300);
+  assert.equal(normaliseSettings({}).response, 3); assert.equal(normaliseSettings({}).seconds, 5);
   assert.ok(Math.abs(normalQuantile(.975) - 1.959963986) < 1e-7);
   assert.equal(normalQuantile(.5), 0);
   assert.equal(dPrime({ hits: 0, misses: 0, falseAlarms: 0, correctRejects: 0 }), null);
@@ -224,7 +229,7 @@ async function run() {
   assert.equal(audio.spoken.length, 2); // Interrupted full sequence and full replay.
   audio.stop(); assert.equal(audio.tasks.size, 0);
 
-  // All supported N/count/response combinations preserve the full response
+  // The original N/count/response combinations preserve the full response
   // window. Rotate probability, interference, and silent/audio-only states;
   // their complete generator combinations are independently checked above.
   let lifecycleCombinations = 0;
@@ -346,10 +351,57 @@ async function run() {
   assert.equal(noAudio.state.presented, 1); assert.ok(Object.values(noAudio.state.score).every(value => value === 0));
   noAudio.stop();
 
+  // Five-minute listening is still measured start-to-start, including speech.
+  // The previous 120-second limit must not silently shorten its cadence.
+  const fiveMinuteListening = fixture({ speech: true });
+  Object.entries({ count: '6', session: 'open', 'number-seconds': '300' }).forEach(([id, value]) => { fiveMinuteListening.elements[id].value = value; });
+  fiveMinuteListening.elements['number-listening'].checked = true;
+  fiveMinuteListening.start(); await fiveMinuteListening.flush();
+  const listeningSpeech = numberSpeech.buildSequence(fiveMinuteListening.state.current.values, fiveMinuteListening.state.settings, audioData).duration * 1000 + 60;
+  await fiveMinuteListening.advance(listeningSpeech - .01); assert.equal(fiveMinuteListening.state.phase, 'speaking');
+  await fiveMinuteListening.advance(.01); assert.equal(fiveMinuteListening.state.phase, 'listening');
+  assert.equal(fiveMinuteListening.state.deadline, 300000); assert.equal(fiveMinuteListening.state.heard, 1);
+  await fiveMinuteListening.advance(120000 - fiveMinuteListening.now());
+  assert.equal(fiveMinuteListening.state.presented, 1);
+  fiveMinuteListening.pause(); assert.equal(fiveMinuteListening.state.remaining, 180000);
+  await fiveMinuteListening.advance(500000); assert.equal(fiveMinuteListening.state.presented, 1);
+  fiveMinuteListening.pause(); await fiveMinuteListening.advance(179999); assert.equal(fiveMinuteListening.state.presented, 1);
+  await fiveMinuteListening.advance(1); assert.equal(fiveMinuteListening.state.presented, 2);
+  assert.equal(fiveMinuteListening.now(), 800000);
+  assert.ok(Object.values(fiveMinuteListening.state.score).every(value => value === 0));
+  fiveMinuteListening.stop(); assert.equal(fiveMinuteListening.tasks.size, 0);
+
+  // Both memory fill and scored responses receive the full 300 seconds after
+  // six complete spoken numbers. Paused wall time is excluded from the window.
+  const fiveMinuteResponse = fixture({ speech: true });
+  Object.entries({ count: '6', n: '1', session: 'open', response: '300' }).forEach(([id, value]) => { fiveMinuteResponse.elements[id].value = value; });
+  fiveMinuteResponse.start(); await fiveMinuteResponse.flush();
+  const responseSpeech = numberSpeech.buildSequence(fiveMinuteResponse.state.current.values, fiveMinuteResponse.state.settings, audioData).duration * 1000 + 60;
+  await fiveMinuteResponse.advance(responseSpeech);
+  assert.equal(fiveMinuteResponse.state.phase, 'response'); assert.equal(fiveMinuteResponse.state.awaiting, false);
+  assert.equal(fiveMinuteResponse.state.remaining, 300000);
+  await fiveMinuteResponse.advance(299999); assert.equal(fiveMinuteResponse.state.presented, 1);
+  await fiveMinuteResponse.advance(1); assert.equal(fiveMinuteResponse.state.phase, 'feedback');
+  assert.equal(fiveMinuteResponse.state.score.scored, 0);
+  await fiveMinuteResponse.advance(450); assert.equal(fiveMinuteResponse.state.presented, 2);
+  await fiveMinuteResponse.advance(responseSpeech);
+  assert.equal(fiveMinuteResponse.state.awaiting, true); assert.equal(fiveMinuteResponse.state.remaining, 300000);
+  await fiveMinuteResponse.advance(120000); assert.equal(fiveMinuteResponse.state.score.scored, 0);
+  fiveMinuteResponse.pause(); assert.equal(fiveMinuteResponse.state.remaining, 180000);
+  await fiveMinuteResponse.advance(500000); assert.equal(fiveMinuteResponse.state.score.scored, 0);
+  fiveMinuteResponse.pause(); await fiveMinuteResponse.advance(179999); assert.equal(fiveMinuteResponse.state.score.scored, 0);
+  await fiveMinuteResponse.advance(1); assert.equal(fiveMinuteResponse.state.score.scored, 1); assert.equal(fiveMinuteResponse.state.score.omissions, 1);
+  fiveMinuteResponse.stop(); assert.equal(fiveMinuteResponse.tasks.size, 0);
+
+  const invalidInterval = fixture({ speech: true });
+  invalidInterval.elements['number-listening'].checked = true; invalidInterval.elements['number-seconds'].value = '301';
+  invalidInterval.start(); await invalidInterval.flush();
+  assert.equal(invalidInterval.state.running, false); assert.equal(invalidInterval.spoken.length, 0);
+
   const complete = fixture(); complete.start(); await complete.flush(); await complete.advance(300000);
   assert.equal(complete.state.running, false); assert.equal(complete.elements.stimulus.textContent, 'SESSION COMPLETE');
   assert.equal(complete.tasks.size, 0);
   assert.ok(complete.state.trials.length <= 8);
-  console.log(JSON.stringify({ passed: true, generatedTrials: generated, lifecycleCombinations, audibleCombinations, timingScoringAndAudioRegressions: true }));
+  console.log(JSON.stringify({ passed: true, generatedTrials: generated, lifecycleCombinations, audibleCombinations, timingScoringAndAudioRegressions: true, fiveMinutePacing: true }));
 }
 run().catch(error => { console.error(error); process.exitCode = 1; });

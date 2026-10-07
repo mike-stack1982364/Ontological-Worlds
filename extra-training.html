@@ -45,7 +45,7 @@ button:disabled{opacity:.42;cursor:not-allowed}
 <div class="grid">
 <div><label for="n">N-back level</label><select id="n"></select></div>
 <div><label for="count">Numbers per trial</label><select id="count"><option value="1">1 number</option><option value="2">2 numbers</option><option value="3" selected>3 numbers</option><option value="4">4 numbers</option><option value="5">5 numbers</option><option value="6">6 numbers</option></select></div>
-<div><label for="response">Trial response time</label><select id="response"><option value="1">1 second</option><option value="2">2 seconds</option><option value="3" selected>3 seconds</option><option value="5">5 seconds</option><option value="8">8 seconds</option><option value="12">12 seconds</option><option value="20">20 seconds</option></select></div>
+<div><label for="response">Trial response time</label><select id="response"><option value="1">1 second</option><option value="2">2 seconds</option><option value="3" selected>3 seconds</option><option value="5">5 seconds</option><option value="8">8 seconds</option><option value="12">12 seconds</option><option value="20">20 seconds</option><option value="30">30 seconds</option><option value="60">1 minute</option><option value="120">2 minutes</option><option value="180">3 minutes</option><option value="240">4 minutes</option><option value="300">5 minutes</option></select><p class="help">Time to respond after the complete spoken sequence, up to 5 minutes. This also applies during memory fill.</p></div>
 <div><label for="session">Session length</label><select id="session"><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15" selected>15 minutes</option><option value="20">20 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option><option value="300">5 hours</option><option value="360">6 hours</option><option value="open">Open-ended session</option></select></div>
 <div><label for="probability">Match probability</label><select id="probability"><option value="20">20%</option><option value="30">30%</option><option value="35" selected>35%</option><option value="40">40%</option><option value="50">50%</option><option value="60">60%</option></select></div>
 <div><label for="interference">Cognitive interference</label><select id="interference"><option value="0">None</option><option value="25">Low</option><option value="50">Moderate</option><option value="75" selected>High</option><option value="100">Maximum</option></select><p class="help">Higher stages reuse recent digits, transpose remembered digits and create near-matches with misleading slot order.</p></div>
@@ -57,8 +57,8 @@ button:disabled{opacity:.42;cursor:not-allowed}
 <p id="number-listening-help" class="help">Listen and answer in your mind. Trials advance automatically; no answers, timeouts or accuracy penalties are recorded.</p>
 <div id="number-listening-settings" hidden style="max-width:420px;margin-top:16px">
 <label for="number-seconds">Seconds per trial</label>
-<input id="number-seconds" type="number" min="1" max="120" step="any" value="5" required inputmode="decimal" aria-describedby="number-cadence-help" disabled>
-<p id="number-cadence-help" class="help">Choose any value from 1 to 120 seconds, including decimals. This is the time between trial starts. If the speech takes longer, the next trial waits for it to finish. Speech stays on in listening mode.</p>
+<input id="number-seconds" type="number" min="1" max="300" step="any" value="5" required inputmode="decimal" aria-describedby="number-cadence-help" disabled>
+<p id="number-cadence-help" class="help">Choose any value from 1 to 300 seconds (5 minutes), including decimals. This is the time between trial starts. If the speech takes longer, the next trial waits for it to finish. Speech stays on in listening mode.</p>
 </div>
 <div class="toggles"><label><input id="speak" type="checkbox" checked> Speak stimuli</label><label><input id="audio-only" type="checkbox"> Audio-only display</label><label><input id="keyboard" type="checkbox" checked> Keyboard controls</label><label><input id="haptic" type="checkbox" checked> Haptics</label></div>
 <div class="buttons"><button id="start">Start</button><button id="pause" class="secondary" disabled>Pause</button><button id="stop" class="secondary" disabled>Stop</button><button id="test" class="secondary">Test speech</button></div>
@@ -76,7 +76,7 @@ button:disabled{opacity:.42;cursor:not-allowed}
 <h2 id="number-guide-title">How to play</h2>
 <p>Remember each ordered sequence of 1–6 digits. Select <strong>Match</strong> when at least one digit is the same in the same position as it was exactly N trials earlier. Otherwise select <strong>No Match</strong>. A digit repeated in a different position is not a match.</p>
 <p>The first N trials fill your memory and are not scored. When speech is enabled, the complete sequence plays before the response timer starts. Missing a scored response counts against accuracy.</p>
-<p>For hands-free practice, enable <strong>Listening mode — no response input</strong> and choose 1–120 seconds per trial, including decimals. The interval runs from one trial start to the next. Longer speech finishes before the next trial starts. No responses, accuracy scores or omission penalties are recorded; only fully played trials count as heard.</p>
+<p>For hands-free practice, enable <strong>Listening mode — no response input</strong> and choose 1–300 seconds per trial (up to 5 minutes), including decimals. The interval runs from one trial start to the next. Longer speech finishes before the next trial starts. No responses, accuracy scores or omission penalties are recorded; only fully played trials count as heard.</p>
 <p>Pause freezes the remaining interval. If you pause during speech, Resume replays the same trial and restarts its interval. A session ending during speech finishes the current sequence before stopping. Turn listening mode off before starting a new session to restore responses and scoring.</p>
 <p>Each digit appears at most twice per sequence. No digit repeats three times consecutively in the number stream or in the same position across trials. These limits take priority over the requested match probability.</p>
 <p><strong>Keyboard:</strong> F or J = Match; D or K = No Match; Escape = Stop. Use Pause/Resume to pause. Returning to Main Training stops the current session.</p>
@@ -85,6 +85,6 @@ button:disabled{opacity:.42;cursor:not-allowed}
 <footer class="container help" style="padding-top:0">Australian English voice: Cameron, recorded by CAMSOWN. <a href="https://github.com/mike-stack1982364/Ontological-Worlds/blob/main/NUMBER-SPEECH-ASSETS.md">Voice credits and adaptations</a> · <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a></footer>
 <script src="number-speech-data.js?v=20260920-natural-voice-2"></script>
 <script src="number-speech.js?v=20261008-sentience-numbers"></script>
-<script src="extra-training-runtime.js?v=20261008-sentience-numbers"></script>
+<script src="extra-training-runtime.js?v=20261008-five-minute-pacing"></script>
 </body>
 </html>

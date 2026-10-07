@@ -98,10 +98,10 @@
         const finite = (value, minimum, maximum, fallback) => Number.isFinite(Number(value)) && value !== ''
           ? Math.max(minimum, Math.min(maximum, Number(value))) : fallback;
         const advanceOnResponse = settings.advanceOnResponse !== false;
-        let responseSeconds = finite(settings.responseSeconds, 0, 120, 0);
+        let responseSeconds = finite(settings.responseSeconds, 0, 300, 0);
         if (responseSeconds > 0) responseSeconds = Math.max(1, responseSeconds);
         if (!advanceOnResponse && responseSeconds === 0) responseSeconds = 30;
-        return { listening: Boolean(settings.listeningMode), interval: finite(settings.trialInterval, 1, 120, 30), responseSeconds, advanceOnResponse };
+        return { listening: Boolean(settings.listeningMode), interval: finite(settings.trialInterval, 1, 300, 30), responseSeconds, advanceOnResponse };
       };
       const finishExpiredSession = () => {
         if (!app.isSessionExpired?.()) return false;

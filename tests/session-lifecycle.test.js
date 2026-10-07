@@ -382,7 +382,7 @@ test("fixed pacing cannot remain untimed and invalid intervals do not start a se
     assert.equal(window.document.getElementById('response-seconds').value, '30');
     window.document.getElementById('listening-mode').checked = true;
     window.document.getElementById('trial-interval').disabled = false;
-    window.document.getElementById('trial-interval').value = '121';
+    window.document.getElementById('trial-interval').value = '301';
     await app.start();
     assert.equal(app.running, false);
     window.document.getElementById('trial-interval').value = '12.5';
@@ -407,4 +407,30 @@ test("background-volume controls cannot reintroduce sound during pending or acti
     app.setDeltaVolume(); app.duckDelta(false);
     assert.equal(values.at(-1), 0);
   } finally { dom.window.close(); }
+});
+
+
+test("main timing accepts 300 seconds, rejects 301 at start, and clamps out-of-range settings", async () => {
+  for (const listeningMode of [true, false]) {
+    const { dom, window, app, advance } = await setup({ listeningMode, trialInterval: 300, responseSeconds: 300 });
+    try {
+      const id = listeningMode ? 'trial-interval' : 'response-seconds';
+      const input = window.document.getElementById(id);
+      assert.equal(input.max, '300');
+      assert.equal(input.checkValidity(), true);
+      assert.equal(app.settings()[listeningMode ? 'trialInterval' : 'responseSeconds'], 300);
+      input.value = '301';
+      assert.equal(input.checkValidity(), false);
+      assert.equal(app.settings()[listeningMode ? 'trialInterval' : 'responseSeconds'], 300);
+      await app.start(); assert.equal(app.running, false);
+      input.value = '300';
+      app.nextTrial = () => { app.current = {}; app.score.shown++; };
+      const started = app.start(); await advance(2000); await started;
+      assert.equal(app.running, true);
+      assert.equal(app.sessionSettings[listeningMode ? 'trialInterval' : 'responseSeconds'], 300);
+      app.stop(true);
+      input.value = '120'; assert.equal(input.checkValidity(), true);
+      assert.equal(app.settings()[listeningMode ? 'trialInterval' : 'responseSeconds'], 120);
+    } finally { dom.window.close(); }
+  }
 });

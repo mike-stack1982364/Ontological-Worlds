@@ -15,11 +15,11 @@
   function normaliseSettings(raw) {
     return {
       n: Math.floor(bounded(raw.n, 1, 20, 2)), count: Math.floor(bounded(raw.count, 1, 6, 3)),
-      response: bounded(raw.response, 1, 20, 3), session: raw.session === 'open' ? 'open' : bounded(raw.session, 5, 360, 15),
+      response: bounded(raw.response, 1, 300, 3), session: raw.session === 'open' ? 'open' : bounded(raw.session, 5, 360, 15),
       prob: bounded(raw.probability, 0, 100, 35) / 100, interference: bounded(raw.interference, 0, 100, 75),
       rate: Object.hasOwn(RATES, raw.rate) ? raw.rate : 'average', spacing: Object.hasOwn(GAPS, raw.spacing) ? raw.spacing : 'average',
       volume: bounded(raw.volume, raw.listening ? .01 : 0, 1, .8), speak: !!raw.speak || !!raw.listening, audioOnly: !!raw.audioOnly,
-      listening: !!raw.listening, seconds: bounded(raw.seconds, 1, 120, 5),
+      listening: !!raw.listening, seconds: bounded(raw.seconds, 1, 300, 5),
       keyboard: !!raw.keyboard, haptic: !!raw.haptic
     };
   }
