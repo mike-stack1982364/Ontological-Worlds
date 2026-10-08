@@ -19,8 +19,8 @@
   const start = root.document.getElementById('start-btn');
   if (start) start.disabled = true;
 
-  root.__modeTwoV22Ready = root.__modeTwoV21Ready = loadScript('mode-two-engine-v22.js?v=20261008-sentience-updates')
-    .then(() => loadScript('mode-two-runtime-v22.js?v=20261008-five-minute-pacing'))
+  root.__modeTwoV22Ready = root.__modeTwoV21Ready = loadScript('mode-two-engine-v22.js?v=20261008-equal-premises')
+    .then(() => loadScript('mode-two-runtime-v22.js?v=20261008-equal-premises'))
     .then(() => root.__modeTwoFinalRuntimeReady)
     .catch(error => {
       root.__modeTwoV21LoadError = error;

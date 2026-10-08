@@ -78,6 +78,37 @@ test('joint bindings distinguish a directed cycle from a transitive graph', () =
   assert.equal(actual.matchedCount, 2);
 });
 
+test('every statement can cross the old third slot without inference overriding N-back', () => {
+  const target = trial(S('A', 'N', 'B'), S('B', 'N', 'C'), S('A', 'N', 'C'), 4);
+  let unavailable = 0;
+  for (const assignment of permutations([0, 1, 2])) {
+    const old = list(target), current = trial(...assignment.map(index => old[index]), 4);
+    const result = conflict.evaluateConflictMatrix(target, current);
+    assert.equal(result.wholeTrialMatch, true);
+    assert.deepEqual(result.statementMatches, [true, true, true]);
+    assert.equal(result.responseVector[4], true);
+    if (!result.entailmentAvailable) {
+      unavailable++;
+      assert.equal(result.responseVector[3], false);
+      assert.equal(result.expectedRelation, null);
+    }
+    assert.equal(conflict.evaluateHistory([target, target, current], 2, 2).isMatch, true);
+  }
+  assert(unavailable > 0, 'The fixture must exercise a collapsed independent spatial check');
+});
+
+test('feedback reports the N-back decision separately from K/L in both disagreement cases', () => {
+  for (const nBackMatch of [false, true]) {
+    const current = nBackMatch
+      ? trial(S('A', 'E', 'B'), S('C', 'N', 'A'), S('C', 'W', 'B'), 8)
+      : trial(S('A', 'E', 'B'), S('C', 'N', 'A'), S('C', 'NE', 'B'), 8);
+    Object.assign(current, { nBackMatch, statementMatchVector: [true, true, nBackMatch] });
+    const text = conflict.explainConflictTrial(current);
+    assert(text.startsWith(`N-back: ${nBackMatch ? 'MATCH' : 'NO MATCH'} —`));
+    assert(text.includes(`Separate K/L check: ${nBackMatch ? 'NO' : 'YES'}`));
+  }
+});
+
 test('live wrong-pair statements retain their existing shape and entailment behavior', () => {
   // The live task can repeat a clue as its third statement. Sentience's
   // standalone triangle validator is deliberately not imported into this UI.

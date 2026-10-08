@@ -101,7 +101,7 @@ test('all six assignments and deterministic false-first ties agree with independ
   }
 });
 
-test('nested graphs use local mappings and free slots while retaining their output and outer attachment', () => {
+test('nested graphs use local mappings and free slots while retaining their outer attachment', () => {
   const target=engine.generateTrial(new Rng(421),{complexity:'worlds',directionResolution:16});
   const key=letters(target)[0], child=triangle(['N','N','S']);
   child.worldRule=engine.WORLD_RULE;child.outputFacet=engine.outputFacet(child);
@@ -118,7 +118,7 @@ test('nested graphs use local mappings and free slots while retaining their outp
   assert.equal(engine.compare(target,attachment).isMatch,false,'Local worlds stay attached to the mapped outer entities');
 });
 
-test('nested projection output remains an ontology binding even when inner stated graph matches', () => {
+test('a changed separate practice inference never changes an unchanged nested memory graph', () => {
   const target=engine.generateTrial(new Rng(643),{complexity:'worlds',directionResolution:16});
   const key=letters(target)[0], child=triangle(['N','E','NE']);
   child.worldRule=engine.WORLD_RULE;child.outputFacet=engine.outputFacet(child);
@@ -128,9 +128,49 @@ test('nested projection output remains an ontology binding even when inner state
   moved.outputFacet=engine.outputFacet(moved);assert.equal(moved.outputFacet.form,'I');
   changed.worlds[key]=moved;
   assert.equal(engine.compare(child,moved).isMatch,true,'The inner edge graph still matches');
-  assert.equal(engine.compare(target,changed).isMatch,false,'Its changed projection output changes the outer bound world');
+  assert.equal(engine.compare(target,changed).isMatch,true,'Only the stated graph and its attachment determine the nested memory match');
+  assert.deepEqual(engine.compare(target,changed).alignment.statementMatches,[true,true,true]);
   const corrupt=clone(changed);corrupt.worlds[key].outputFacet=F('Projection','O');
-  assert.throws(()=>engine.compare(target,corrupt),/output does not follow/);
+  assert.equal(engine.compare(target,corrupt).isMatch,true,'A cached practice result cannot change a memory answer');
+  assert.throws(()=>engine.evaluate(corrupt),/output does not follow/,'The independent practice still validates its result');
   assert.equal(spatial.evaluateTrial(child).isEntailed,true);
   assert.equal(spatial.evaluateTrial(moved).isEntailed,false);
+});
+
+test('all nested statement orders and equivalent inversions match even when a separate proof collapses', () => {
+  const target=engine.generateTrial(new Rng(9187),{complexity:'worlds',directionResolution:16});
+  const key=letters(target)[0], child=triangle(['N','N','N']);
+  child.worldRule=engine.WORLD_RULE;child.outputFacet=engine.outputFacet(child);
+  target.worlds[key]=child;
+  let collapsed=0;
+  for(const order of perms([0,1,2])) for(let mask=0;mask<8;mask++) {
+    const current=reorder(target,[2,0,1]), moved=reorder(child,order);
+    const items=all(moved).map((statement,index)=>(mask&(1<<index))?engine.invert(statement):statement);
+    moved.premises=items.slice(0,2);moved.conclusion=items[2];
+    current.worlds[key]=moved;
+    const compared=engine.compare(target,current);
+    assert.equal(compared.isMatch,true,`${order}:${mask}`);
+    assert.equal(compared.alignment.wholeTrialMatch,true);
+    assert.equal(engine.evaluateHistory([target,target,current],2,2).isMatch,true);
+    assert.doesNotMatch(engine.renderOntologicalTrial(current),/premise|candidate|conclusion|world rule|infer its output/i);
+    try { spatial.evaluateTrial(moved); } catch (_) { collapsed++;assert.equal(compared.currentWithinTrial,null); }
+  }
+  assert.ok(collapsed>0,'The fixtures cover undefined independent practice geometry');
+  const malformed=clone(target);malformed.worlds[key].outputFacet={category:'Unknown',form:'O'};
+  assert.throws(()=>engine.compare(target,malformed),/known category/,'Ignoring inferred truth does not ignore malformed facets');
+  const changed=clone(target);changed.worlds[key].premises[0].subjectFacet.form='I';
+  assert.equal(engine.compare(target,changed).isMatch,false,'An explicitly stated endpoint perspective is still scored');
+});
+
+test('a moved mixed-axis nested graph preserves true nonmatches for spatial and attachment changes', () => {
+  const target=engine.generateTrial(new Rng(9981),{complexity:'worlds',directionResolution:16});
+  const [key,other]=letters(target), child=triangle(['N','E','NE']);
+  child.worldRule=engine.WORLD_RULE;child.outputFacet=engine.outputFacet(child);target.worlds[key]=child;
+  const moved=clone(target);moved.worlds[key]=reorder(child,[2,1,0]);
+  assert.equal(engine.compare(target,moved).isMatch,true);
+  const spatialLure=clone(moved);spatialLure.worlds[key].premises[0].relation='E';
+  assert.equal(engine.compare(target,spatialLure).isMatch,false);
+  const attachmentLure=clone(moved);
+  [attachmentLure.worlds[key],attachmentLure.worlds[other]]=[attachmentLure.worlds[other],attachmentLure.worlds[key]];
+  assert.equal(engine.compare(target,attachmentLure).isMatch,false);
 });

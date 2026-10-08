@@ -187,10 +187,10 @@
         const subject = trial.conclusion.subject, object = trial.conclusion.object;
         const probe = {
           inference: { ...generatedProbe.spatial,
-            question: `Use only the two premises. Where is ${subject} relative to ${object}?`,
+            question: `For this separate practice question, use Statements 1 and 2. Where is ${subject} relative to ${object}?`,
             answer: generatedProbe.spatial.expectedRelation },
           counterfactual: { ...generatedProbe.counterfactual,
-            question: `Reverse the compass direction in BOTH premises, keeping every letter, aspect and the candidate fixed. Where would ${subject} be relative to ${object}? This changes the spatial facts; it does not merely reverse the wording.`,
+            question: `Reverse the compass direction in Statements 1 and 2, keeping every letter, aspect and Statement 3 fixed. Where would ${subject} be relative to ${object}? This changes the spatial facts; it does not merely reverse the wording.`,
             answer: generatedProbe.counterfactual.expectedRelation },
           options: core.allowedCodes(trial.directionResolution)
         };

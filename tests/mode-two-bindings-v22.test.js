@@ -45,8 +45,7 @@ function oracle(a, b) {
   const from = letters(a), to = letters(b);
   for (const assignment of maps(to)) {
     const mapping = Object.fromEntries(from.map((letter, i) => [letter, assignment[i]]));
-    if (a.complexity === 'worlds' && from.some(letter => !oracle(a.worlds[letter], b.worlds[mapping[letter]])
-      || !sameFacet(a.worlds[letter].outputFacet, b.worlds[mapping[letter]].outputFacet))) continue;
+    if (a.complexity === 'worlds' && from.some(letter => !oracle(a.worlds[letter], b.worlds[mapping[letter]]))) continue;
     const same = (first, second) => (
       mapping[first.subject] === second.subject && mapping[first.object] === second.object
       && first.relation === second.relation && sameFacet(first.subjectFacet, second.subjectFacet) && sameFacet(first.objectFacet, second.objectFacet)
@@ -69,7 +68,8 @@ test('the proposed advanced two-trial pair preserves all six endpoint bindings',
   assert.deepEqual(engine.analyseAlignment(original, matched).mapping, { H: 'X', D: 'Y', C: 'Z' });
   const text = engine.renderOntologicalTrial(original);
   assert.match(text, /Outer Connection H is south of Projection D/);
-  assert.match(text, /Candidate: Projection C is north of Inner Division H/);
+  assert.match(text, /Projection C is north of Inner Division H/);
+  assert.doesNotMatch(text, /premise|candidate|conclusion/i);
   assert.equal(engine.evaluate(original).ontologyRelevant, true);
 });
 
@@ -144,7 +144,7 @@ test('inner world structure is scored even if its output and every outer stateme
   assert.equal(oracle(target, matchedWorld), true, 'inner letters must be independently scoped');
 });
 
-test('nested output changes exactly when the child candidate truth changes', () => {
+test('nested practice output remains validated independently of the memory signature', () => {
   const target = engine.generateTrial(new Rng(311), { complexity: 'worlds', directionResolution: 16 });
   for (const child of Object.values(target.worlds)) {
     const evaluation = core.evaluateTrial(child);
@@ -153,7 +153,8 @@ test('nested output changes exactly when the child candidate truth changes', () 
   }
   const key = letters(target)[0], corrupt = clone(target);
   corrupt.worlds[key].outputFacet.form = corrupt.worlds[key].outputFacet.form === 'I' ? 'O' : 'I';
-  assert.throws(() => engine.relationalSignature(corrupt), /output does not follow/);
+  assert.equal(engine.relationalSignature(corrupt), engine.relationalSignature(target));
+  assert.throws(() => engine.evaluate(corrupt), /output does not follow/);
 });
 
 test('exact N-back offsets and unscored warmups are used at all eight levels', () => {

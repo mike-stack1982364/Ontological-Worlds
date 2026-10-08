@@ -1,0 +1,1805 @@
+{
+  "baselineCommit": "09a62fc8f8c2ca9d345641398e6a7a29ea251f22",
+  "cases": [
+    {
+      "key": "mode1/R4/N1/P0",
+      "seed": 1085444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 62828,
+      "digest": "e78102dc41fb9584c15222979e90a7b91107c5ac17cd5e78f1b9b99e67351e34"
+    },
+    {
+      "key": "mode1/R4/N1/P0.15",
+      "seed": 1085459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 49009,
+      "digest": "1238e5dad6b6a4a26d04113aa84391685f4b19de8124c085127eb565692474b5"
+    },
+    {
+      "key": "mode1/R4/N1/P0.35",
+      "seed": 1085479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 7,
+      "actualMatches": 7,
+      "rngCalls": 38648,
+      "digest": "cd704b12411ca8630cb7e25981df379eebbc5bdf4afe624c05f813fe4b4d1a11"
+    },
+    {
+      "key": "mode1/R4/N1/P0.6",
+      "seed": 1085504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 24828,
+      "digest": "9cfe63b40a4edfef05bc7946bf71e4fcea96a04419934eeace6d6198a4d4db56"
+    },
+    {
+      "key": "mode1/R4/N1/P1",
+      "seed": 1085544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 648,
+      "digest": "7243f5a75daba5b499ecba552146f394cea77d726f9291d78636cc3bde16c69e"
+    },
+    {
+      "key": "mode1/R4/N2/P0",
+      "seed": 1085544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 62859,
+      "digest": "8f54e1152d813011c0276ea4e42de2f1cc105f074511bcd13250eefa8a8cec5a"
+    },
+    {
+      "key": "mode1/R4/N2/P0.15",
+      "seed": 1085559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 1,
+      "actualMatches": 1,
+      "rngCalls": 59417,
+      "digest": "4a2f81634610b3f9d6a4df779a9c986470125394a7d551b055d8ae5d6795161f"
+    },
+    {
+      "key": "mode1/R4/N2/P0.35",
+      "seed": 1085579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 21,
+      "actualMatches": 21,
+      "rngCalls": 53111,
+      "digest": "b625825bbf9be28286fff68d1c79c484eaef79e785bb43ed38f4737634eb4bb5"
+    },
+    {
+      "key": "mode1/R4/N2/P0.6",
+      "seed": 1085604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 8,
+      "actualMatches": 8,
+      "rngCalls": 35229,
+      "digest": "4e304c84b0266fcf25a014f2b5bc4c904988aac2f379784d2953e0926290960f"
+    },
+    {
+      "key": "mode1/R4/N2/P1",
+      "seed": 1085644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 712,
+      "digest": "a112fcd897a52c6429ee0f22883e256f3ec043b58327ebc790e3ed0e3847e4a9"
+    },
+    {
+      "key": "mode1/R4/N8/P0",
+      "seed": 1086144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 63113,
+      "digest": "986a1212f741b153c8f0f26b8604a08569ec957a4db9de3f4c2648dc2db85ab2"
+    },
+    {
+      "key": "mode1/R4/N8/P0.15",
+      "seed": 1086159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 2,
+      "actualMatches": 2,
+      "rngCalls": 56226,
+      "digest": "f81000a3dd583e47d80d7b71f001b478130dad302376499be9ae4271d3beb817"
+    },
+    {
+      "key": "mode1/R4/N8/P0.35",
+      "seed": 1086179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 7,
+      "actualMatches": 7,
+      "rngCalls": 38950,
+      "digest": "af0d1e6384dbd7b91f4e6fdbae98ee3029feeadfe582b4c9c383983c46508195"
+    },
+    {
+      "key": "mode1/R4/N8/P0.6",
+      "seed": 1086204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 25149,
+      "digest": "10aecaa7dd4381c0ba8476471f95de0c4fbbd3f85179af2bc06f7bb9b8e10174"
+    },
+    {
+      "key": "mode1/R4/N8/P1",
+      "seed": 1086244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 938,
+      "digest": "e34250138d3b3674ec1680d294ad3c626a741b0e9d64b2a01686b2277312aa56"
+    },
+    {
+      "key": "mode1/R8/N1/P0",
+      "seed": 1089444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 62825,
+      "digest": "452141f5eaa4552905bf42ced91df4454fe60443331b14bb08a7a992c8e934a1"
+    },
+    {
+      "key": "mode1/R8/N1/P0.15",
+      "seed": 1089459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 49007,
+      "digest": "cf899998f3bc29941bb4a80563d25357be53d0eb045ffee3bce4887714331976"
+    },
+    {
+      "key": "mode1/R8/N1/P0.35",
+      "seed": 1089479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 6,
+      "actualMatches": 6,
+      "rngCalls": 42097,
+      "digest": "589d522cf28dc14b75bf9eedc0907a599f42146196448d2e65c39d378c970520"
+    },
+    {
+      "key": "mode1/R8/N1/P0.6",
+      "seed": 1089504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 13,
+      "actualMatches": 13,
+      "rngCalls": 17921,
+      "digest": "2240779b872fbbb49ca37c68665f8eb8420b250cb3203741bda405b10703ad9c"
+    },
+    {
+      "key": "mode1/R8/N1/P1",
+      "seed": 1089544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 652,
+      "digest": "d665849afb6226686b9d1a99f413f344c70d6a2754a7eb9f011f191737f2bffe"
+    },
+    {
+      "key": "mode1/R8/N2/P0",
+      "seed": 1089544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 62865,
+      "digest": "15ace4f5c7874ca97c8c733c871be79784ba876ae9300153404eae770d92341e"
+    },
+    {
+      "key": "mode1/R8/N2/P0.15",
+      "seed": 1089559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 52504,
+      "digest": "e4131a13bb9614541bc56c6620e7367975a720991a69fdff5b40d1f1d4a46206"
+    },
+    {
+      "key": "mode1/R8/N2/P0.35",
+      "seed": 1089579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 9,
+      "actualMatches": 9,
+      "rngCalls": 94572,
+      "digest": "c41af84bbd9bcc4a989b9e3640f931249e0f5beba2b84b48234d3295426812ae"
+    },
+    {
+      "key": "mode1/R8/N2/P0.6",
+      "seed": 1089604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 9,
+      "actualMatches": 9,
+      "rngCalls": 31779,
+      "digest": "20f1f544ef4480b7503923ef9166b677bc56d96654e1d820606b095f4ed977ed"
+    },
+    {
+      "key": "mode1/R8/N2/P1",
+      "seed": 1089644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 686,
+      "digest": "924eb32adb1f3a1a49ccd67f5818c56d65b44737a8dfbd3b74f9df61aabd70c8"
+    },
+    {
+      "key": "mode1/R8/N8/P0",
+      "seed": 1090144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 63091,
+      "digest": "e9a9ff42faa9e9015803b34dde4a22115ffaa323b21802ac8075898c1fd3edbd"
+    },
+    {
+      "key": "mode1/R8/N8/P0.15",
+      "seed": 1090159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 52742,
+      "digest": "661f8f5733044eb2e427bc7b0cc79f8e449ec8dd1b5593eaac4079f431c40bba"
+    },
+    {
+      "key": "mode1/R8/N8/P0.35",
+      "seed": 1090179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 49264,
+      "digest": "317fe2523879141b675397f9c75d5bd2377d600254a00ee7b6107bdad77a96fa"
+    },
+    {
+      "key": "mode1/R8/N8/P0.6",
+      "seed": 1090204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 7,
+      "actualMatches": 7,
+      "rngCalls": 38921,
+      "digest": "fa48bc56065aa5d1b7ba69b5b0c7f331f83fc84336011cdae0f0a72e33f57c4f"
+    },
+    {
+      "key": "mode1/R8/N8/P1",
+      "seed": 1090244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 921,
+      "digest": "05b0e09033b4199c7ad854d097fab233f9cc4ad0f3a327f61e157d2922553864"
+    },
+    {
+      "key": "mode1/R16/N1/P0",
+      "seed": 1097444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 62820,
+      "digest": "d7d7eed80099fc51db9e74b5785649daae1eb677228d450cad2aea89a9cc7715"
+    },
+    {
+      "key": "mode1/R16/N1/P0.15",
+      "seed": 1097459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 49004,
+      "digest": "a475bb90a412c58bf4aa0f7f9a79a60bafa59f04e271dc4ab0fedef99d381366"
+    },
+    {
+      "key": "mode1/R16/N1/P0.35",
+      "seed": 1097479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 49005,
+      "digest": "ccb47693cdff7408b4a75b27b91a601deca1dc4ceb9d558ee81cdad0e1e4eb8c"
+    },
+    {
+      "key": "mode1/R16/N1/P0.6",
+      "seed": 1097504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 13,
+      "actualMatches": 13,
+      "rngCalls": 17921,
+      "digest": "f27f963c55234a0f71aa0bac09b7824590e63b02ed80fa6b4876ec10656d6780"
+    },
+    {
+      "key": "mode1/R16/N1/P1",
+      "seed": 1097544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 648,
+      "digest": "06d6c15edf9d96d302e3f6bcf18edf7d2894be599f9b7daa3ec5bbe1b0b1d889"
+    },
+    {
+      "key": "mode1/R16/N2/P0",
+      "seed": 1097544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 62857,
+      "digest": "d2825974783a4377891cff2ec0491f2a41a3cc814f5616ce95c241424772e589"
+    },
+    {
+      "key": "mode1/R16/N2/P0.15",
+      "seed": 1097559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 52494,
+      "digest": "bcbd0773f864dc52d89e5e52859e5c9c1bcf2cab01734173e9e2fc204ee026bc"
+    },
+    {
+      "key": "mode1/R16/N2/P0.35",
+      "seed": 1097579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 6,
+      "actualMatches": 6,
+      "rngCalls": 104918,
+      "digest": "40a6fb4536deaa772ae71cea833cd9f519c7a649baf05dbb212094048ac93ac3"
+    },
+    {
+      "key": "mode1/R16/N2/P0.6",
+      "seed": 1097604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 24864,
+      "digest": "60f8291767de54676c39eec7f54d03b7b741d935478176781f329f7bf3ccacda"
+    },
+    {
+      "key": "mode1/R16/N2/P1",
+      "seed": 1097644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 685,
+      "digest": "f8889fdb884667ff992557a83fd3f903f96c2f548627bacfa2d8343ab910c50d"
+    },
+    {
+      "key": "mode1/R16/N8/P0",
+      "seed": 1098144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 63081,
+      "digest": "208b4c2782c447ed6b442231615cf45a7c40cf29be64bbf17fe402d18212a6fb"
+    },
+    {
+      "key": "mode1/R16/N8/P0.15",
+      "seed": 1098159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 5,
+      "actualMatches": 5,
+      "rngCalls": 45804,
+      "digest": "b55dcc34048d39c04e484d9518b885e3706077ac4f4e673d69123b8902e99a9d"
+    },
+    {
+      "key": "mode1/R16/N8/P0.35",
+      "seed": 1098179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 5,
+      "actualMatches": 5,
+      "rngCalls": 45813,
+      "digest": "cbaca42079c03e1ceb0c3b99ce04375ce4e9a95afb96401c75b14551a16208f9"
+    },
+    {
+      "key": "mode1/R16/N8/P0.6",
+      "seed": 1098204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 14,
+      "actualMatches": 14,
+      "rngCalls": 14719,
+      "digest": "0d411ba610c16861f6898c2915efba6aeb79875c58b559cc26298e45070d5c98"
+    },
+    {
+      "key": "mode1/R16/N8/P1",
+      "seed": 1098244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 906,
+      "digest": "aa5aafa84bbafcf543ee99a3531aa40e10b06a4c4c01af19763bb45e0451debe"
+    },
+    {
+      "key": "entities/R4/N1/P0",
+      "seed": 1185444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 285,
+      "digest": "f1c05f5f37af0d6d6a9587f31da1a279db9da09a2ac81d51c0a036fb35373664"
+    },
+    {
+      "key": "entities/R4/N1/P0.15",
+      "seed": 1185459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 2,
+      "actualMatches": 2,
+      "rngCalls": 280,
+      "digest": "0bbce96387e5ac09302543f9f45690da40b5b1e5fa76535d95b80a9b267e45d5"
+    },
+    {
+      "key": "entities/R4/N1/P0.35",
+      "seed": 1185479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 273,
+      "digest": "075a9ee75ab7f72c95462032f72667bb58fef5af760d32dcd0ab2419e8e0b696"
+    },
+    {
+      "key": "entities/R4/N1/P0.6",
+      "seed": 1185504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 252,
+      "digest": "ca11bb06c322c418be1778bd29f9256d9c5e57ae90205cc0e721b30bfbb49dc9"
+    },
+    {
+      "key": "entities/R4/N1/P1",
+      "seed": 1185544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 232,
+      "digest": "6ec8f8a5d118f8e727610b175b57fda66c95f501c8a632cf4a19513446e894db"
+    },
+    {
+      "key": "entities/R4/N2/P0",
+      "seed": 1185544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 301,
+      "digest": "491d14142524e96deef58dc26bfc9ecead5a8074d3636b770ef4cab702a6686d"
+    },
+    {
+      "key": "entities/R4/N2/P0.15",
+      "seed": 1185559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 1,
+      "actualMatches": 1,
+      "rngCalls": 298,
+      "digest": "43fe9cfb9d5b6f0fc2971bd0afbeccb97fc539a85469b9aac3863c85f145188f"
+    },
+    {
+      "key": "entities/R4/N2/P0.35",
+      "seed": 1185579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 538,
+      "digest": "22bc19df6c9b642e170f98598a5337b052243353de37432a71a5584ccce548ba"
+    },
+    {
+      "key": "entities/R4/N2/P0.6",
+      "seed": 1185604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 268,
+      "digest": "d4d7c89cfc4524bd4a2e188f8d661290d7542ea383d7f40af4908db188914d85"
+    },
+    {
+      "key": "entities/R4/N2/P1",
+      "seed": 1185644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 248,
+      "digest": "a65c8225a9a0e733ada9a32fe1b1f200e5a84cef45e82d63e7b1d97b1f63b963"
+    },
+    {
+      "key": "entities/R4/N8/P0",
+      "seed": 1186144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 393,
+      "digest": "2522e5e5ec40462ae1b829f3fcd36e68ad459c4ddb54d7fbe1ff3d8b2d42b042"
+    },
+    {
+      "key": "entities/R4/N8/P0.15",
+      "seed": 1186159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 395,
+      "digest": "23b2312bbfb59aa3d9fd6e193d6c37d96491229ebfdc70af8c47a909a11e519c"
+    },
+    {
+      "key": "entities/R4/N8/P0.35",
+      "seed": 1186179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 7,
+      "actualMatches": 7,
+      "rngCalls": 373,
+      "digest": "75c68e65e8cfb28594c86fa09776d05d42560645cbddc478674bd058bb888ae8"
+    },
+    {
+      "key": "entities/R4/N8/P0.6",
+      "seed": 1186204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 7,
+      "actualMatches": 7,
+      "rngCalls": 370,
+      "digest": "25f140a50050cd7a01b78aa7d9c286c6d01da3dfdc05926b5872358013885439"
+    },
+    {
+      "key": "entities/R4/N8/P1",
+      "seed": 1186244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 338,
+      "digest": "b671d6196f2f1814ff23e2f82e50b6cbd9bb9e5daac9b7b91a8593e262a2bd31"
+    },
+    {
+      "key": "entities/R8/N1/P0",
+      "seed": 1189444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 286,
+      "digest": "49b5b0ec2febf8f0946b13f421fb1772f928a98fed0fe9a79043632e1f54b670"
+    },
+    {
+      "key": "entities/R8/N1/P0.15",
+      "seed": 1189459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 273,
+      "digest": "c83e821bd6a3eff500e9b673c479ea0491e43c8dd608603d1b0c61e1b5528257"
+    },
+    {
+      "key": "entities/R8/N1/P0.35",
+      "seed": 1189479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 6,
+      "actualMatches": 6,
+      "rngCalls": 268,
+      "digest": "39395a3806be0699f2c9ded1386780d3e52aa01e616a8265688ab867e1b1ec66"
+    },
+    {
+      "key": "entities/R8/N1/P0.6",
+      "seed": 1189504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 10,
+      "actualMatches": 10,
+      "rngCalls": 269,
+      "digest": "47aaa7aa5466bed9b675e22dbcdf61e338d1895c6421617c591b5d4e5973be2d"
+    },
+    {
+      "key": "entities/R8/N1/P1",
+      "seed": 1189544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 231,
+      "digest": "9c4532c805e0a50e061894ef1b5edd75cfa3481f5d19e9a5509490f8d2cef3a9"
+    },
+    {
+      "key": "entities/R8/N2/P0",
+      "seed": 1189544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 301,
+      "digest": "2ed58cac1dab261f5d7f4be2a1a92e410ebbacf1c61345e689fd251b6c8afee0"
+    },
+    {
+      "key": "entities/R8/N2/P0.15",
+      "seed": 1189559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 292,
+      "digest": "9abd96c0e8f98620e033a79f561c904cc3b7fefb9d823937e5e6abb480b5d7a0"
+    },
+    {
+      "key": "entities/R8/N2/P0.35",
+      "seed": 1189579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 12,
+      "actualMatches": 12,
+      "rngCalls": 534,
+      "digest": "92859141c21002ead4a8af275d0429866526cb735132f5b60c9cd5a7b0e9fd7a"
+    },
+    {
+      "key": "entities/R8/N2/P0.6",
+      "seed": 1189604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 267,
+      "digest": "15dafff131ee0fcd4245982457d3df445b0c4d9953affff47c4700174dc9a14d"
+    },
+    {
+      "key": "entities/R8/N2/P1",
+      "seed": 1189644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 247,
+      "digest": "0b03da845ebc162002633d52df903d197a23eb61bfc972457be4e8d4ddfadc00"
+    },
+    {
+      "key": "entities/R8/N8/P0",
+      "seed": 1190144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 392,
+      "digest": "815cfaa24eff87dbfaa75933fcc4c02dda9c5a312c22d522dc03415a913d34da"
+    },
+    {
+      "key": "entities/R8/N8/P0.15",
+      "seed": 1190159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 2,
+      "actualMatches": 2,
+      "rngCalls": 387,
+      "digest": "1a252a424d7c4789ac222e85314b71ab534cd9e2b21856bd3aa2231e534aa9b7"
+    },
+    {
+      "key": "entities/R8/N8/P0.35",
+      "seed": 1190179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 5,
+      "actualMatches": 5,
+      "rngCalls": 379,
+      "digest": "b546da5015752cba96921441890a272dc404b0bc8ded6096ac6308a2d81adb6a"
+    },
+    {
+      "key": "entities/R8/N8/P0.6",
+      "seed": 1190204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 360,
+      "digest": "f18cca72431433031e3a80522497595a1ff88c0be90e6f6002d69f87b5e00320"
+    },
+    {
+      "key": "entities/R8/N8/P1",
+      "seed": 1190244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 342,
+      "digest": "6b89a2048df8c7b9e67d384e24a2e22de02b0b110feab673350cac168f537edb"
+    },
+    {
+      "key": "entities/R16/N1/P0",
+      "seed": 1197444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 286,
+      "digest": "7d1377ac96454f571ee224eaf60298c7b7aabd7d343cb23eef75eb15158a405f"
+    },
+    {
+      "key": "entities/R16/N1/P0.15",
+      "seed": 1197459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 277,
+      "digest": "f7d5e712d105afc00499ccc49e5ad69f2dea55365d6d41cd1c1dc2938680881f"
+    },
+    {
+      "key": "entities/R16/N1/P0.35",
+      "seed": 1197479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 277,
+      "digest": "3d11b88ee98ddc43262a17aa0de6cf0db9e29ed25cf5f5bd1258a1de37a1d7e1"
+    },
+    {
+      "key": "entities/R16/N1/P0.6",
+      "seed": 1197504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 12,
+      "actualMatches": 12,
+      "rngCalls": 250,
+      "digest": "bdd9fd5abfe770c489c73e5c4e31114431b71b719549a1edc206af38bc09da7a"
+    },
+    {
+      "key": "entities/R16/N1/P1",
+      "seed": 1197544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 231,
+      "digest": "3d1e4abdd3be4899d071bc63a8d6b3745df837eddf168bc9f49890dee666c40c"
+    },
+    {
+      "key": "entities/R16/N2/P0",
+      "seed": 1197544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 300,
+      "digest": "cc3de0180fa663ae0644cb52edb332c14e8032f0de7823bce89df78ac53c1b3c"
+    },
+    {
+      "key": "entities/R16/N2/P0.15",
+      "seed": 1197559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 5,
+      "actualMatches": 5,
+      "rngCalls": 285,
+      "digest": "73444103da002cdb5bd62952a32295249d2f709f16a5d5051f914e359fdd5b86"
+    },
+    {
+      "key": "entities/R16/N2/P0.35",
+      "seed": 1197579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 13,
+      "actualMatches": 13,
+      "rngCalls": 532,
+      "digest": "40ef023dbecd6b222576c7a0ca7167fc83a62983320a4a541e1c67ee330b128f"
+    },
+    {
+      "key": "entities/R16/N2/P0.6",
+      "seed": 1197604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 13,
+      "actualMatches": 13,
+      "rngCalls": 262,
+      "digest": "42221b8e5ebfa209bb2934446768049e93418e80afec9aa6e21e660b706386f8"
+    },
+    {
+      "key": "entities/R16/N2/P1",
+      "seed": 1197644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 247,
+      "digest": "795d969f80ebc46412164dfa06c0e5cd6e6d6b395b10510b764505ae1675ba15"
+    },
+    {
+      "key": "entities/R16/N8/P0",
+      "seed": 1198144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 401,
+      "digest": "3b17dbfbab042d9118e92cd837b2b5bbee31409e0bb7e613146d9119f408ce11"
+    },
+    {
+      "key": "entities/R16/N8/P0.15",
+      "seed": 1198159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 382,
+      "digest": "7bd41b53e58bb3907fb00a98d12ddcdc4adf361354aa0f2e9497ed58ff88661b"
+    },
+    {
+      "key": "entities/R16/N8/P0.35",
+      "seed": 1198179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 9,
+      "actualMatches": 9,
+      "rngCalls": 368,
+      "digest": "49fdb1c889800aff99b8c18e17edba610e7a50794f36f0334f2f198706fcf9c7"
+    },
+    {
+      "key": "entities/R16/N8/P0.6",
+      "seed": 1198204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 10,
+      "actualMatches": 10,
+      "rngCalls": 366,
+      "digest": "a6c1fb56c1c66a17905134ae0370340dd865b3f09c4f56f619d8705616549636"
+    },
+    {
+      "key": "entities/R16/N8/P1",
+      "seed": 1198244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 340,
+      "digest": "aaa681b33a2ad1c4973db922a2797f6bfdf4a4fa25bd44176b657124f9ea0f11"
+    },
+    {
+      "key": "facets/R4/N1/P0",
+      "seed": 1285444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 285,
+      "digest": "324f31156e85873511218fba10b93cc22ad48e4bbeda63e5f9d1050d16ca1317"
+    },
+    {
+      "key": "facets/R4/N1/P0.15",
+      "seed": 1285459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 5,
+      "actualMatches": 5,
+      "rngCalls": 269,
+      "digest": "8cdeeed7cb946cfa55965ddd8270fd7022137d8107a474d25ae47f48bdf21b4d"
+    },
+    {
+      "key": "facets/R4/N1/P0.35",
+      "seed": 1285479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 278,
+      "digest": "a72b7acefe7624c6ed5ac640f964c3ccec860ea4c862d8a33a87ba215f028a10"
+    },
+    {
+      "key": "facets/R4/N1/P0.6",
+      "seed": 1285504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 253,
+      "digest": "7d9e1369656e83748ff5760eba6623d6dfc0e04813ff8eec14f3025383dcd35d"
+    },
+    {
+      "key": "facets/R4/N1/P1",
+      "seed": 1285544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 235,
+      "digest": "8fe7ca896975a276fba70da90b63ef294101511038464a57f373240d972e04d5"
+    },
+    {
+      "key": "facets/R4/N2/P0",
+      "seed": 1285544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 302,
+      "digest": "193c5d48dd2600123baec230770ed9669e8acc3ecb60e485b020977c83bbc1e6"
+    },
+    {
+      "key": "facets/R4/N2/P0.15",
+      "seed": 1285559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 2,
+      "actualMatches": 2,
+      "rngCalls": 298,
+      "digest": "d5ce31c75486d5744d27fb04a8f8bba6bf9f7d66f74b9eb54f882b848207ca15"
+    },
+    {
+      "key": "facets/R4/N2/P0.35",
+      "seed": 1285579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 13,
+      "actualMatches": 13,
+      "rngCalls": 534,
+      "digest": "8e0288483e7986457c88a5da6a5e9a4e2214b36fbb7c4cf231c300844f4d6fc2"
+    },
+    {
+      "key": "facets/R4/N2/P0.6",
+      "seed": 1285604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 12,
+      "actualMatches": 12,
+      "rngCalls": 268,
+      "digest": "b9e9e7832c32250e654eca931a3efda4012ea26dd9e0af6ddacc957cc6b905a7"
+    },
+    {
+      "key": "facets/R4/N2/P1",
+      "seed": 1285644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 252,
+      "digest": "ad22e6535a0b23e11878a6aededcec3483c1f87330425af823c6adae54a2d5c1"
+    },
+    {
+      "key": "facets/R4/N8/P0",
+      "seed": 1286144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 412,
+      "digest": "24a92c87b488a1b5c3e0f5047af26954e1529fa98330d8e71ad925a0180f8985"
+    },
+    {
+      "key": "facets/R4/N8/P0.15",
+      "seed": 1286159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 7,
+      "actualMatches": 7,
+      "rngCalls": 393,
+      "digest": "486a660f6847f52d5e8d89379105dd152ee074e0a8e0df2d2ea1c931376b3819"
+    },
+    {
+      "key": "facets/R4/N8/P0.35",
+      "seed": 1286179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 6,
+      "actualMatches": 6,
+      "rngCalls": 397,
+      "digest": "0f8e54e56b5d8fadfcc2365c553e0150eb3f72d072af02d7a37e7236243a6a3e"
+    },
+    {
+      "key": "facets/R4/N8/P0.6",
+      "seed": 1286204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 10,
+      "actualMatches": 10,
+      "rngCalls": 388,
+      "digest": "94db00f4d92726cc1d736088d633f7e5007713aeabcf139e408b234e9b1adb13"
+    },
+    {
+      "key": "facets/R4/N8/P1",
+      "seed": 1286244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 365,
+      "digest": "975603418e44675f05fd08654ab10a2b7ce02a14d71d36a8005cb53da19b1ba5"
+    },
+    {
+      "key": "facets/R8/N1/P0",
+      "seed": 1289444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 285,
+      "digest": "a71150cc131117bf4db8307d2549d30ac693f8ab6385c35adbbc244d4349d2f0"
+    },
+    {
+      "key": "facets/R8/N1/P0.15",
+      "seed": 1289459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 6,
+      "actualMatches": 6,
+      "rngCalls": 266,
+      "digest": "34c8fb9c4483b2cc387ea860aef6416f4624b4e3e0dc445cb7c6a13e105bf903"
+    },
+    {
+      "key": "facets/R8/N1/P0.35",
+      "seed": 1289479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 7,
+      "actualMatches": 7,
+      "rngCalls": 265,
+      "digest": "a97365549c9812fbec479ae3ecd8c5c404ad71439e00063790609c926791fc13"
+    },
+    {
+      "key": "facets/R8/N1/P0.6",
+      "seed": 1289504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 12,
+      "actualMatches": 12,
+      "rngCalls": 249,
+      "digest": "0f1a3d2aa090575b72f4f7d251cfdfaad9e710c90feadd82c05f98165a833a01"
+    },
+    {
+      "key": "facets/R8/N1/P1",
+      "seed": 1289544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 234,
+      "digest": "f8ce68252314dcb7df4f292b22aa0f132e9347f074e5bfacb8bbf9bc6cff0d9f"
+    },
+    {
+      "key": "facets/R8/N2/P0",
+      "seed": 1289544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 299,
+      "digest": "cef597c37c6ad9d9b555b2b94f23d392b7ca94ee1a2a513c384cf953a8c694c5"
+    },
+    {
+      "key": "facets/R8/N2/P0.15",
+      "seed": 1289559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 6,
+      "actualMatches": 6,
+      "rngCalls": 286,
+      "digest": "7f2fcc1f36b6b7f667ce1eec1fc8d37c2d4a4880cf9ee82455b2e9cf701cd03a"
+    },
+    {
+      "key": "facets/R8/N2/P0.35",
+      "seed": 1289579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 541,
+      "digest": "be97c8f4dce1fd47804db0d86bdbc9a636c3991c714579397209bb23962e2373"
+    },
+    {
+      "key": "facets/R8/N2/P0.6",
+      "seed": 1289604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 9,
+      "actualMatches": 9,
+      "rngCalls": 279,
+      "digest": "e91f5a9362f207235e622620594a161fc53f3a39dde42e06dec754120402d58a"
+    },
+    {
+      "key": "facets/R8/N2/P1",
+      "seed": 1289644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 253,
+      "digest": "306dc71f2863911b34fb292004b25b59b87aae52c9c6fc1d6713f26dd11e9fe0"
+    },
+    {
+      "key": "facets/R8/N8/P0",
+      "seed": 1290144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 416,
+      "digest": "274f358137a8ee73e5edc139089826db59ce90864667012252451ec2679a22cf"
+    },
+    {
+      "key": "facets/R8/N8/P0.15",
+      "seed": 1290159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 2,
+      "actualMatches": 2,
+      "rngCalls": 406,
+      "digest": "73d3199aa92c882158fe92af5d63a08bde98a793779c51e373f544daf4675eea"
+    },
+    {
+      "key": "facets/R8/N8/P0.35",
+      "seed": 1290179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 2,
+      "actualMatches": 2,
+      "rngCalls": 408,
+      "digest": "dea4a6dd177c93359c9fbfbd6409c907195b30358fbc11f5fc0c0a6aa6959cba"
+    },
+    {
+      "key": "facets/R8/N8/P0.6",
+      "seed": 1290204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 10,
+      "actualMatches": 10,
+      "rngCalls": 387,
+      "digest": "1b03aeea208680c7a8a86296911fd2375e9835082d65b75fcb5e1d7250960fba"
+    },
+    {
+      "key": "facets/R8/N8/P1",
+      "seed": 1290244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 367,
+      "digest": "9070ea8ab63a966793d9a847ddad86950a8b8d7d79e1606ccb9c48d1fdcf28f3"
+    },
+    {
+      "key": "facets/R16/N1/P0",
+      "seed": 1297444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 286,
+      "digest": "ea2b3c480aa4053ffa795d2064eee5c2d63793d95525b22ad4cc9c1bd8df63b4"
+    },
+    {
+      "key": "facets/R16/N1/P0.15",
+      "seed": 1297459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 1,
+      "actualMatches": 1,
+      "rngCalls": 280,
+      "digest": "a796ce977dbdd974b53346af1cc8896e1f8787e8c3e60738b16b30b4d569e8b9"
+    },
+    {
+      "key": "facets/R16/N1/P0.35",
+      "seed": 1297479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 275,
+      "digest": "a5cb313c6bfd5fef0b78418eb81ba01bd10d962b10be5f6f73ea11e6f3107e38"
+    },
+    {
+      "key": "facets/R16/N1/P0.6",
+      "seed": 1297504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 9,
+      "actualMatches": 9,
+      "rngCalls": 261,
+      "digest": "cef1abcd12a3e36dd6e87d21b34f1d08d74d735f79adb390110b11f6e3333142"
+    },
+    {
+      "key": "facets/R16/N1/P1",
+      "seed": 1297544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 235,
+      "digest": "50d5797ca0f614dc0f0abb8c12ce70cb615c0e38a3b53f755064e4e8c744a3dc"
+    },
+    {
+      "key": "facets/R16/N2/P0",
+      "seed": 1297544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 303,
+      "digest": "7180f24ddf05ffbc1289e08c8495a9d77e6a32810c3d7d394de5599e59eee794"
+    },
+    {
+      "key": "facets/R16/N2/P0.15",
+      "seed": 1297559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 292,
+      "digest": "339b6e9c5174ee7d8e7654edcbc82007923b53c2139d80bcf68a66cbd50ae2b8"
+    },
+    {
+      "key": "facets/R16/N2/P0.35",
+      "seed": 1297579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 7,
+      "actualMatches": 7,
+      "rngCalls": 552,
+      "digest": "e0dbaf9cbc8234a3e4097582e85ca53107c10f8edaf4c2c653cb6aaf360b1f44"
+    },
+    {
+      "key": "facets/R16/N2/P0.6",
+      "seed": 1297604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 272,
+      "digest": "60573cad0b6428e6e6d7a22b1f86e178ca6c05a812a8a0180cf9e95c65f2ecfe"
+    },
+    {
+      "key": "facets/R16/N2/P1",
+      "seed": 1297644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 253,
+      "digest": "cc4f3f383e802d7776cace6aed34f4d2c5b3ace3c77d1e0e79c8b23832cf7bde"
+    },
+    {
+      "key": "facets/R16/N8/P0",
+      "seed": 1298144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 417,
+      "digest": "31d06db516eb7b2913b593fdaa60aee8f37ddc9df6bdda70eefa9509c16a5e42"
+    },
+    {
+      "key": "facets/R16/N8/P0.15",
+      "seed": 1298159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 1,
+      "actualMatches": 1,
+      "rngCalls": 409,
+      "digest": "c15de2bcc756bf72d7101ddaa28cad5361f4040671a74fef1bb8f9a1e5c67d41"
+    },
+    {
+      "key": "facets/R16/N8/P0.35",
+      "seed": 1298179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 404,
+      "digest": "219e8a8b805e63f15b8ceced8c5ef6570513393b9732495ce12e3c32384aa397"
+    },
+    {
+      "key": "facets/R16/N8/P0.6",
+      "seed": 1298204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 12,
+      "actualMatches": 12,
+      "rngCalls": 382,
+      "digest": "218e4af9d6f530cd83f0f84c0b44fcd88a41f5339ef6bf00f49ff6d76af0921f"
+    },
+    {
+      "key": "facets/R16/N8/P1",
+      "seed": 1298244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 365,
+      "digest": "9e42eddaa22d46c4680d888e212c9082a23d4361f0a4a0b9991fc846961c15df"
+    },
+    {
+      "key": "worlds/R4/N1/P0",
+      "seed": 1385444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 893,
+      "digest": "f3a604c2c44e84ebe09b3392baf17236bec6046d4a6e5baded8ed79d9f4d4ff0"
+    },
+    {
+      "key": "worlds/R4/N1/P0.15",
+      "seed": 1385459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 875,
+      "digest": "e2fd5a9f3e06401076768d5c33ce9ecc6b6d2c0e50be92d8c319eb21b280aa23"
+    },
+    {
+      "key": "worlds/R4/N1/P0.35",
+      "seed": 1385479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 9,
+      "actualMatches": 9,
+      "rngCalls": 853,
+      "digest": "98fd2b6e345ad9b72fd0a7417e62ced8eb784ee8a3fa9c37329a56753200879e"
+    },
+    {
+      "key": "worlds/R4/N1/P0.6",
+      "seed": 1385504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 10,
+      "actualMatches": 10,
+      "rngCalls": 856,
+      "digest": "2d338bc9bc2bfb71083677ebac188c6c4d78419db04cc0619d8ab83e95eb0a8d"
+    },
+    {
+      "key": "worlds/R4/N1/P1",
+      "seed": 1385544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 826,
+      "digest": "ebced210d93e09a7d07f679a10d852185be6495c0ce8d38a330d23d8e6737d64"
+    },
+    {
+      "key": "worlds/R4/N2/P0",
+      "seed": 1385544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 966,
+      "digest": "ed933268b25a871d109033d03ca560d7bb82d07ba6036407460288ac4f824ab4"
+    },
+    {
+      "key": "worlds/R4/N2/P0.15",
+      "seed": 1385559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 2,
+      "actualMatches": 2,
+      "rngCalls": 953,
+      "digest": "1338949bbbf0112345ad792d444a1ffcab2e5f79d36855919bf8a9275974189f"
+    },
+    {
+      "key": "worlds/R4/N2/P0.35",
+      "seed": 1385579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 1725,
+      "digest": "f25d5908bb41779571ae84979989035254489745c0a4933c7284ee4bb84fbba3"
+    },
+    {
+      "key": "worlds/R4/N2/P0.6",
+      "seed": 1385604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 15,
+      "actualMatches": 15,
+      "rngCalls": 908,
+      "digest": "08e196510a04b668c9f6634ef570bf54bea64a43f1216841826d6b150b51f925"
+    },
+    {
+      "key": "worlds/R4/N2/P1",
+      "seed": 1385644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 900,
+      "digest": "ac2d3514f1a032193bbf1765e171800ef1fa1669e3838c4c8be09cf7ddc158cb"
+    },
+    {
+      "key": "worlds/R4/N8/P0",
+      "seed": 1386144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 1382,
+      "digest": "c453f13536199ce0aa848be898f023eb32af6459b0c5cc1948324f7451dca710"
+    },
+    {
+      "key": "worlds/R4/N8/P0.15",
+      "seed": 1386159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 1374,
+      "digest": "a94b5e785937a0f73b80159caaf0d15a5a124ea97ff8e40426c6fb05b9813cdc"
+    },
+    {
+      "key": "worlds/R4/N8/P0.35",
+      "seed": 1386179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 9,
+      "actualMatches": 9,
+      "rngCalls": 1349,
+      "digest": "968638efa177ac9d68c5caa2ca5dfb6d3fd8eb349be20392edebb702bb2b277a"
+    },
+    {
+      "key": "worlds/R4/N8/P0.6",
+      "seed": 1386204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 9,
+      "actualMatches": 9,
+      "rngCalls": 1354,
+      "digest": "9a96c46b9fe56ea78b37fdff43682174a16832d5f12d85227698139d9fee22e0"
+    },
+    {
+      "key": "worlds/R4/N8/P1",
+      "seed": 1386244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 1321,
+      "digest": "6475f73b5acad5498c5ef0aa4f8ae8017def3356b284e889ce2f203bb8b0e3cb"
+    },
+    {
+      "key": "worlds/R8/N1/P0",
+      "seed": 1389444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 881,
+      "digest": "ca5ab50df3a62ddff622de062a3f18ce34d38645dd6e1e12da096d9d7fd65d18"
+    },
+    {
+      "key": "worlds/R8/N1/P0.15",
+      "seed": 1389459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 883,
+      "digest": "4acc4d9d099601f85be58b561d27ea0ba9b60eda2acba7f76facdcf31057f1f1"
+    },
+    {
+      "key": "worlds/R8/N1/P0.35",
+      "seed": 1389479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 883,
+      "digest": "64ee3b8d54f25a1368d4eaef18a7a19cc83186890b099b236dbe8931d1088f3c"
+    },
+    {
+      "key": "worlds/R8/N1/P0.6",
+      "seed": 1389504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 10,
+      "actualMatches": 10,
+      "rngCalls": 856,
+      "digest": "d852d4b284157b771572a2bdca2b65d8932f6e28846e57d2ae6bdd6e47373373"
+    },
+    {
+      "key": "worlds/R8/N1/P1",
+      "seed": 1389544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 827,
+      "digest": "90a9a09299a163c57a43253f7806519dae0a35220509f020002e02a92ebc8c4c"
+    },
+    {
+      "key": "worlds/R8/N2/P0",
+      "seed": 1389544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 970,
+      "digest": "57614dd6539733560755efaa041088dd9ed80b9a3ade1c71dbffbf95ae71116f"
+    },
+    {
+      "key": "worlds/R8/N2/P0.15",
+      "seed": 1389559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 3,
+      "actualMatches": 3,
+      "rngCalls": 949,
+      "digest": "42a3752e3eeda6f579e5b818ff286735b7df6212a16abbcfe94f2ed243419cfd"
+    },
+    {
+      "key": "worlds/R8/N2/P0.35",
+      "seed": 1389579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 8,
+      "actualMatches": 8,
+      "rngCalls": 1749,
+      "digest": "b75544bf25d895ffa11b9815ba42e168268ecf02407f69ceb4fe3312cd613af5"
+    },
+    {
+      "key": "worlds/R8/N2/P0.6",
+      "seed": 1389604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 12,
+      "actualMatches": 12,
+      "rngCalls": 915,
+      "digest": "cd569f5b056fdfd39792e763105a9f61da96d995f98906aa9581677d0c3e6484"
+    },
+    {
+      "key": "worlds/R8/N2/P1",
+      "seed": 1389644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 900,
+      "digest": "fb988872ab9a5fc145e272c9bbe94e5335b642de50071860a8332886fb5b87c6"
+    },
+    {
+      "key": "worlds/R8/N8/P0",
+      "seed": 1390144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 1396,
+      "digest": "287b1954ade49f2275361bfd5fd536faa6b27f09b599ed36264f13fc47c3590d"
+    },
+    {
+      "key": "worlds/R8/N8/P0.15",
+      "seed": 1390159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 2,
+      "actualMatches": 2,
+      "rngCalls": 1371,
+      "digest": "fa174ed3d4b18f6f5c98f03c19537cc38fc9c3c1074f60f917aa6ca27f268185"
+    },
+    {
+      "key": "worlds/R8/N8/P0.35",
+      "seed": 1390179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 1374,
+      "digest": "de86fb0903dd402c915d3191da0c2d856357fe21d3b3efb958855c41b013f439"
+    },
+    {
+      "key": "worlds/R8/N8/P0.6",
+      "seed": 1390204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 10,
+      "actualMatches": 10,
+      "rngCalls": 1363,
+      "digest": "4a51b4114b6bc88dad58c30847d35630c6734208d3915e43e5438efc83673c14"
+    },
+    {
+      "key": "worlds/R8/N8/P1",
+      "seed": 1390244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 1323,
+      "digest": "b9298849dec63e7ce6e727c3216590adc506a2876f0af394ed3774a716af671e"
+    },
+    {
+      "key": "worlds/R16/N1/P0",
+      "seed": 1397444,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 887,
+      "digest": "37862de8d08c0fa62f63db9a491f38868567fecbe3c7b95c4ada2bc43b364ac3"
+    },
+    {
+      "key": "worlds/R16/N1/P0.15",
+      "seed": 1397459,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 4,
+      "actualMatches": 4,
+      "rngCalls": 877,
+      "digest": "4b6efc0072cc2208c78fc2735266c251a3587564f4a2ef4586af04968b25c700"
+    },
+    {
+      "key": "worlds/R16/N1/P0.35",
+      "seed": 1397479,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 5,
+      "actualMatches": 5,
+      "rngCalls": 870,
+      "digest": "1e49fd09ea070a09a9656c4fbbbb8d1163f612143f673dded661be81b9cbf1ae"
+    },
+    {
+      "key": "worlds/R16/N1/P0.6",
+      "seed": 1397504,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 12,
+      "actualMatches": 12,
+      "rngCalls": 847,
+      "digest": "9db86670b345286924ea25138fcb4cc6c5a8cf39b2eb7631b2cea4fe9bac1aec"
+    },
+    {
+      "key": "worlds/R16/N1/P1",
+      "seed": 1397544,
+      "trials": 19,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 827,
+      "digest": "e50d5d069e211eff4c9f5cd81ec99463adc2923210184b1e245dc56dac27e15a"
+    },
+    {
+      "key": "worlds/R16/N2/P0",
+      "seed": 1397544,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 954,
+      "digest": "b6dfbaca84946164a629135cde787db3500211998405ac73ee6244b7d3c98960"
+    },
+    {
+      "key": "worlds/R16/N2/P0.15",
+      "seed": 1397559,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 1,
+      "actualMatches": 1,
+      "rngCalls": 962,
+      "digest": "2238da64cef9c8976c2c9bc40e6a32f4837d18d7e18898523b0f62db9d274064"
+    },
+    {
+      "key": "worlds/R16/N2/P0.35",
+      "seed": 1397579,
+      "trials": 38,
+      "scoredTrials": 36,
+      "requestedMatches": 10,
+      "actualMatches": 10,
+      "rngCalls": 1743,
+      "digest": "80e4af3f73ecaff86f051616015d1e71010b8e02e92be1e0574bf27f86d2abd6"
+    },
+    {
+      "key": "worlds/R16/N2/P0.6",
+      "seed": 1397604,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 11,
+      "actualMatches": 11,
+      "rngCalls": 919,
+      "digest": "68ec3b5bfe7f6e07eb1d287cf9e87796168e24c3ccfda456ec297c109a988cb0"
+    },
+    {
+      "key": "worlds/R16/N2/P1",
+      "seed": 1397644,
+      "trials": 20,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 896,
+      "digest": "21b8bdbf5a6a1111e211318d71b2a21f667886f58d3d10a7448accebd291dc07"
+    },
+    {
+      "key": "worlds/R16/N8/P0",
+      "seed": 1398144,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 1382,
+      "digest": "ec249932618e97599e09b87c68ff181388db4d1ee15927bfd9aafecb9c514618"
+    },
+    {
+      "key": "worlds/R16/N8/P0.15",
+      "seed": 1398159,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 0,
+      "actualMatches": 0,
+      "rngCalls": 1391,
+      "digest": "4bc2dd3d7caad0e2bbbff8bbd30e9bd9615e7427afa3ce78f2550f980eecf4e5"
+    },
+    {
+      "key": "worlds/R16/N8/P0.35",
+      "seed": 1398179,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 5,
+      "actualMatches": 5,
+      "rngCalls": 1366,
+      "digest": "10e4c5d729d64c80a18ab26d25c42feb23f2e5980fa1a11de83ab27fe725d7d5"
+    },
+    {
+      "key": "worlds/R16/N8/P0.6",
+      "seed": 1398204,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 14,
+      "actualMatches": 14,
+      "rngCalls": 1338,
+      "digest": "19dd061675f7ccbb0ad79cc47bd52a314dc16854c3930b723a9c53b8018317bd"
+    },
+    {
+      "key": "worlds/R16/N8/P1",
+      "seed": 1398244,
+      "trials": 26,
+      "scoredTrials": 18,
+      "requestedMatches": 18,
+      "actualMatches": 18,
+      "rngCalls": 1326,
+      "digest": "7f03ab78b812d0443ceb1a2e04cca987395fe9b14ea163a93916d018e3ce00d3"
+    }
+  ]
+}

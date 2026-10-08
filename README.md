@@ -40,17 +40,17 @@ With listening off, **Response time after speech** controls an optional scored d
 
 ## What counts as a match?
 
-Each main reasoning trial contains two premises and a candidate conclusion involving three letters. The premises determine a spatial relation; the candidate may or may not be entailed by them. Build the spatial scene from the premises and treat the candidate as a claim, not an additional established fact.
+Each main reasoning trial contains **three equal-status relational statements** involving three letters. Every statement participates in N-back matching. No statement is a conclusion, and no statement is restricted to its original position. Compare the complete stated pattern, including any relational conflict, with the trial exactly N places earlier.
 
-**Spatial inference convention:** each premise denotes an equal-length unit step, including diagonal directions. The candidate asserts only the resulting bearing, not a unit distance. The core rounds the end-to-end bearing to the nearest of sixteen compass points, choosing clockwise at an exact halfway boundary. Generated trials keep the premises, candidate and derived answer within the chosen 4/8/16-direction pool. This explicit metric convention matters: bare real-world compass statements without distances would not generally determine the same precise intermediate bearings.
+**Separate inference convention:** Mode 1’s retained K/L matrix question and Mode 2’s optional practice treat current Statements 1 and 2 as equal-length unit steps, including diagonals. They check the bearing between Statement 3’s endpoint letters. The core rounds that bearing to the nearest of sixteen compass points, clockwise at an exact halfway boundary. This game convention is independent of N-back matching; inferred directions never replace the written statements. Bare real-world compass statements without distances do not generally determine the same precise intermediate bearings.
 
 The main modes retain **three statements per trial** and their existing answer layouts: Mode 1 uses the five-decision matrix, and Mode 2 uses one Match/No Match response.
 
-N-back comparisons use the trial exactly N positions earlier. Matching requires a single consistent one-to-one mapping between the historical and current letters. Letter names may change, all three statements may exchange positions, and reversed wording is equivalent only when its compass direction is also reversed. The third statement has no privileged N-back position; its within-trial inference role remains separate. Compass directions must match exactly: adjacent directions, an incorrect letter pair, or reversing endpoints without reversing direction do not count.
+N-back comparisons use the trial exactly N positions earlier. Matching requires a single consistent one-to-one mapping between the historical and current letters. Letter names may change, all three statements may exchange positions, and reversed wording is equivalent only when its compass direction is also reversed. The third statement has no privileged N-back position; any separate within-trial diagnostic does not control historical matching. Compass directions and endpoints must match exactly under the chosen mapping. Reversal requires the opposite direction under that mapping; another global renaming is allowed only when it preserves the complete pattern.
 
 ### Mode 1 — Relational reasoning
 
-Apply the **Da Vinci cross-domain method**: build a concrete world from the two clues, then reconstruct the same relationships in a different domain. Preserve directions and entity roles while changing what the letters represent. Evaluate the candidate as a claim; it does not become a fact merely because it is part of the imagined scene.
+Apply the **Da Vinci cross-domain method**: build a concrete world from the stated relationships, then reconstruct the same pattern in a different domain. Preserve all directions, conflicts and entity roles while changing what the letters represent.
 
 When entering responses, answer all five decisions on **every trial**, including the initial N memory-fill trials:
 
@@ -59,14 +59,14 @@ When entering responses, answer all five decisions on **every trial**, including
 | Statement 1 matches the N-back structure | A | S |
 | Statement 2 matches the N-back structure | D | F |
 | Statement 3 matches the N-back structure | H | J |
-| Statement 3 is entailed by the current premises | K | L |
+| Separate check: current Statements 1 and 2 entail Statement 3 | K | L |
 | Complete triad matches the N-back structure | Space | N |
 
 Buttons provide the same choices. Each answer is locked after entry and gets immediate feedback. Entering all five advances after feedback when **Advance by trial response** is enabled; otherwise the trial stays until its finite response interval ends. During memory fill, no historical target exists, so the three statement-match answers and complete-triad answer are **No**; judge current-trial entailment normally.
 
 Statement matches are evaluated together under a coherent letter mapping and statement assignment, not as independent visual similarities. Current-trial entailment is a separate decision from historical matching. A complete-triad match requires all three statements to align.
 
-The alignment first maximizes the number of matching statements. If equally good alignments disagree on the three statement answers, the tie rule compares answers from Statement 1 onward and prefers **No** at the first difference. Thus `[No, Yes, Yes]` precedes `[Yes, No, Yes]`. This determines one reproducible answer vector; it does not affect current-trial entailment. Entailment requires the exact relation between the two ends of the two-premise chain. Merely repeating one premise using its own endpoint pair does not satisfy this question.
+The alignment first maximizes the number of matching statements. If equally good alignments disagree on the three statement answers, the tie rule compares answers from Statement 1 onward and prefers **No** at the first difference. Thus `[No, Yes, Yes]` precedes `[Yes, No, Yes]`. This determines one reproducible answer vector; it does not affect current-trial entailment. For the separate K/L check, current Statements 1 and 2 must form a connected three-letter chain and Statement 3 must give its exact end-to-end relation. Repeating one of the first two statements on its own endpoint pair does not satisfy that additional check. If those two statements cannot establish an end-to-end bearing, K/L is No and all N-back comparisons still proceed independently.
 
 After memory fill, every generated non-match preserves exactly two coherent statements and changes one relation. Letter presentation now varies independently of the requested match: a trial can retain **zero, one or two** letter names from its N-back target, and letters can change relational roles. There is no required shared letter with the immediately preceding trial. A soft random weighting based on the most recent **32 trials** reduces repeated names and long streaks without forcing a predictable rotation or guaranteeing a hard streak limit. Exposure history resets with a new session. These presentation choices do not replace the structural scoring rule.
 
@@ -84,7 +84,7 @@ Each letter denotes one stable entity throughout a trial. Its aspects share its 
 | Multiple aspects per entity | Each endpoint occurrence can express a different operational aspect of the same entity. Preserve which aspect participates in each relationship. |
 | Worlds within worlds | Each outer entity owns a complete inner triad. Match all inner structures under consistent local bijections, keep them attached to the correct outer entities, and match the outer structure. One inner layer is used. |
 
-Worlds use an explicit game rule: **If the inner candidate follows from its premises, this world projects outward; otherwise it receives inward.** The inner category/form/endpoint bindings remain part of the match identity. Equal output states do not make different inner structures equivalent. Inner entity letters are local to their containing world. This is an explicit extension of the game, not an inferred category algebra.
+Worlds retain a separate imagination rule: **if inner Statements 1 and 2 imply inner Statement 3 under the equal-step convention, this world projects outward; otherwise it receives inward.** This inferred output is excluded from N-back matching. The complete inner category/form/endpoint graph and its attachment to the outer entity still matter, with all three inner statements allowed to change places under a consistent local bijection. Equal outputs do not make different inner patterns equivalent; changing only this derived output does not make equivalent stated patterns different. Inner entity letters are local to their containing world. This is an explicit practice rule, not an inferred category algebra.
 
 The first N trials are unscored memory fill. A finite response-time setting gives them that full interval after speech; listening mode follows its start-to-start interval. With untimed entered responses, memory fill advances shortly after successful speech. Only in this untimed case, when speech is silent or unavailable, **Remember this world — Continue** lets the user finish reading before advancing. Match/No Match remain unavailable during memory fill. Subsequent trials accept one **Match** or **No Match** response after speech, subject to the chosen deadline and advancement setting. Close non-matches can alter a category, form, endpoint-role binding, direction or inner-world binding. Remembering only the compass shape or the set of vocabulary words is insufficient. Use **F/J** for Match and **D/K** for No Match, or the on-screen buttons.
 
@@ -92,19 +92,19 @@ The first N trials are unscored memory fill. A finite response-time setting give
 
 | Line | Trial 1 | Trial 2 |
 | --- | --- | --- |
-| Premise 1 | Outer Connection H is south of Projection D. | Multiplication Z is north of Outer Projection Y. |
-| Premise 2 | Outer Projection D is south of Multiplication C. | Projection Y is north of Outer Connection X. |
-| Candidate | Projection C is north of Inner Division H. | Inner Division X is south of Projection Z. |
+| Statement 1 | Outer Connection H is south of Projection D. | Multiplication Z is north of Outer Projection Y. |
+| Statement 2 | Outer Projection D is south of Multiplication C. | Projection Y is north of Outer Connection X. |
+| Statement 3 | Projection C is north of Inner Division H. | Inner Division X is south of Projection Z. |
 
-**Match:** H→X, D→Y, C→Z. The premises swap order and all three statements invert equivalently. Every endpoint descriptor retains its relational role.
+**Match:** H→X, D→Y, C→Z. Statements 1 and 2 swap order and all three statements invert equivalently. Every endpoint descriptor retains its relational role.
 
-Swap only `Multiplication Z` and `Projection Z` between Trial 2's first and third lines: the result is **No Match**. The vocabulary and geometry remain the same, but two aspects are attached to different relationships. Moving a complete statement is allowed; moving only its endpoint descriptor changes its meaning. Likewise, the candidate's logical truth and its historical match are separate: two structurally identical false candidates can form a memory match.
+Swap only `Multiplication Z` and `Projection Z` between Trial 2's first and third lines: the result is **No Match**. The vocabulary and geometry remain the same, but two aspects are attached to different relationships. Moving a complete statement is allowed; moving only its endpoint descriptor changes its meaning. Likewise, an internal relational conflict does not disqualify a memory match: the full stated pattern is compared under one shared mapping.
 
 #### Da Vinci cross-domain practice
 
 Use the category meanings to construct one integrated concrete world and reconstruct its relational pattern in a distant domain. Preserve each entity, its operational aspects and all written relationships. The domain cue and self-written stories do not change the formal match identity and are not automatically graded. Compass directions have no permanently assigned category meanings.
 
-Outside listening mode, after every six scored responses, optional practice pauses the session clock without adding or replacing an N-back trial. Derive the candidate subject's direction relative to its object from the two premises. Then reverse **both premise direction codes**, keeping their endpoints and facets fixed, and derive the new direction. This is a spatial intervention, distinct from equivalent sentence inversion. Practice feedback is separate from N-back accuracy and response-time measurements. Each question's first checked answer is retained for the separate practice metric; feedback retries remain available for learning. Optional prompts/notes support cross-domain reconstruction, an explicit causal rule, a predicted consequence and a boundary where the analogy breaks. Notes remain in the open session and are not graded or persisted to History. **Continue training** also permits skipping practice.
+Outside listening mode, after every six scored responses, optional practice pauses the session clock without adding or replacing an N-back trial. Derive Statement 3’s subject direction relative to its object from current Statements 1 and 2 under the equal-step convention. Then reverse **the direction codes of Statements 1 and 2**, keeping their endpoints and facets fixed, and derive the new direction. This is a spatial intervention, distinct from equivalent sentence inversion. Practice feedback is separate from N-back accuracy and response-time measurements. Each question's first checked answer is retained for the separate practice metric; feedback retries remain available for learning. Optional prompts/notes support cross-domain reconstruction, an explicit causal rule, a predicted consequence and a boundary where the analogy breaks. Notes remain in the open session and are not graded or persisted to History. **Continue training** also permits skipping practice.
 
 Causal predictions need an explicit rule in the imagined model: compass position alone does not establish causation. No rule such as “Division plus Projection equals Connection” is used. The guide includes the nine-category, three-form operational glossary. In particular, Outer Connection means a connected member/endpoint of a linking medium, and unmarked Projection spans source, trajectory and destination.
 

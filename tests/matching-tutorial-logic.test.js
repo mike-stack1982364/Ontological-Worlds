@@ -74,7 +74,8 @@ test('the visible matching tutorial teaches the live key meanings and palette', 
   assert.strictEqual(dialog.getAttribute('role'), 'dialog');
   assert.match(dialog.textContent, /A, D, H, K and SPACEBAR/);
   assert.match(dialog.textContent, /single best valid shared alignment/);
-  assert.match(dialog.textContent, /exact end-to-end conclusion/);
+  assert.match(dialog.textContent, /all (?:three|3) (?:current )?statements/i);
+  assert.doesNotMatch(dialog.textContent, /candidate conclusion|proposed end-to-end conclusion|pair(?:ed)? (?:it )?only with old Statement 3|two allowed premise orders/i);
   const expectedLegend = [
     ['A · D · H', 'LIGHT BLUE = THIS STATEMENT MATCHES', 'rgb(217, 240, 255)'],
     ['S · F · J', 'DARK BLUE = THIS STATEMENT DOES NOT MATCH', 'rgb(18, 58, 109)'],

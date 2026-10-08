@@ -134,7 +134,7 @@
   }
   function statements(trial) {
     if (!trial || !Array.isArray(trial.premises) || trial.premises.length !== 2 || !trial.conclusion) {
-      throw new Error('Mode 2 requires exactly two premises and one candidate conclusion.');
+      throw new Error('Mode 2 requires exactly three displayed relational statements.');
     }
     return [...trial.premises, trial.conclusion];
   }
@@ -210,7 +210,10 @@
     if (trial.worldRule != null && trial.worldRule !== WORLD_RULE) throw new Error('Unknown inner-world dependency rule.');
     if (trial.outputFacet != null) {
       validateFacet(trial.outputFacet);
-      if (facetKey(trial.outputFacet) !== facetKey(outputFacet(trial))) throw new Error('World output does not follow the stated dependency rule.');
+      // Output is a separate practice result, never a fourth stated relation.
+      // Slot permutations may change or invalidate that independent inference
+      // without changing any of the three relationships being remembered.
+      if (!comparisonOnly && facetKey(trial.outputFacet) !== facetKey(outputFacet(trial))) throw new Error('World output does not follow the stated dependency rule.');
     }
     return { letters, resolution, complexity, evaluation };
   }
@@ -234,7 +237,7 @@
   function attachmentSignatures(trial) {
     if (complexityOf(trial) !== 'worlds') return {};
     return Object.fromEntries(trialLetters(trial).map(letter => [letter,
-      `${WORLD_RULE}|OUTPUT:${facetKey(outputFacet(trial.worlds[letter]))}|${signatureValidated(trial.worlds[letter])}`]));
+      signatureValidated(trial.worlds[letter])]));
   }
   function signatureValidated(trial) {
     const letters = trialLetters(trial);
@@ -339,24 +342,20 @@
     return `${facetLabel(statement.subjectFacet)} ${statement.subject} is ${requireCore().direction(statement.relation).name} of ${facetLabel(statement.objectFacet)} ${statement.object}`;
   }
   function renderOntologicalTrial(trial) {
-    validateTrial(trial);
-    const outer = statements(trial).map((statement, index) => `${index < 2 ? `Premise ${index + 1}` : 'Candidate'}: ${renderStatement(statement)}.`).join('\n');
+    validateTrial(trial, 0, undefined, true);
+    const outer = `${statements(trial).map(renderStatement).join('; ')}.`;
     if (complexityOf(trial) !== 'worlds') return outer;
     return outer + '\n\n' + trialLetters(trial).map(letter => {
       const inner = trial.worlds[letter];
-      return `Inside world ${letter} — infer its output using the world rule:\n${renderOntologicalTrial(inner)}`;
-    }).join('\n\n') + `\n\nWorld rule: ${WORLD_RULE}`;
+      return `Inside world ${letter}:\n${renderOntologicalTrial(inner)}`;
+    }).join('\n\n');
   }
   function explainTrial(trial, target) {
-    const result = evaluate(trial), c = requireCore(), end = trial.conclusion;
-    const nested = complexityOf(trial) === 'worlds' ? ' ' + trialLetters(trial).map(letter => {
-      const output = outputFacet(trial.worlds[letter]);
-      return `World ${letter}: its inner candidate ${output.form === 'O' ? 'follows' : 'does not follow'}, so its output is ${facetLabel(output)}.`;
-    }).join(' ') : '';
-    const spatial = `The two premises put ${end.subject} ${c.direction(result.expectedRelation).name} of ${end.object}. The candidate ${result.isEntailed ? 'follows' : 'does not follow'}.${nested}`;
-    if (!target) return `${spatial} A history match separately requires every endpoint category, perspective, relationship and inner world to fit one consistent letter map.`;
+    validateTrial(trial, 0, undefined, true);
+    const rule = 'All three statements have the same N-back role. Each endpoint category, perspective and relationship must fit one consistent letter map, in any statement order. Inner worlds keep their outer attachments and use their own consistent local maps. Separate practice inferences do not determine the memory match.';
+    if (!target) return rule;
     const comparison = compare(target, trial);
-    return `${comparison.isMatch ? 'Match: all endpoint bindings and relationships fit one consistent letter map.' : 'No Match: no single letter map preserves the complete structure.'} ${spatial}`;
+    return `${comparison.isMatch ? 'Match: all endpoint bindings and relationships fit one consistent letter map.' : 'No Match: no single letter map preserves the complete structure.'} ${rule}`;
   }
   function randomFacet(rng, excluding, exposure) {
     const pool = ONTOLOGY_CATEGORIES.flatMap(category => ['I', 'O', 'A'].map(form => ({ category, form })))
@@ -549,13 +548,14 @@
     refreshTrial(changed);
     const counterfactual = evaluate(changed);
     const candidate = renderStatement(trial.conclusion);
-    const spatial = Object.freeze({ question: `Does this candidate follow from these two premises: ${candidate}?`, answer: original.isEntailed, options: Object.freeze([true, false]), expectedRelation: original.expectedRelation, explanation: explainTrial(trial) });
+    const spatial = Object.freeze({ question: `Separate practice: does Statement 3 follow from Statements 1 and 2: ${candidate}?`, answer: original.isEntailed, options: Object.freeze([true, false]), expectedRelation: original.expectedRelation,
+      explanation: `For this practice question only, Statements 1 and 2 place ${trial.conclusion.subject} ${requireCore().direction(original.expectedRelation).name} of ${trial.conclusion.object}. Statement 3 ${original.isEntailed ? 'follows' : 'does not follow'}. This does not determine the N-back answer.` });
     return Object.freeze({
       spatial,
       inference: spatial,
-      counterfactual: Object.freeze({ question: `Reverse the direction in both premises, keeping every letter and facet fixed. Does the unchanged candidate now follow: ${candidate}?`, answer: counterfactual.isEntailed, options: Object.freeze([true, false]),
+      counterfactual: Object.freeze({ question: `Reverse the direction in Statements 1 and 2, keeping every letter and facet fixed. Does unchanged Statement 3 now follow: ${candidate}?`, answer: counterfactual.isEntailed, options: Object.freeze([true, false]),
         expectedRelation: counterfactual.expectedRelation, trial: changed,
-        explanation: `The endpoint relation changes from ${requireCore().direction(original.expectedRelation).name} to ${requireCore().direction(counterfactual.expectedRelation).name}. The unchanged candidate ${counterfactual.isEntailed ? 'now follows' : 'does not follow'}.`,
+        explanation: `The endpoint relation changes from ${requireCore().direction(original.expectedRelation).name} to ${requireCore().direction(counterfactual.expectedRelation).name}. Unchanged Statement 3 ${counterfactual.isEntailed ? 'now follows' : 'does not follow'}. This separate practice does not determine the N-back answer.`,
         outputFacet: counterfactual.outputFacet })
     });
   }
